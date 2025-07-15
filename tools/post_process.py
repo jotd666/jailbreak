@@ -120,9 +120,10 @@ with open(source_dir / "data.inc","w") as fw:
     fw.writelines(equates)
 
 with open(source_dir / "jailbreak.68k","w") as fw:
-    fw.write("""\t.include "double_dragon.inc"
+    fw.write("""\t*.include "jailbreak.inc"
 .include "data.inc"
-\t.global\tirq_44f5
-\t.global\treset_4000
+\t.global\tirq_8a57
+\t.global\tirq_b05d
+\t.global\treset_81a6
 """)
     fw.writelines(lines)

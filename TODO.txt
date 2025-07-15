@@ -1,4 +1,5 @@
 - generate include.inc generic should be adapted
+- l_8358: protect with pushsr
 
 log sounds: bpset xxx,,{print A;g}
 sim sound on credit: bpset xxx,,{A=$81;g}

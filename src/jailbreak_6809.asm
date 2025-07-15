@@ -5630,6 +5630,7 @@ AF8E: C6 8B       LDB    #$03
 AF90: F7 32 7E    STB    $10FC
 AF93: 39          RTS
 AF94: 86 C5       LDA    #$E7
+play_sound_af96:
 AF96: 12          NOP
 AF97: 12          NOP
 AF98: 12          NOP
@@ -5640,14 +5641,14 @@ AF9E: B7 BA 22    STA    dsw3_3200
 AFA1: 39          RTS
 AFA2: C6 86       LDB    #$04
 AFA4: 86 BD       LDA    #$9F
-AFA6: BD 2D BE    JSR    $AF96
+AFA6: BD 2D BE    JSR    play_sound_af96
 AFA9: 8B A8       ADDA   #$20
 AFAB: 5A          DECB
 AFAC: 26 D0       BNE    $AFA6
 AFAE: 7E 09 8F    JMP    $81AD
 AFB1: C6 86       LDB    #$04
 AFB3: 86 BD       LDA    #$9F
-AFB5: BD 2D 14    JSR    $AF96
+AFB5: BD 2D 14    JSR    play_sound_af96
 AFB8: 8B 08       ADDA   #$20
 AFBA: 5A          DECB
 AFBB: 26 D0       BNE    $AFB5
@@ -5676,7 +5677,7 @@ AFF3: CC 33 33    LDD    #$1111
 AFF6: FD 94 EE    STD    $16C6
 AFF9: 7F 9E 41    CLR    $16C9
 AFFC: 86 D7       LDA    #$FF
-AFFE: 7E 27 B4    JMP    $AF96
+AFFE: 7E 27 B4    JMP    play_sound_af96
 B001: B6 94 49    LDA    $16CB
 B004: 27 1B       BEQ    $B03F
 B006: 7F 94 E3    CLR    $16CB
@@ -5715,7 +5716,7 @@ B04F: 10 8E DD 97 LDY    #$FF15
 B053: EC 84       LDD    A,Y
 B055: FD 94 46    STD    $16C4
 B058: 86 D7       LDA    #$FF
-B05A: 7E 27 BE    JMP    $AF96
+B05A: 7E 27 BE    JMP    play_sound_af96
 
 irq_b05d:
 B05D: 86 76       LDA    #$FE
@@ -5759,6 +5760,10 @@ B0C0: 26 67       BNE    $B107
 B0C2: 7F 94 EA    CLR    $16C8
 B0C5: 39          RTS
 
+; dynamic jump to whatever is in [U]
+; at start, all 3 function pointers are set to AFD6
+; which does nothing
+
 store_and_jump_b0c6:
 B0C6: B7 95 24    STA    $170C
 B0C9: 6E 4C       JMP    ,U			; [indirect_jump]
@@ -5766,11 +5771,11 @@ B0C9: 6E 4C       JMP    ,U			; [indirect_jump]
 B0CB: CE 87 FE    LDU    #$AFD6
 B0CE: B6 9F 2E    LDA    $170C
 B0D1: 8B 1D       ADDA   #$9F
-B0D3: BD 8D B4    JSR    $AF96
+B0D3: BD 8D B4    JSR    play_sound_af96
 B0D6: 81 5D       CMPA   #$DF
 B0D8: 26 62       BNE    $B124
 B0DA: 86 77       LDA    #$FF
-B0DC: 7E 87 1E    JMP    $AF96
+B0DC: 7E 87 1E    JMP    play_sound_af96
 B0DF: F6 35 24    LDB    $1706
 B0E2: C1 1B       CMPB   #$99
 B0E4: 24 1C       BCC    $B124
@@ -5852,7 +5857,7 @@ B197: 8B A8       ADDA   #$80
 B199: C4 87       ANDB   #$0F
 B19B: F7 3F 2E    STB    $1706
 B19E: BB 9F 24    ADDA   $1706
-B1A1: BD 2D 14    JSR    $AF96
+B1A1: BD 2D 14    JSR    play_sound_af96
 B1A4: FC 35 85    LDD    $1707
 B1A7: 84 2B       ANDA   #$03
 B1A9: 58          ASLB
@@ -5863,20 +5868,20 @@ B1AD: 58          ASLB
 B1AE: 49          ROLA
 B1AF: 58          ASLB
 B1B0: 49          ROLA
-B1B1: 7E 2D 14    JMP    $AF96
+B1B1: 7E 2D 14    JMP    play_sound_af96
 B1B4: BD 93 3D    JSR    $B1BF
 B1B7: 86 B8       LDA    #$90
 B1B9: BB 9F 8E    ADDA   $1706
-B1BC: 7E 87 1E    JMP    $AF96
+B1BC: 7E 87 1E    JMP    play_sound_af96
 B1BF: B6 35 2E    LDA    $170C
 B1C2: 8B 12       ADDA   #$90
 B1C4: 53          COMB
 B1C5: C4 8D       ANDB   #$0F
 B1C7: F7 3F 2E    STB    $1706
 B1CA: BB 9F 2E    ADDA   $1706
-B1CD: 7E 27 1E    JMP    $AF96
+B1CD: 7E 27 1E    JMP    play_sound_af96
 B1D0: 86 FD       LDA    #$DF
-B1D2: BD 2D B4    JSR    $AF96
+B1D2: BD 2D B4    JSR    play_sound_af96
 B1D5: 86 72       LDA    #$F0
 B1D7: 20 C3       BRA    $B1C4
 B1D9: BE 9F 8A    LDX    $1702
@@ -6124,7 +6129,7 @@ B3FB: CE 91 B1    LDU    #$B999
 B3FE: CC 31 29    LDD    #$B90B
 B401: FD 94 40    STD    $16C2
 B404: 86 DD       LDA    #$FF
-B406: 7E 2D BE    JMP    $AF96
+B406: 7E 2D BE    JMP    play_sound_af96
 B409: B6 9D 13    LDA    $159B
 B40C: 81 2D       CMPA   #$05
 B40E: 10 26 DF 9C LBNE   $B1D0
