@@ -1,12 +1,93 @@
+;	map(0x0000, 0x07ff).ram().w(FUNC(jailbrek_state::colorram_w)).share(m_colorram);
+;	map(0x0800, 0x0fff).ram().w(FUNC(jailbrek_state::videoram_w)).share(m_videoram);
+;	map(0x1000, 0x10bf).ram().share(m_spriteram);
+;	map(0x10c0, 0x14ff).ram(); // ???
+;	map(0x1500, 0x1fff).ram(); // work RAM
+;	map(0x2000, 0x203f).ram().share(m_scroll_x);
+;	map(0x2040, 0x2040).nopw(); // ???
+;	map(0x2041, 0x2041).nopw(); // ???
+;	map(0x2042, 0x2042).ram().share(m_scroll_dir); // bit 2 = scroll direction
+;	map(0x2043, 0x2043).nopw(); // ???
+;	map(0x2044, 0x2044).w(FUNC(jailbrek_state::ctrl_w)); // irq, nmi enable, screen flip
+;	map(0x3000, 0x3000).w(FUNC(jailbrek_state::coin_w));
+;	map(0x3100, 0x3100).portr("DSW2").w("snsnd", FUNC(sn76489a_device::write));
+;	map(0x3200, 0x3200).portr("DSW3").nopw(); // mirror of the previous?
+;	map(0x3300, 0x3300).portr("SYSTEM").w("watchdog", FUNC(watchdog_timer_device::reset_w));
+;	map(0x3301, 0x3301).portr("P1");
+;	map(0x3302, 0x3302).portr("P2");
+;	map(0x3303, 0x3303).portr("DSW1");
+;	map(0x4000, 0x4000).w(FUNC(jailbrek_state::speech_w)); // speech pins
+;	map(0x5000, 0x5000).w(m_vlm, FUNC(vlm5030_device::data_w)); // speech data
+;	map(0x6000, 0x6000).r(FUNC(jailbrek_state::speech_r));
+;	map(0x8000, 0xffff).rom();
+;
+
+;	PORT_START("SYSTEM")    // system_3300
+;	KONAMI8_SYSTEM_10
+;	PORT_BIT( 0xe0, IP_ACTIVE_LOW, IPT_UNUSED )
+;
+;	PORT_START("P1")        // in0_3301
+;	KONAMI8_B12_UNK(1)  // button1 = shoot, button2 = select
+;
+;	PORT_START("P2")        // in1_3302
+;	KONAMI8_B12_UNK(2)
+;
+;	PORT_START("DSW1")      // dsw1_3303
+;	KONAMI_COINAGE_LOC(DEF_STR( Free_Play ), "Invalid", SW1)
+;	// "Invalid" = both coin slots disabled
+;
+;	PORT_START("DSW2")      // dsw2_3100
+;	PORT_DIPNAME( 0x03, 0x01, DEF_STR( Lives ) )       PORT_DIPLOCATION( "SW2:1,2" )
+;	PORT_DIPSETTING(    0x03, "1" )
+;	PORT_DIPSETTING(    0x02, "2" )
+;	PORT_DIPSETTING(    0x01, "3" )
+;	PORT_DIPSETTING(    0x00, "5" )
+;	PORT_DIPNAME( 0x04, 0x00, DEF_STR( Cabinet ) )     PORT_DIPLOCATION( "SW2:3" )
+;	PORT_DIPSETTING(    0x00, DEF_STR( Upright ) )
+;	PORT_DIPSETTING(    0x04, DEF_STR( Cocktail ) )
+;	PORT_DIPNAME( 0x08, 0x08, DEF_STR( Bonus_Life ) )  PORT_DIPLOCATION( "SW2:4" )
+;	PORT_DIPSETTING(    0x08, "30K 70K+" )
+;	PORT_DIPSETTING(    0x00, "40K 80K+" )
+;	PORT_DIPNAME( 0x30, 0x10, DEF_STR( Difficulty ) )  PORT_DIPLOCATION( "SW2:5,6" )
+;	PORT_DIPSETTING(    0x30, DEF_STR( Easy ) )
+;	PORT_DIPSETTING(    0x20, DEF_STR( Normal ) )
+;	PORT_DIPSETTING(    0x10, DEF_STR( Difficult ) )
+;	PORT_DIPSETTING(    0x00, DEF_STR( Very_Difficult ) )
+;	PORT_BIT( 0x40, IP_ACTIVE_LOW, IPT_UNUSED )        PORT_DIPLOCATION( "SW2:7" )
+;	PORT_DIPNAME( 0x80, 0x00, DEF_STR( Demo_Sounds ) ) PORT_DIPLOCATION( "SW2:8" )
+;	PORT_DIPSETTING(    0x80, DEF_STR( Off ) )
+;	PORT_DIPSETTING(    0x00, DEF_STR( On ) )
+;
+;	PORT_START("DSW3")      // dsw3_3200
+;	PORT_DIPNAME( 0x01, 0x01, DEF_STR( Flip_Screen ) ) PORT_DIPLOCATION( "SW3:1" )
+;	PORT_DIPSETTING(    0x01, DEF_STR( Off ) )
+;	PORT_DIPSETTING(    0x00, DEF_STR( On ) )
+;	PORT_DIPNAME( 0x02, 0x02, "Upright Controls" )     PORT_DIPLOCATION( "SW3:2" )
+;	PORT_DIPSETTING(    0x02, DEF_STR( Single ) )
+;	PORT_DIPSETTING(    0x00, DEF_STR( Dual ) )
+;	PORT_BIT( 0x04, IP_ACTIVE_LOW, IPT_UNUSED )        PORT_DIPLOCATION( "SW3:3" )
+;	PORT_BIT( 0x08, IP_ACTIVE_LOW, IPT_UNUSED )        PORT_DIPLOCATION( "SW3:4" )
+
+system_3300 = $3000
+in0_3301 = $3301
+in1_3302 = $3302
+dsw1_3303 = $3303
+dsw2_3100 = $3100
+dsw3_3200 = $3200
+scroll_dir_2042 = $2042
+ctrl_2044 = $2044
+scroll_x_2000 = $2000
+coin_3000 = $3000
+
 8000: 8E 32 82    LDX    #$1000
 8003: 4F          CLRA
 8004: 5F          CLRB
-8005: B7 B1 82    STA    $3300
+8005: B7 B1 82    STA    system_3300
 8008: ED A9       STD    ,X++
 800A: 8C 9F 28    CMPX   #$1700
 800D: 25 7E       BCS    $8005
 800F: 8E 33 E2    LDX    #$11C0
-8012: B7 B1 22    STA    $3300
+8012: B7 B1 22    STA    system_3300
 8015: ED 03       STD    ,X++
 8017: 8C 3F 88    CMPX   #$17A0
 801A: 25 7E       BCS    $8012
@@ -33,9 +114,9 @@
 804E: ED 8A       STD    $2,X
 8050: B6 34 42    LDA    $16C0
 8053: BD AB 20    JSR    $8902
-8056: B7 B1 28    STA    $3300
+8056: B7 B1 28    STA    system_3300
 8059: BD 39 C0    JSR    $B148
-805C: B7 1B 88    STA    $3300
+805C: B7 1B 88    STA    system_3300
 805F: 86 60       LDA    #$42
 8061: 88 02       EORA   #$80
 8063: 97 00       STA    $22
@@ -43,7 +124,7 @@
 8068: C6 2B       LDB    #$03
 806A: D8 A9       EORB   $21
 806C: D7 09       STB    $21
-806E: F7 A8 66    STB    $2044
+806E: F7 A8 66    STB    ctrl_2044
 8071: 1C 6D       ANDCC  #$EF
 8073: 9E 1E       LDX    $3C
 8075: EC 06       LDD    ,X
@@ -82,13 +163,13 @@
 80BC: 5C          INCB
 80BD: D7 A2       STB    $2A
 80BF: 7E A4 AC    JMP    $868E
-80C2: B6 B1 21    LDA    $3303
+80C2: B6 B1 21    LDA    dsw1_3303
 80C5: 43          COMA
 80C6: 97 D2       STA    $50
-80C8: B6 19 88    LDA    $3100
+80C8: B6 19 88    LDA    dsw2_3100
 80CB: 43          COMA
 80CC: 97 79       STA    $51
-80CE: B6 BA 22    LDA    $3200
+80CE: B6 BA 22    LDA    dsw3_3200
 80D1: 43          COMA
 80D2: 97 D0       STA    $52
 80D4: 96 72       LDA    $50
@@ -129,7 +210,7 @@
 8117: CE 38 38    LDU    #$1010
 811A: 4F          CLRA
 811B: 5F          CLRB
-811C: 8E 08 88    LDX    #$2000
+811C: 8E 08 88    LDX    #scroll_x_2000
 811F: ED A3       STD    ,X++
 8121: ED 03       STD    ,X++
 8123: ED A3       STD    ,X++
@@ -199,31 +280,31 @@ reset_81a6:
 81B3: 4F          CLRA
 81B4: FD 02 C2    STD    $2040
 81B7: 86 2A       LDA    #$02
-81B9: B7 A8 CA    STA    $2042
-81BC: 8E 08 88    LDX    #$2000
+81B9: B7 A8 CA    STA    scroll_dir_2042
+81BC: 8E 08 88    LDX    #scroll_x_2000
 81BF: C6 62       LDB    #$40
 81C1: 4F          CLRA
 81C2: A7 02       STA    ,X+
 81C4: 5A          DECB
 81C5: 26 79       BNE    $81C2
-81C7: F6 1A 28    LDB    $3200
+81C7: F6 1A 28    LDB    dsw3_3200
 81CA: 54          LSRB
 81CB: 25 2A       BCS    $81CF
 81CD: 86 80       LDA    #$08
 81CF: 8E 22 22    LDX    #$0000
-81D2: B7 B1 22    STA    $3300
-81D5: B7 A2 C6    STA    $2044
+81D2: B7 B1 22    STA    system_3300
+81D5: B7 A2 C6    STA    ctrl_2044
 81D8: 30 29       LEAX   $1,X
 81DA: 26 7E       BNE    $81D2
 81DC: 86 3D       LDA    #$15
 81DE: 1F 03       TFR    A,DP
 81E0: 4F          CLRA
 81E1: 8E 82 82    LDX    #$0000
-81E4: B7 11 82    STA    $3300
+81E4: B7 11 82    STA    system_3300
 81E7: A7 AC       STA    ,X
 81E9: A1 08       CMPA   ,X+
 81EB: 26 8D       BNE    $8192
-81ED: 8C A8 88    CMPX   #$2000
+81ED: 8C A8 88    CMPX   #scroll_x_2000
 81F0: 25 D0       BCS    $81E4
 81F2: 8B D7       ADDA   #$55
 81F4: 81 76       CMPA   #$54
@@ -232,15 +313,15 @@ reset_81a6:
 81F9: 81 77       CMPA   #$FF
 81FB: 26 29       BNE    $81FE
 81FD: 4F          CLRA
-81FE: B7 BB 22    STA    $3300
+81FE: B7 BB 22    STA    system_3300
 8201: A7 00       STA    ,-X
 8203: A1 A6       CMPA   ,X
 8205: 26 09       BNE    $8192
 8207: 8C 28 28    CMPX   #$0000
 820A: 22 64       BHI    $81F8
 820C: 4F          CLRA
-820D: 8E A8 88    LDX    #$2000
-8210: B7 11 82    STA    $3300
+820D: 8E A8 88    LDX    #scroll_x_2000
+8210: B7 11 82    STA    system_3300
 8213: A7 A6       STA    ,X
 8215: A1 02       CMPA   ,X+
 8217: 10 26 D7 EA LBNE   $817D
@@ -253,20 +334,20 @@ reset_81a6:
 8227: 81 D7       CMPA   #$FF
 8229: 26 89       BNE    $822C
 822B: 4F          CLRA
-822C: B7 1B 88    STA    $3300
+822C: B7 1B 88    STA    system_3300
 822F: A7 A0       STA    ,-X
 8231: A1 06       CMPA   ,X
 8233: 10 26 DD C4 LBNE   $817D
-8237: 8C 08 28    CMPX   #$2000
+8237: 8C 08 28    CMPX   #scroll_x_2000
 823A: 22 62       BHI    $8226
 823C: C6 38       LDB    #$10
 823E: 8D E4       BSR    $82AC
 8240: CE E6 DE    LDU    #$C45C
 8243: 10 8E 22 82 LDY    #$0000
-8247: 8E 68 28    LDX    #$4000
+8247: 8E 68 28    LDX    #speech_4000
 824A: 4F          CLRA
 824B: 5F          CLRB
-824C: B7 1B 88    STA    $3300
+824C: B7 1B 88    STA    system_3300
 824F: EB 80       ADDB   ,-Y
 8251: 89 82       ADCA   #$00
 8253: 30 3D       LEAX   -$1,X
@@ -300,7 +381,7 @@ reset_81a6:
 8299: 8D 8B       BSR    $829E
 829B: 7E A8 28    JMP    $8000
 829E: 8E 88 22    LDX    #$0000
-82A1: B7 B1 82    STA    $3300
+82A1: B7 B1 82    STA    system_3300
 82A4: 3D          MUL
 82A5: 30 9D       LEAX   -$1,X
 82A7: 26 D0       BNE    $82A1
@@ -308,7 +389,7 @@ reset_81a6:
 82AA: C6 77       LDB    #$FF
 82AC: 8E 20 88    LDX    #$0800
 82AF: 4F          CLRA
-82B0: B7 11 82    STA    $3300
+82B0: B7 11 82    STA    system_3300
 82B3: A7 AB DA 82 STA    -$0800,X
 82B7: E7 A8       STB    ,X+
 82B9: 8C 98 88    CMPX   #$1000
@@ -320,8 +401,8 @@ reset_81a6:
 82C5: 4F          CLRA
 82C6: FD A2 68    STD    $2040
 82C9: 86 8A       LDA    #$02
-82CB: B7 08 6A    STA    $2042
-82CE: 8E A8 22    LDX    #$2000
+82CB: B7 08 6A    STA    scroll_dir_2042
+82CE: 8E A8 22    LDX    #scroll_x_2000
 82D1: C6 C2       LDB    #$40
 82D3: 4F          CLRA
 82D4: A7 A2       STA    ,X+
@@ -1238,8 +1319,8 @@ irq_8a57:
 8A5B: 96 09       LDA    $21
 8A5D: 84 75       ANDA   #$FD
 8A5F: 97 03       STA    $21
-8A61: B7 A2 C6    STA    $2044
-8A64: B7 11 82    STA    $3300
+8A61: B7 A2 C6    STA    ctrl_2044
+8A64: B7 11 82    STA    system_3300
 8A67: 96 0A       LDA    $22
 8A69: B7 A8 CB    STA    $2043
 8A6C: 0C 1E       INC    $36
@@ -1248,7 +1329,7 @@ irq_8a57:
 8A73: 96 03       LDA    $21
 8A75: 88 80       EORA   #$02
 8A77: 97 09       STA    $21
-8A79: B7 A8 CC    STA    $2044
+8A79: B7 A8 CC    STA    ctrl_2044
 8A7C: 3B          RTI
 8A7D: 96 D5       LDA    $5D
 8A7F: 97 7C       STA    $5E
@@ -1260,7 +1341,7 @@ irq_8a57:
 8A8B: DD 71       STD    $59
 8A8D: 96 DD       LDA    $55
 8A8F: 97 78       STA    $5A
-8A91: B6 B1 82    LDA    $3300
+8A91: B6 B1 82    LDA    system_3300
 8A94: 43          COMA
 8A95: 97 D1       STA    $53
 8A97: 96 0E       LDA    $26
@@ -1268,10 +1349,10 @@ irq_8a57:
 8A9B: 27 2C       BEQ    $8AA1
 8A9D: 0D CC       TST    $44
 8A9F: 27 2E       BEQ    $8AAD
-8AA1: B6 B1 83    LDA    $3301
+8AA1: B6 B1 83    LDA    in0_3301
 8AA4: 43          COMA
 8AA5: 97 D6       STA    $54
-8AA7: B6 1B 2A    LDA    $3302
+8AA7: B6 1B 2A    LDA    in1_3302
 8AAA: 43          COMA
 8AAB: 97 7D       STA    $55
 8AAD: 96 D8       LDA    $50
@@ -1313,7 +1394,7 @@ irq_8a57:
 8AFA: 96 AB       LDA    $23
 8AFC: 88 29       EORA   #$01
 8AFE: 97 AB       STA    $23
-8B00: B7 12 82    STA    $3000
+8B00: B7 12 82    STA    coin_3000
 8B03: 0D 6F       TST    $4D
 8B05: 27 8C       BEQ    $8B15
 8B07: 0A 65       DEC    $4D
@@ -1331,7 +1412,7 @@ irq_8a57:
 8B1F: 96 01       LDA    $23
 8B21: 88 80       EORA   #$02
 8B23: 97 01       STA    $23
-8B25: B7 B2 82    STA    $3000
+8B25: B7 B2 82    STA    coin_3000
 8B28: D6 7B       LDB    $53
 8B2A: DA D0       ORB    $58
 8B2C: 53          COMB
@@ -1960,7 +2041,7 @@ irq_8a57:
 904B: C6 0D       LDB    #$25
 904D: BD 08 29    JSR    $80A1
 9050: 86 24       LDA    #$06
-9052: B7 A2 60    STA    $2042
+9052: B7 A2 60    STA    scroll_dir_2042
 9055: BD 11 10    JSR    $9392
 9058: 8E 27 08    LDX    #$0F80
 905B: BF 28 19    STX    >$0031
@@ -2020,7 +2101,7 @@ irq_8a57:
 90D1: 26 89       BNE    $90DE
 90D3: BD A3 35    JSR    $8117
 90D6: 86 80       LDA    #$02
-90D8: B7 08 CA    STA    $2042
+90D8: B7 08 CA    STA    scroll_dir_2042
 90DB: 0C 40       INC    $68
 90DD: 39          RTS
 90DE: 10 83 24 22 CMPD   #$0600
@@ -2054,7 +2135,7 @@ irq_8a57:
 9125: 8D 99       BSR    $9142
 9127: 8D 31       BSR    $9142
 9129: 8D 9F       BSR    $9142
-912B: 8E 08 28    LDX    #$2000
+912B: 8E 08 28    LDX    #scroll_x_2000
 912E: 6C 08       INC    ,X+
 9130: 8C 02 A2    CMPX   #$2020
 9133: 25 DB       BCS    $912E
@@ -5552,8 +5633,8 @@ AF97: 12          NOP
 AF98: 12          NOP
 AF99: 12          NOP
 AF9A: 12          NOP
-AF9B: B7 19 28    STA    $3100
-AF9E: B7 BA 22    STA    $3200
+AF9B: B7 19 28    STA    dsw2_3100
+AF9E: B7 BA 22    STA    dsw3_3200
 AFA1: 39          RTS
 AFA2: C6 86       LDB    #$04
 AFA4: 86 BD       LDA    #$9F
@@ -5638,10 +5719,10 @@ irq_b05d:
 B05D: 86 76       LDA    #$FE
 B05F: B4 37 03    ANDA   $1521
 B062: B7 97 03    STA    $1521
-B065: B7 A2 C6    STA    $2044
+B065: B7 A2 C6    STA    ctrl_2044
 B068: B6 3F 85    LDA    $170D
 B06B: 27 39       BEQ    $B07E
-B06D: B6 E8 88    LDA    $6000
+B06D: B6 E8 88    LDA    speech_6000
 B070: 85 23       BITA   #$01
 B072: 26 88       BNE    $B07E
 B074: 7F 35 8F    CLR    $170D
@@ -5667,7 +5748,7 @@ B0A9: FF 9E 4C    STU    $16C4
 B0AC: 86 29       LDA    #$01
 B0AE: BA 9D 03    ORA    $1521
 B0B1: B7 97 A3    STA    $1521
-B0B4: B7 02 C6    STA    $2044
+B0B4: B7 02 C6    STA    ctrl_2044
 B0B7: 3B          RTI
 B0B8: 8E 98 F6    LDX    #$B07E
 B0BB: 34 38       PSHS   X
@@ -5703,17 +5784,17 @@ B101: C4 FD       ANDB   #$7F
 B103: 58          ASLB
 B104: F7 72 82    STB    $5000
 B107: 86 29       LDA    #$01
-B109: B7 C8 88    STA    $4000
+B109: B7 C8 88    STA    speech_4000
 B10C: 86 2B       LDA    #$03
-B10E: B7 C8 22    STA    $4000
+B10E: B7 C8 22    STA    speech_4000
 B111: 86 83       LDA    #$01
-B113: B4 42 22    ANDA   $6000
+B113: B4 42 22    ANDA   speech_6000
 B116: 27 7B       BEQ    $B111
 B118: B7 3F 85    STA    $170D
 B11B: 86 29       LDA    #$01
-B11D: B7 C8 88    STA    $4000
+B11D: B7 C8 88    STA    speech_4000
 B120: 4F          CLRA
-B121: B7 C2 82    STA    $4000
+B121: B7 C2 82    STA    speech_4000
 B124: 39          RTS
 B125: 7C 95 86    INC    $1704
 B128: B6 3F 8C    LDA    $1704
@@ -5731,9 +5812,9 @@ B143: B7 35 2C    STA    $170E
 B146: 20 34       BRA    $B0FE
 B148: BD 87 35    JSR    $AFBD
 B14B: 86 2C       LDA    #$04
-B14D: B7 C8 88    STA    $4000
+B14D: B7 C8 88    STA    speech_4000
 B150: 86 23       LDA    #$01
-B152: B4 E2 22    ANDA   $6000
+B152: B4 E2 22    ANDA   speech_6000
 B155: 26 7B       BNE    $B150
 B157: 1F B0       TFR    B,A
 B159: 84 F7       ANDA   #$7F
@@ -5741,11 +5822,11 @@ B15B: 8E D1 A7    LDX    #$F98F
 B15E: A6 0E       LDA    A,X
 B160: B7 72 82    STA    $5000
 B163: 86 27       LDA    #$05
-B165: B7 C2 82    STA    $4000
+B165: B7 C2 82    STA    speech_4000
 B168: 86 29       LDA    #$01
-B16A: B7 C8 28    STA    $4000
+B16A: B7 C8 28    STA    speech_4000
 B16D: 4F          CLRA
-B16E: B7 C8 22    STA    $4000
+B16E: B7 C8 22    STA    speech_4000
 B171: 39          RTS
 B172: BD 33 B3    JSR    $B191
 B175: FC 95 85    LDD    $1707
@@ -6815,7 +6896,7 @@ BB15: A7 26       STA    ,Y
 BB17: BD 99 9C    JSR    $B1B4
 BB1A: CC 89 A8    LDD    #$0180
 BB1D: 7E 39 FA    JMP    $B172
-BB20: CC 42 82    LDD    #$6000
+BB20: CC 42 82    LDD    #speech_6000
 BB23: A7 86       STA    ,Y
 BB25: 7E 33 36    JMP    $B1B4
 BB28: 7E 9A CE    JMP    $B246
