@@ -56,10 +56,10 @@
 8086: 23 81       BLS    $808B
 8088: 8E 3C 48    LDX    #$14C0
 808B: 9F 14       STX    $3C
-808D: 8E 35 9C    LDX    #$BD14
+808D: 8E 35 9C    LDX    #table_bd14
 8090: 10 8E 02 F1 LDY    #$8073
 8094: 34 02       PSHS   Y
-8096: 6E 14       JMP    [A,X]
+8096: 6E 14       JMP    [A,X]        ; [jump_table]
 8098: 86 29       LDA    #$01
 809A: 20 8E       BRA    $80A2
 809C: 5F          CLRB
@@ -793,8 +793,8 @@ reset_81a6:
 86AA: 39          RTS
 86AB: 96 01       LDA    $29
 86AD: 48          ASLA
-86AE: 8E 49 9C    LDX    #$C1BE
-86B1: 6E 14       JMP    [A,X]
+86AE: 8E 49 9C    LDX    #table_c1be
+86B1: 6E 14       JMP    [A,X]        ; [jump_table]
 86B3: BD A3 43    JSR    $8161
 86B6: 0C AB       INC    $29
 86B8: CC 28 88    LDD    #$0000
@@ -1295,6 +1295,7 @@ irq_8a57:
 8AD9: C6 89       LDB    #$01
 8ADB: D7 0D       STB    $25
 8ADD: 39          RTS
+
 8ADE: 0D C0       TST    $48
 8AE0: 27 2C       BEQ    $8AF0
 8AE2: 0A CA       DEC    $48
@@ -1432,12 +1433,14 @@ irq_8a57:
 8BF6: 9F C2       STX    $40
 8BF8: 96 0D       LDA    $25
 8BFA: 48          ASLA
-8BFB: 8E EA 6C    LDX    #$C244
-8BFE: 6E 1E       JMP    [A,X]
+8BFB: 8E EA 6C    LDX    #table_c244
+8BFE: 6E 1E       JMP    [A,X]        ; [jump_table]
+
 8C00: 96 04       LDA    $26
 8C02: 48          ASLA
-8C03: 8E E0 6E    LDX    #$C24C
-8C06: 6E 14       JMP    [A,X]
+8C03: 8E E0 6E    LDX    #table_c24c
+8C06: 6E 14       JMP    [A,X]        ; [jump_table]
+
 8C08: BD A9 9D    JSR    $8115
 8C0B: C6 D7       LDB    #$FF
 8C0D: D7 D7       STB    $5F
@@ -1571,8 +1574,9 @@ irq_8a57:
 8D1E: 26 8B       BNE    $8D23
 8D20: 96 04       LDA    $26
 8D22: 48          ASLA
-8D23: 8E E1 D4    LDX    #$C3F6
-8D26: 6E 14       JMP    [A,X]
+8D23: 8E E1 D4    LDX    #table_c3f6
+8D26: 6E 14       JMP    [A,X]        ; [jump_table]
+
 8D28: 0C 0E       INC    $26
 8D2A: 7E 09 3D    JMP    $8115
 8D2D: BD 0E 06    JSR    $868E
@@ -1682,8 +1686,9 @@ irq_8a57:
 8E04: 39          RTS
 8E05: 96 AA       LDA    $28
 8E07: 48          ASLA
-8E08: 8E EC 88    LDX    #$C400
-8E0B: 6E BE       JMP    [A,X]
+8E08: 8E EC 88    LDX    #table_c400
+8E0B: 6E BE       JMP    [A,X]        ; [jump_table]
+
 8E0D: BD 09 9F    JSR    $8117
 8E10: 0C 0A       INC    $28
 8E12: 39          RTS
@@ -1708,8 +1713,8 @@ irq_8a57:
 8E3C: 39          RTS
 8E3D: 96 A1       LDA    $29
 8E3F: 48          ASLA
-8E40: 8E E6 90    LDX    #$C412
-8E43: 6E B4       JMP    [A,X]
+8E40: 8E E6 90    LDX    #table_c412
+8E43: 6E B4       JMP    [A,X]        ; [jump_table]
 8E45: BD 04 02    JSR    $8680
 8E48: 96 6C       LDA    $44
 8E4A: 27 8D       BEQ    $8E51
@@ -1839,8 +1844,8 @@ irq_8a57:
 8F56: 7E 13 EB    JMP    $91C3
 8F59: 96 E0       LDA    $68
 8F5B: 48          ASLA
-8F5C: 8E EC A0    LDX    #$C428
-8F5F: 6E B4       JMP    [A,X]
+8F5C: 8E EC A0    LDX    #table_c428
+8F5F: 6E B4       JMP    [A,X]        ; [jump_table]
 8F61: 96 C0       LDA    $42
 8F63: 27 28       BEQ    $8F6F
 8F65: C6 8A       LDB    #$08
@@ -2733,8 +2738,8 @@ irq_8a57:
 9732: 4A          DECA
 9733: 48          ASLA
 9734: 10 AE 24    LDY    A,Y
-9737: CE CF 84    LDU    #$E7AC
-973A: AD 5E       JSR    [A,U]
+9737: CE CF 84    LDU    #table_e7ac
+973A: AD 5E       JSR    [A,U]        ; [jump_table]
 973C: A6 A0 9D    LDA    $15,X
 973F: C6 24       LDB    #$06
 9741: 3D          MUL
@@ -2773,8 +2778,8 @@ irq_8a57:
 9787: ED 62       STD    $A,U
 9789: BD 10 A0    JSR    $9828
 978C: 35 6C       PULS   B,U
-978E: 10 8E C4 59 LDY    #$E67B
-9792: 6E 37       JMP    [B,Y]
+978E: 10 8E C4 59 LDY    #table_e67b
+9792: 6E 37       JMP    [B,Y]        ; [jump_table]
 9794: EC 6A       LDD    $8,U
 9796: 43          COMA
 9797: 53          COMB
@@ -2808,10 +2813,10 @@ irq_8a57:
 97CD: 7A 98 68    DEC    $10E0
 97D0: 26 D3       BNE    $97C3
 97D2: 39          RTS
-97D3: CE C5 90    LDU    #$E7B2
+97D3: CE C5 90    LDU    #table_e7b2
 97D6: 4A          DECA
 97D7: 48          ASLA
-97D8: 6E FE       JMP    [A,U]
+97D8: 6E FE       JMP    [A,U]        ; [jump_table]
 97DA: EE 8A       LDU    $2,X
 97DC: A6 29       LDA    $1,X
 97DE: 27 8B       BEQ    $97E3
@@ -3251,9 +3256,9 @@ irq_8a57:
 9BA8: 20 DF       BRA    $9BA1
 9BAA: 48          ASLA
 9BAB: 33 EE       LEAU   A,U
-9BAD: 10 8E 60 10 LDY    #$E832
+9BAD: 10 8E 60 10 LDY    #table_e832
 9BB1: 58          ASLB
-9BB2: 6E 37       JMP    [B,Y]
+9BB2: 6E 37       JMP    [B,Y]        ; [jump_table]
 9BB4: A6 E6       LDA    ,U
 9BB6: A7 8A       STA    $8,X
 9BB8: A6 69       LDA    $1,U
@@ -3848,14 +3853,14 @@ A0BB: A7 AC       STA    ,X
 A0BD: 27 70       BEQ    $A0B7
 A0BF: C6 D2       LDB    #$F0
 A0C1: E7 86       STB    $4,X
-A0C3: CE CB 90    LDU    #$E9B2
+A0C3: CE CB 90    LDU    #table_e9b2
 A0C6: 4A          DECA
 A0C7: 48          ASLA
 A0C8: F6 39 4E    LDB    $11C6
 A0CB: E7 20       STB    $8,X
 A0CD: E7 83       STB    $B,X
 A0CF: 6F AA 30    CLR    $12,X
-A0D2: 6E 54       JMP    [A,U]
+A0D2: 6E 54       JMP    [A,U]        ; [jump_table]
 A0D4: 8E CB 13    LDX    #$E991
 A0D7: A6 AD       LDA    B,X
 A0D9: B7 98 7A    STA    $10F2
@@ -4033,10 +4038,10 @@ A26C: E6 AA       LDB    ,-X
 A26E: F7 98 D3    STB    $10F1
 A271: 7C 92 74    INC    $10F6
 A274: B6 32 74    LDA    $10F6
-A277: 8E C3 B0    LDX    #$EB98
+A277: 8E C3 B0    LDX    #table_eb98
 A27A: F6 98 D4    LDB    $10FC
 A27D: 58          ASLB
-A27E: 6E 1D       JMP    [B,X]
+A27E: 6E 1D       JMP    [B,X]        ; [jump_table]
 A280: F7 32 73    STB    $10F1
 A283: BD 82 F6    JSR    $A0D4
 A286: A6 A3       LDA    $1,Y
@@ -4289,9 +4294,9 @@ A4C8: E6 80 9A    LDB    $12,Y
 A4CB: 27 2B       BEQ    $A4D0
 A4CD: BD 2D 77    JSR    $A5FF
 A4D0: E6 86       LDB    ,Y
-A4D2: 8E 69 C7    LDX    #$EBE5
+A4D2: 8E 69 C7    LDX    #table_ebe5
 A4D5: 58          ASLB
-A4D6: AD 17       JSR    [B,X]
+A4D6: AD 17       JSR    [B,X]        ; [jump_table]
 A4D8: 96 B3       LDA    $9B
 A4DA: 81 8D       CMPA   #$05
 A4DC: 27 3A       BEQ    $A4F0
@@ -4302,8 +4307,8 @@ A4E4: 27 28       BEQ    $A4F0
 A4E6: C1 A2       CMPB   #$20
 A4E8: 27 2E       BEQ    $A4F0
 A4EA: 48          ASLA
-A4EB: 8E C3 88    LDX    #$EBA0
-A4EE: AD 1E       JSR    [A,X]
+A4EB: 8E C3 88    LDX    #table_eba0
+A4EE: AD 1E       JSR    [A,X]        ; [jump_table]
 A4F0: B6 32 70    LDA    $10F2
 A4F3: 31 8A 32    LEAY   $10,Y
 A4F6: 4A          DECA
@@ -4884,11 +4889,11 @@ A9D8: 8E C4 AF    LDX    #$EC27
 A9DB: E6 8C       LDB    ,Y
 A9DD: C1 8D       CMPB   #$05
 A9DF: 27 21       BEQ    $A9E4
-A9E1: 8E 6E B3    LDX    #$EC31
+A9E1: 8E 6E B3    LDX    #table_ec31
 A9E4: E6 8A A2    LDB    $20,Y
 A9E7: 58          ASLB
 A9E8: A6 0C       LDA    $4,Y
-A9EA: AD 1D       JSR    [B,X]
+A9EA: AD 1D       JSR    [B,X]        ; [jump_table]
 A9EC: BD 80 3A    JSR    $A8B2
 A9EF: 20 83       BRA    $A992
 A9F1: B1 93 46    CMPA   $11C4
@@ -5043,12 +5048,12 @@ AB3A: 20 8A       BRA    $AB3E
 AB3C: A7 01       STA    $9,Y
 AB3E: A6 A3       LDA    $B,Y
 AB40: B7 32 72    STA    $10F0
-AB43: 8E CE 19    LDX    #$EC3B
+AB43: 8E CE 19    LDX    #table_ec3b
 AB46: E6 2A 08    LDB    $20,Y
 AB49: 10 27 76 6D LBEQ   $A992
 AB4D: 58          ASLB
 AB4E: A6 AC       LDA    $4,Y
-AB50: AD B7       JSR    [B,X]
+AB50: AD B7       JSR    [B,X]        ; [jump_table]
 AB52: BD 2A 90    JSR    $A8B2
 AB55: 7E 2B 10    JMP    $A992
 AB58: 81 F8       CMPA   #$D0
@@ -5140,8 +5145,8 @@ AC11: F7 92 72    STB    $10F0
 AC14: A6 06       LDA    $4,Y
 AC16: E6 2A 08    LDB    $20,Y
 AC19: 58          ASLB
-AC1A: 8E 64 75    LDX    #$EC5D
-AC1D: AD 1D       JSR    [B,X]
+AC1A: 8E 64 75    LDX    #table_ec5d
+AC1D: AD 1D       JSR    [B,X]        ; [jump_table]
 AC1F: E6 0A       LDB    $8,Y
 AC21: BD 2A 30    JSR    $A8B2
 AC24: 10 8C 90 C2 CMPY   #$1240
@@ -5280,9 +5285,9 @@ AD50: C1 27       CMPB   #$05
 AD52: 27 8E       BEQ    $AD60
 AD54: F6 32 74    LDB    $10F6
 AD57: 7C 38 DE    INC    $10F6
-AD5A: 8E 64 5D    LDX    #$EC75
+AD5A: 8E 64 5D    LDX    #table_ec75
 AD5D: 48          ASLA
-AD5E: AD 1E       JSR    [A,X]
+AD5E: AD 1E       JSR    [A,X]        ; [jump_table]
 AD60: 34 02       PSHS   Y
 AD62: 10 8E 31 E2 LDY    #$13C0
 AD66: 5F          CLRB
@@ -5691,8 +5696,8 @@ B0F0: F7 34 4A    STB    $16C8
 B0F3: 1F BA       TFR    B,A
 B0F5: 80 02       SUBA   #$80
 B0F7: 48          ASLA
-B0F8: 10 8E 71 DD LDY    #$F955
-B0FC: 6E 9E       JMP    [A,Y]
+B0F8: 10 8E 71 DD LDY    #table_f955
+B0FC: 6E 9E       JMP    [A,Y]        ; [jump_table]
 B0FE: BD 39 69    JSR    $B14B
 B101: C4 FD       ANDB   #$7F
 B103: 58          ASLB
@@ -5870,9 +5875,9 @@ B28C: 54          LSRB
 B28D: 54          LSRB
 B28E: 54          LSRB
 B28F: 54          LSRB
-B290: 10 8E 7F A7 LDY    #$FD25
+B290: 10 8E 7F A7 LDY    #table_fd25
 B294: A6 BA 80    LDA    [$02,X]
-B297: 6E 9D       JMP    [B,Y]
+B297: 6E 9D       JMP    [B,Y]        ; [jump_table]
 B299: 48          ASLA
 B29A: 10 8E D5 4D LDY    #$FD65
 B29E: EC 2E       LDD    A,Y
@@ -5881,6 +5886,7 @@ B2A2: CC 82 23    LDD    #$0001
 B2A5: E3 80       ADDD   $2,X
 B2A7: ED 2A       STD    $2,X
 B2A9: 7E 3A 8F    JMP    $B207
+
 B2AC: A7 29       STA    $1,X
 B2AE: B7 9E DD    STA    $16FF
 B2B1: 20 6D       BRA    $B2A2
@@ -7009,3 +7015,464 @@ BCE7: CE 94 9F    LDU    #$BCB7
 BCEA: CC 8E 26    LDD    #$060E
 BCED: ED 2C       STD    ,Y
 BCEF: 39          RTS
+table_bd14:
+	dc.w	$82da	; $bd14
+	dc.w	$8327	; $bd16
+	dc.w	$8344	; $bd18
+	dc.w	$843f	; $bd1a
+	dc.w	$85e2	; $bd1c
+	dc.w	$8602	; $bd1e
+	dc.w	$bd82	; $bd20
+	dc.w	$bd98	; $bd22
+	dc.w	$bdab	; $bd24
+	dc.w	$bdc1	; $bd26
+	dc.w	$bdcf	; $bd28
+	dc.w	$bddd	; $bd2a
+	dc.w	$be2e	; $bd2c
+	dc.w	$be2e	; $bd2e
+	dc.w	$be3c	; $bd30
+	dc.w	$be4a	; $bd32
+	dc.w	$be58	; $bd34
+	dc.w	$be5f	; $bd36
+	dc.w	$be66	; $bd38
+	dc.w	$be77	; $bd3a
+	dc.w	$be80	; $bd3c
+	dc.w	$be80	; $bd3e
+	dc.w	$be89	; $bd40
+	dc.w	$be99	; $bd42
+	dc.w	$bea9	; $bd44
+	dc.w	$bee9	; $bd46
+	dc.w	$befa	; $bd48
+	dc.w	$bf0a	; $bd4a
+	dc.w	$bf1a	; $bd4c
+	dc.w	$bf1a	; $bd4e
+	dc.w	$bf1a	; $bd50
+	dc.w	$bf1a	; $bd52
+	dc.w	$bf27	; $bd54
+	dc.w	$bf27	; $bd56
+	dc.w	$bf27	; $bd58
+	dc.w	$bf27	; $bd5a
+	dc.w	$bf27	; $bd5c
+	dc.w	$bf2f	; $bd5e
+	dc.w	$bf9a	; $bd60
+	dc.w	$bfa1	; $bd62
+	dc.w	$bdfe	; $bd64
+	dc.w	$bfa8	; $bd66
+	dc.w	$bfd5	; $bd68
+	dc.w	$bfe9	; $bd6a
+	dc.w	$bffb	; $bd6c
+	dc.w	$c00f	; $bd6e
+	dc.w	$c043	; $bd70
+	dc.w	$c068	; $bd72
+	dc.w	$c08b	; $bd74
+	dc.w	$c093	; $bd76
+	dc.w	$c0ba	; $bd78
+	dc.w	$c0df	; $bd7a
+	dc.w	$c109	; $bd7c
+	dc.w	$c140	; $bd7e
+	dc.w	$c15b	; $bd80
+table_c1be:
+	dc.w	$86b3	; $c1be
+	dc.w	$86d4	; $c1c0
+	dc.w	$86e3	; $c1c2
+	dc.w	$86e9	; $c1c4
+	dc.w	$871e	; $c1c6
+	dc.w	$8741	; $c1c8
+	dc.w	$878e	; $c1ca
+	dc.w	$87a4	; $c1cc
+	dc.w	$87dd	; $c1ce
+table_c244:
+	dc.w	$8c00	; $c244
+	dc.w	$8d0d	; $c246
+	dc.w	$8e05	; $c248
+	dc.w	$82da	; $c24a
+	dc.w	$8c08	; $c24c
+	dc.w	$8c1c	; $c24e
+	dc.w	$8c08	; $c250
+	dc.w	$8c92	; $c252
+	dc.w	$8c08	; $c254
+	dc.w	$8ca7	; $c256
+	dc.w	$8c08	; $c258
+table_c24c:
+	dc.w	$8c08	; $c24c
+	dc.w	$8c1c	; $c24e
+	dc.w	$8c08	; $c250
+	dc.w	$8c92	; $c252
+	dc.w	$8c08	; $c254
+	dc.w	$8ca7	; $c256
+	dc.w	$8c08	; $c258
+table_c3f6:
+	dc.w	$8d28	; $c3f6
+	dc.w	$8d2d	; $c3f8
+	dc.w	$8d5b	; $c3fa
+	dc.w	$8d72	; $c3fc
+	dc.w	$8d7b	; $c3fe
+	dc.w	$8e0d	; $c400
+	dc.w	$8e13	; $c402
+	dc.w	$8e3d	; $c404
+	dc.w	$8f29	; $c406
+	dc.w	$8f59	; $c408
+	dc.w	$8e10	; $c40a
+	dc.w	$8f77	; $c40c
+	dc.w	$8fea	; $c40e
+	dc.w	$8ff6	; $c410
+	dc.w	$8e45	; $c412
+	dc.w	$8e59	; $c414
+	dc.w	$8e73	; $c416
+	dc.w	$8e8a	; $c418
+	dc.w	$8ea0	; $c41a
+	dc.w	$8e50	; $c41c
+	dc.w	$8e50	; $c41e
+	dc.w	$8e50	; $c420
+	dc.w	$8e50	; $c422
+	dc.w	$8e50	; $c424
+	dc.w	$8929	; $c426
+	dc.w	$902d	; $c428
+	dc.w	$9081	; $c42a
+	dc.w	$908d	; $c42c
+	dc.w	$9090	; $c42e
+	dc.w	$90b1	; $c430
+table_c400:
+	dc.w	$8e0d	; $c400
+	dc.w	$8e13	; $c402
+	dc.w	$8e3d	; $c404
+	dc.w	$8f29	; $c406
+	dc.w	$8f59	; $c408
+	dc.w	$8e10	; $c40a
+	dc.w	$8f77	; $c40c
+	dc.w	$8fea	; $c40e
+	dc.w	$8ff6	; $c410
+	dc.w	$8e45	; $c412
+	dc.w	$8e59	; $c414
+	dc.w	$8e73	; $c416
+	dc.w	$8e8a	; $c418
+	dc.w	$8ea0	; $c41a
+	dc.w	$8e50	; $c41c
+	dc.w	$8e50	; $c41e
+	dc.w	$8e50	; $c420
+	dc.w	$8e50	; $c422
+	dc.w	$8e50	; $c424
+	dc.w	$8929	; $c426
+	dc.w	$902d	; $c428
+	dc.w	$9081	; $c42a
+	dc.w	$908d	; $c42c
+	dc.w	$9090	; $c42e
+	dc.w	$90b1	; $c430
+table_c412:
+	dc.w	$8e45	; $c412
+	dc.w	$8e59	; $c414
+	dc.w	$8e73	; $c416
+	dc.w	$8e8a	; $c418
+	dc.w	$8ea0	; $c41a
+	dc.w	$8e50	; $c41c
+	dc.w	$8e50	; $c41e
+	dc.w	$8e50	; $c420
+	dc.w	$8e50	; $c422
+	dc.w	$8e50	; $c424
+	dc.w	$8929	; $c426
+	dc.w	$902d	; $c428
+	dc.w	$9081	; $c42a
+	dc.w	$908d	; $c42c
+	dc.w	$9090	; $c42e
+	dc.w	$90b1	; $c430
+table_c428:
+	dc.w	$902d	; $c428
+	dc.w	$9081	; $c42a
+	dc.w	$908d	; $c42c
+	dc.w	$9090	; $c42e
+	dc.w	$90b1	; $c430
+table_e7ac:
+	dc.w	$9323	; $e7ac
+	dc.w	$930f	; $e7ae
+	dc.w	$9327	; $e7b0
+	dc.w	$980c	; $e7b2
+	dc.w	$980c	; $e7b4
+	dc.w	$97da	; $e7b6
+table_e67b:
+	dc.w	$9794	; $e67b
+	dc.w	$97b1	; $e67d
+	dc.w	$97ba	; $e67f
+	dc.w	$97a7	; $e681
+	dc.w	$e689	; $e683
+	dc.w	$e6ea	; $e685
+	dc.w	$e74b	; $e687
+table_e7b2:
+	dc.w	$980c	; $e7b2
+	dc.w	$980c	; $e7b4
+	dc.w	$97da	; $e7b6
+table_e832:
+	dc.w	$9bb4	; $e832
+	dc.w	$9bbd	; $e834
+	dc.w	$9bb4	; $e836
+	dc.w	$9bbd	; $e838
+	dc.w	$ff00	; $e83a
+	dc.w	$c040	; $e83c
+	dc.w	$8080	; $e83e
+table_e9b2:
+	dc.w	$a08d	; $e9b2
+	dc.w	$a02c	; $e9b4
+	dc.w	$a08d	; $e9b6
+	dc.w	$a08d	; $e9b8
+	dc.w	$a089	; $e9ba
+	dc.w	$a075	; $e9bc
+	dc.w	$a08d	; $e9be
+	dc.w	$a093	; $e9c0
+	dc.w	$a093	; $e9c2
+	dc.w	$a071	; $e9c4
+	dc.w	$a06d	; $e9c6
+	dc.w	$a08d	; $e9c8
+	dc.w	$a062	; $e9ca
+	dc.w	$a062	; $e9cc
+	dc.w	$a05d	; $e9ce
+	dc.w	$a05d	; $e9d0
+	dc.w	$a049	; $e9d2
+	dc.w	$a049	; $e9d4
+	dc.w	$a0a0	; $e9d6
+	dc.w	$a0a0	; $e9d8
+	dc.w	$a0a3	; $e9da
+	dc.w	$a086	; $e9dc
+	dc.w	$a081	; $e9de
+	dc.w	$a030	; $e9e0
+	dc.w	$a058	; $e9e2
+	dc.w	$a058	; $e9e4
+	dc.w	$a058	; $e9e6
+	dc.w	$a01e	; $e9e8
+	dc.w	$a01e	; $e9ea
+	dc.w	$a01e	; $e9ec
+	dc.w	$a01e	; $e9ee
+	dc.w	$a011	; $e9f0
+table_eb98:
+	dc.w	$a298	; $eb98
+	dc.w	$a29e	; $eb9a
+	dc.w	$a2a4	; $eb9c
+	dc.w	$a29c	; $eb9e
+	dc.w	$a522	; $eba0
+	dc.w	$a54e	; $eba2
+	dc.w	$a58d	; $eba4
+	dc.w	$ebac	; $eba6
+	dc.w	$ebb4	; $eba8
+	dc.w	$ebbc	; $ebaa
+table_ebe5:
+	dc.w	$a811	; $ebe5
+	dc.w	$a811	; $ebe7
+	dc.w	$a949	; $ebe9
+	dc.w	$a852	; $ebeb
+	dc.w	$a811	; $ebed
+	dc.w	$a9af	; $ebef
+	dc.w	$aa47	; $ebf1
+	dc.w	$aaee	; $ebf3
+	dc.w	$a9af	; $ebf5
+	dc.w	$aaee	; $ebf7
+	dc.w	$a930	; $ebf9
+	dc.w	$a930	; $ebfb
+	dc.w	$aae5	; $ebfd
+	dc.w	$aad5	; $ebff
+	dc.w	$a842	; $ec01
+	dc.w	$ab0d	; $ec03
+	dc.w	$aa47	; $ec05
+	dc.w	$ab12	; $ec07
+	dc.w	$aa5c	; $ec09
+	dc.w	$a94f	; $ec0b
+	dc.w	$a94f	; $ec0d
+	dc.w	$a94f	; $ec0f
+	dc.w	$a8fc	; $ec11
+	dc.w	$a8f1	; $ec13
+	dc.w	$ab21	; $ec15
+	dc.w	$abda	; $ec17
+	dc.w	$a922	; $ec19
+	dc.w	$a909	; $ec1b
+	dc.w	$a922	; $ec1d
+	dc.w	$a909	; $ec1f
+	dc.w	$abfb	; $ec21
+	dc.w	$a7e6	; $ec23
+	dc.w	$a94f	; $ec25
+	dc.w	$a9f1	; $ec27
+	dc.w	$a9fe	; $ec29
+	dc.w	$aa0c	; $ec2b
+	dc.w	$aa1c	; $ec2d
+	dc.w	$aa2a	; $ec2f
+	dc.w	$aa83	; $ec31
+	dc.w	$aa92	; $ec33
+	dc.w	$aaa3	; $ec35
+	dc.w	$aab3	; $ec37
+	dc.w	$aac3	; $ec39
+	dc.w	$ab97	; $ec3b
+	dc.w	$ab58	; $ec3d
+	dc.w	$ab6d	; $ec3f
+	dc.w	$ab79	; $ec41
+	dc.w	$ab84	; $ec43
+	dc.w	$ab98	; $ec45
+	dc.w	$abad	; $ec47
+	dc.w	$abb9	; $ec49
+	dc.w	$abca	; $ec4b
+	dc.w	$ec7d	; $ec4d
+	dc.w	$ec7d	; $ec4f
+	dc.w	$ec7d	; $ec51
+	dc.w	$ec87	; $ec53
+	dc.w	$ec91	; $ec55
+	dc.w	$ec9b	; $ec57
+	dc.w	$ec7d	; $ec59
+	dc.w	$ec7d	; $ec5b
+	dc.w	$accd	; $ec5d
+	dc.w	$ac47	; $ec5f
+	dc.w	$ac5a	; $ec61
+	dc.w	$ac6b	; $ec63
+	dc.w	$ac7b	; $ec65
+	dc.w	$ac8b	; $ec67
+	dc.w	$ac9c	; $ec69
+	dc.w	$acab	; $ec6b
+	dc.w	$acbc	; $ec6d
+	dc.w	$acdf	; $ec6f
+	dc.w	$acf1	; $ec71
+	dc.w	$ad07	; $ec73
+	dc.w	$ad37	; $ec75
+	dc.w	$ad3c	; $ec77
+	dc.w	$ad41	; $ec79
+	dc.w	$ad45	; $ec7b
+	dc.w	$f0f8	; $ec7d
+table_eba0:
+	dc.w	$a522	; $eba0
+	dc.w	$a54e	; $eba2
+	dc.w	$a58d	; $eba4
+	dc.w	$ebac	; $eba6
+	dc.w	$ebb4	; $eba8
+	dc.w	$ebbc	; $ebaa
+table_ec31:
+	dc.w	$aa83	; $ec31
+	dc.w	$aa92	; $ec33
+	dc.w	$aaa3	; $ec35
+	dc.w	$aab3	; $ec37
+	dc.w	$aac3	; $ec39
+	dc.w	$ab97	; $ec3b
+	dc.w	$ab58	; $ec3d
+	dc.w	$ab6d	; $ec3f
+	dc.w	$ab79	; $ec41
+	dc.w	$ab84	; $ec43
+	dc.w	$ab98	; $ec45
+	dc.w	$abad	; $ec47
+	dc.w	$abb9	; $ec49
+	dc.w	$abca	; $ec4b
+	dc.w	$ec7d	; $ec4d
+	dc.w	$ec7d	; $ec4f
+	dc.w	$ec7d	; $ec51
+	dc.w	$ec87	; $ec53
+	dc.w	$ec91	; $ec55
+	dc.w	$ec9b	; $ec57
+	dc.w	$ec7d	; $ec59
+	dc.w	$ec7d	; $ec5b
+	dc.w	$accd	; $ec5d
+	dc.w	$ac47	; $ec5f
+	dc.w	$ac5a	; $ec61
+	dc.w	$ac6b	; $ec63
+	dc.w	$ac7b	; $ec65
+	dc.w	$ac8b	; $ec67
+	dc.w	$ac9c	; $ec69
+	dc.w	$acab	; $ec6b
+	dc.w	$acbc	; $ec6d
+	dc.w	$acdf	; $ec6f
+	dc.w	$acf1	; $ec71
+	dc.w	$ad07	; $ec73
+	dc.w	$ad37	; $ec75
+	dc.w	$ad3c	; $ec77
+	dc.w	$ad41	; $ec79
+	dc.w	$ad45	; $ec7b
+	dc.w	$f0f8	; $ec7d
+table_ec3b:
+	dc.w	$ab97	; $ec3b
+	dc.w	$ab58	; $ec3d
+	dc.w	$ab6d	; $ec3f
+	dc.w	$ab79	; $ec41
+	dc.w	$ab84	; $ec43
+	dc.w	$ab98	; $ec45
+	dc.w	$abad	; $ec47
+	dc.w	$abb9	; $ec49
+	dc.w	$abca	; $ec4b
+	dc.w	$ec7d	; $ec4d
+	dc.w	$ec7d	; $ec4f
+	dc.w	$ec7d	; $ec51
+	dc.w	$ec87	; $ec53
+	dc.w	$ec91	; $ec55
+	dc.w	$ec9b	; $ec57
+	dc.w	$ec7d	; $ec59
+	dc.w	$ec7d	; $ec5b
+	dc.w	$accd	; $ec5d
+	dc.w	$ac47	; $ec5f
+	dc.w	$ac5a	; $ec61
+	dc.w	$ac6b	; $ec63
+	dc.w	$ac7b	; $ec65
+	dc.w	$ac8b	; $ec67
+	dc.w	$ac9c	; $ec69
+	dc.w	$acab	; $ec6b
+	dc.w	$acbc	; $ec6d
+	dc.w	$acdf	; $ec6f
+	dc.w	$acf1	; $ec71
+	dc.w	$ad07	; $ec73
+	dc.w	$ad37	; $ec75
+	dc.w	$ad3c	; $ec77
+	dc.w	$ad41	; $ec79
+	dc.w	$ad45	; $ec7b
+	dc.w	$f0f8	; $ec7d
+table_ec5d:
+	dc.w	$accd	; $ec5d
+	dc.w	$ac47	; $ec5f
+	dc.w	$ac5a	; $ec61
+	dc.w	$ac6b	; $ec63
+	dc.w	$ac7b	; $ec65
+	dc.w	$ac8b	; $ec67
+	dc.w	$ac9c	; $ec69
+	dc.w	$acab	; $ec6b
+	dc.w	$acbc	; $ec6d
+	dc.w	$acdf	; $ec6f
+	dc.w	$acf1	; $ec71
+	dc.w	$ad07	; $ec73
+	dc.w	$ad37	; $ec75
+	dc.w	$ad3c	; $ec77
+	dc.w	$ad41	; $ec79
+	dc.w	$ad45	; $ec7b
+	dc.w	$f0f8	; $ec7d
+table_ec75:
+	dc.w	$ad37	; $ec75
+	dc.w	$ad3c	; $ec77
+	dc.w	$ad41	; $ec79
+	dc.w	$ad45	; $ec7b
+	dc.w	$f0f8	; $ec7d
+table_f955:
+	dc.w	$b0fe	; $f955
+	dc.w	$b0fe	; $f957
+	dc.w	$b0fe	; $f959
+	dc.w	$b125	; $f95b
+	dc.w	$b0fe	; $f95d
+	dc.w	$b0fe	; $f95f
+	dc.w	$b141	; $f961
+	dc.w	$b141	; $f963
+	dc.w	$b0fe	; $f965
+	dc.w	$b0fe	; $f967
+	dc.w	$b0fe	; $f969
+	dc.w	$b0fe	; $f96b
+	dc.w	$b0fe	; $f96d
+	dc.w	$b0fe	; $f96f
+	dc.w	$b0fe	; $f971
+	dc.w	$b0fe	; $f973
+	dc.w	$b0fe	; $f975
+	dc.w	$b0fe	; $f977
+	dc.w	$b0fe	; $f979
+	dc.w	$b0fe	; $f97b
+	dc.w	$b135	; $f97d
+	dc.w	$b0fe	; $f97f
+	dc.w	$b0fe	; $f981
+	dc.w	$b0fe	; $f983
+	dc.w	$b0fe	; $f985
+	dc.w	$8182	; $f987
+	dc.w	$8382	; $f989
+	dc.w	$8381	; $f98b
+	dc.w	$8283	; $f98d
+	dc.w	$9011	; $f98f
+table_fd25:
+	dc.w	$b299	; $fd25
+	dc.w	$b2ac	; $fd27
+	dc.w	$b2b3	; $fd29
+	dc.w	$b2b9	; $fd2b
+	dc.w	$b2bd	; $fd2d
+	dc.w	$b2c1	; $fd2f
+	dc.w	$b2b1	; $fd31
+	dc.w	$b24c	; $fd33
