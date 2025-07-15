@@ -104,10 +104,11 @@ with open(source_dir / "conv.s") as f:
         elif "jump_table" in line:
             m = jmpre.search(line)
             if m:
+                ireg = m.group(2).upper()  # A or B
                 inst = m.group(1).upper()
-                reg = {"x":"A2","y":"A3","u":"A4"}[m.group(2)]
+                reg = {"x":"A2","y":"A3","u":"A4"}[m.group(3)]
                 rest = re.sub(".*\"","",line)
-                line = f"\t{inst}_A_INDEXED\t{reg}{rest}"
+                line = f"\t{inst}_{ireg}_INDEXED\t{reg}{rest}"
         if "ERROR" in line:
             print(line,end="")
         lines[i] = line
@@ -118,7 +119,7 @@ with open(source_dir / "conv.s") as f:
 with open(source_dir / "data.inc","w") as fw:
     fw.writelines(equates)
 
-with open(source_dir / "double_dragon.68k","w") as fw:
+with open(source_dir / "jailbreak.68k","w") as fw:
     fw.write("""\t.include "double_dragon.inc"
 .include "data.inc"
 \t.global\tirq_44f5

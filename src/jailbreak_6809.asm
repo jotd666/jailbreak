@@ -78,6 +78,8 @@ scroll_dir_2042 = $2042
 ctrl_2044 = $2044
 scroll_x_2000 = $2000
 coin_3000 = $3000
+speech_4000 = $4000
+speech_6000 = $6000
 
 8000: 8E 32 82    LDX    #$1000
 8003: 4F          CLRA
@@ -5733,17 +5735,17 @@ B07E: 8D 09       BSR    $B001
 B080: 4F          CLRA
 B081: FE 94 42    LDU    $16C0
 B084: 10 8E 95 8D LDY    #$170F
-B088: BD 98 4E    JSR    $B0C6
+B088: BD 98 4E    JSR    store_and_jump_b0c6
 B08B: FF 3E E8    STU    $16C0
 B08E: 86 A8       LDA    #$20
 B090: FE 34 40    LDU    $16C2
 B093: 10 8E 35 95 LDY    #$1717
-B097: BD 98 EE    JSR    $B0C6
+B097: BD 98 EE    JSR    store_and_jump_b0c6
 B09A: FF 9E EA    STU    $16C2
 B09D: 86 C8       LDA    #$40
 B09F: FE 34 E6    LDU    $16C4
 B0A2: 10 8E 35 3D LDY    #$171F
-B0A6: BD 32 EE    JSR    $B0C6
+B0A6: BD 32 EE    JSR    store_and_jump_b0c6
 B0A9: FF 9E 4C    STU    $16C4
 B0AC: 86 29       LDA    #$01
 B0AE: BA 9D 03    ORA    $1521
@@ -5756,8 +5758,11 @@ B0BD: 7A 9F 86    DEC    $170E
 B0C0: 26 67       BNE    $B107
 B0C2: 7F 94 EA    CLR    $16C8
 B0C5: 39          RTS
+
+store_and_jump_b0c6:
 B0C6: B7 95 24    STA    $170C
-B0C9: 6E 4C       JMP    ,U
+B0C9: 6E 4C       JMP    ,U			; [indirect_jump]
+
 B0CB: CE 87 FE    LDU    #$AFD6
 B0CE: B6 9F 2E    LDA    $170C
 B0D1: 8B 1D       ADDA   #$9F
