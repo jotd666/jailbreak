@@ -18,8 +18,10 @@ input_dict = {"system_3300":"read_system_inputs",
 # various dirty but at least automatic patches applying on the specific track and field code
 with open(source_dir / "conv.s") as f:
     lines = list(f)
+    i = 0
 
-    for i,line in enumerate(lines):
+    while i < len(lines):
+        line = lines[i]
         if " = " in line:
             equates.append(line)
             line = ""
@@ -57,6 +59,31 @@ with open(source_dir / "conv.s") as f:
         elif "dsw3_" in line and "lda" in line:
             line = change_instruction("jbsr\tosd_read_dsw_3",lines,i)
 
+        elif "[$835d" in line or "[$8364" in line or "[$836b" in line:
+            # protect abcd X flag
+            line = "\tPUSH_SR\n"+line
+        elif "[$836b" in line or "[$8368" in line:
+            # pop sr (protect abcd)
+            lines[i+2] = "\tPOP_SR\n"+lines[i+2]
+        elif "[$836d" in line:
+            line = "\tPOP_SR\n"+line
+            lines[i+1] = ""
+        elif "[$a790" in line:
+            line = "\tPUSH_SR\n"+line
+            lines[i+2] = "\tPOP_SR\n"+lines[i+2]
+            lines[i+3] = ""
+        elif "[$b0c9" in line:
+            line = change_instruction("INDIRECT_JMP_U",lines,i)
+
+        elif any(x in line for x in ["[$951f","[$9538","[$954b","[$955e","[$9571"]):
+            # functions return condition code (C) set
+            lines[i+1] = ""
+        elif any(x in line for x in ["[$a62b","[$a666"]):
+            line = lines[i+1]
+            lines[i+1] = lines[i]
+            lines[i+3] = ""  # remove error
+            i += 2
+
         if "multiply_ab" in line and "MAKE_D" in lines[i+1]:
             lines[i+1] = ""
 ##        if "tfr" in line and "POP_SR" in lines[i+1] and "PUSH_SR" in lines[i-1]:
@@ -71,18 +98,18 @@ with open(source_dir / "conv.s") as f:
 
 
 
-        elif "flip_screen_set_1080" in line:
-            line = remove_instruction(lines,i)
-            remove_continuing_lines(lines,i)
-
-        elif "irq_mask_w_1487" in line:
-            # check next line
-            next_line = lines[i+1]
-            if "clr" in next_line:
-                line = change_instruction("jbsr\tosd_disable_interrupts",lines,i)
-            else:
-                line = change_instruction("jbsr\tosd_enable_interrupts",lines,i)
-                lines[i-1] = remove_instruction(lines,i-1)
+##        elif "flip_screen_set_1080" in line:
+##            line = remove_instruction(lines,i)
+##            remove_continuing_lines(lines,i)
+##
+##        elif "irq_mask_w_1487" in line:
+##            # check next line
+##            next_line = lines[i+1]
+##            if "clr" in next_line:
+##                line = change_instruction("jbsr\tosd_disable_interrupts",lines,i)
+##            else:
+##                line = change_instruction("jbsr\tosd_enable_interrupts",lines,i)
+##                lines[i-1] = remove_instruction(lines,i-1)
 
         if "GET_ADDRESS" in line:
             val = line.split()[1]
@@ -97,8 +124,6 @@ with open(source_dir / "conv.s") as f:
 
         elif "unsupported instruction rti" in line:
             line = change_instruction("rts",lines,i)
-        elif "unsupported instruction lds" in line:
-            line = remove_instruction(lines,i)
 ##        elif "unsupported instruction andcc" in line:
 ##            line = change_instruction("CLR_XC_FLAGS",lines,i)
         elif "jump_table" in line:
@@ -112,6 +137,7 @@ with open(source_dir / "conv.s") as f:
         if "ERROR" in line:
             print(line,end="")
         lines[i] = line
+        i+=1
 
 
 
