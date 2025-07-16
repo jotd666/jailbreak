@@ -225,6 +225,7 @@ start:
 		.global osd_read_inputs_2
 		.global osd_read_system_inputs
 		.global osd_wait
+		.global	osd_set_scroll_direction
 		
 		* read/write on memory
 		.ifndef	RELEASE
@@ -737,7 +738,17 @@ alloc_sprite:
 	.endif
 	* in release mode, just discard this sprite, maybe we'll get away with it!
 	rts
-
+	
+* zero all registers but 6809 stack pointer
+cpu_init:
+	moveq	#0,d0
+	moveq	#0,d1
+	moveq	#0,d2
+	moveq	#0,d3
+	moveq	#0,d4
+	moveq	#0,d6
+	moveq	#0,d7
+	rts
 
 demo_game:
 		move		#0x4000,_custom+intena						| disable interrupts
@@ -814,28 +825,15 @@ demo_game:
 	GET_MEMORY_START_AND_DP
 	moveq	#0,d5		| set D5.L to 0
 	jbsr	cpu_init
-	jmp			reset_4000					| pass control to the cpu core
+	jmp			reset_81a6					| pass control to the cpu core
 
-easy_values:
-	.word	0x1600	| dash
-	.word	0x0500	| long jump
-	.word	0x5000	| javelin
-	.word	0x2000	| hurdles
-	.word	0x5000	| hammer
-	.word	0x0180	| long jump
-	
-easy_high_jump_values:
-* originally: 00 02 01 05 00 02 02 05 00 02 03 00 00 02 03 05   ................
-	.long	0x0010800,0x00010905,0x00020000,0x00020005
 
-jotd_message:	
-	.asciz	"AMIGA@PORT@BY@JOTD@"
-	.align  2
 do_irq:
 	* set base for RAM
 	jbsr	cpu_init
 	GET_MEMORY_START_AND_DP
-	jra			irq_44f5					| pass control to the cpu core
+	* OR irq_b05d
+	jra			irq_8a57					| pass control to the cpu core
 	
 * just in case some hardware calls nmi
 _nmi:
@@ -945,6 +943,9 @@ _vblank:
 3:
     movem.l (a7)+,d0-d7/a0-a6
     rte
+	
+osd_set_scroll_direction:
+	rts
 	
 	.ifndef	RELEASE
 
@@ -2861,16 +2862,6 @@ osd_read_dsw_3:
 
 	
 
-
-clear_all_faults:
-	move.l	a5,-(a7)
-	move.l	m6809_direct_page_pointer,a5
-*	clr.b	(high_jump_fault_9f,a5)
-*	clr.b	(jump_foul_c9,a5)
-	move.b	#5,(chrono_second_72,a5)		| race: 5 seconds
-	move.l 	(a7)+,a5
-	rts
-
 	
 
 level2_interrupt:
@@ -2907,7 +2898,7 @@ handle_keyboard:
 	cmp.b	#0x50,d0	| F1 key: only 1 wolf
 	bne.b	0f
 	move.w	#0x0FF,_custom+color
-	jbsr	clear_all_faults
+
 	st.b	cheat_used
 	
 0:

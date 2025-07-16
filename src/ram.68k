@@ -9,6 +9,7 @@
 	.global vbl_sync_counter
 	.global vbl_sync_flag
 	.global no_sync_flag
+	.global m6809_direct_page_pointer
 	.ifdef	RELEASE
 	.global	ram_buffer
 	.global	rom_buffer
@@ -49,6 +50,10 @@ high_score_beaten:
 stack_top:
 	.long	0
 	
+
+| direct page pointer needs to be reloaded in case of irq
+m6809_direct_page_pointer:
+	.long	0xA5A5A5A5
 
 skip_intro_flag:
 	.byte	0

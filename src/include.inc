@@ -13,9 +13,6 @@
 
 
 
-	.global	cpu_init
-	.global	m6809_direct_page_pointer
-
 	.macro	ERROR	arg
 	*.error	"\arg"     | comment out to disable errors
 	.endm
@@ -357,25 +354,12 @@
 	READ_BE_WORD	a0
 	GET_UNCHECKED_ADDRESS_FUNC
 	.endm
-* zero all registers but 6809 stack pointer
-cpu_init:
-	moveq	#0,d0
-	moveq	#0,d1
-	moveq	#0,d2
-	moveq	#0,d3
-	moveq	#0,d4
-	moveq	#0,d6
-	moveq	#0,d7
-	rts
+
 
 get_address:
 	ERROR "`TODO: implement this by adding memory base to a0"
 	rts
 
-
-| direct page pointer needs to be reloaded in case of irq
-m6809_direct_page_pointer:
-	.long	0xA5A5A5A5
 
 
 multiply_ab:
