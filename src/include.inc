@@ -25,20 +25,30 @@
 	| called when a word write was done in a0
 	.endm
 
+	.ifdef	RELEASE
+	.macro	GET_ADDRESS_FUNC
+	lea		(a6,a0.l),a0
+	.endm
+	.macro	GET_UNCHECKED_ADDRESS_FUNC
+	GET_ADDRESS_FUNC
+	.endm
+	
+	.else
+	
 	.macro	GET_ADDRESS_FUNC
 	jbsr	get_address
 	.endm
-
+	
 	.macro	GET_UNCHECKED_ADDRESS_FUNC
-	jbsr	get_address
+	lea		(a6,a0.l),a0
 	.endm
-
 	.macro	ABX
 	moveq	#0,d6
 	move.b	d1,d6
 	add.w	d1,d2
 	.endm
-
+	.endif
+	
 
 	.macro	SEX
 	move.b	d1,d0
@@ -354,24 +364,9 @@
 	READ_BE_WORD	a0
 	GET_UNCHECKED_ADDRESS_FUNC
 	.endm
-
-
-get_address:
-	ERROR "`TODO: implement this by adding memory base to a0"
-	rts
-
-
-
-multiply_ab:
-	and.w	#0xFF,d0
-	and.w	#0xFF,d1
-	mulu	d0,d1
-	ror.w	#8,d1
-	move.b	d1,d0
-	ror.w	#8,d1
-	rts
 	
-	
+** game/amiga specific
+
 	.ifdef	RELEASE
 	.macro	BREAKPOINT comment
 	.endm
@@ -392,6 +387,42 @@ comment\@:
 next\@:
 	.endm
 	.endif
+
+* dev mode, more checks about the address
+get_address:
+
+0:
+	cmp.w	#0x1000,a0
+	jcc		0f
+	jbsr	osd_get_last_known_pc
+	BREAKPOINT	"video address range 0x0000-0x0FFF, PC in D6"
+	jra		10f
+0:
+	
+	* 0X2000 <= range < 0x3000, ram, video ram & special ram/scroll
+	cmp.l	#0x8000,a0
+	jcc		10f				| ROM: OK
+	cmp.w	#0x6000,a0
+	jcs		10f				| ROM: OK
+	jbsr	osd_get_last_known_pc
+	BREAKPOINT	"illegal range 0x6000-0x8000, PC in D6"
+10:
+	lea		(a6,a0.l),a0
+	rts
+
+
+
+multiply_ab:
+	and.w	#0xFF,d0
+	and.w	#0xFF,d1
+	mulu	d0,d1
+	ror.w	#8,d1
+	move.b	d1,d0
+	ror.w	#8,d1
+	rts
+	
+	
+
 	
 * game specific
 	.macro 	JUMP_IF_KNOWN	addr
@@ -406,3 +437,26 @@ next\@:
 	BREAKPOINT	"unknown indirect jump (in D4)"
 	.endm
 	
+	.ifndef	RELEASE
+	
+
+	* to trace at some virtual PCs, insert this macro
+	
+	.macro	LOG_REGS	the_pc
+	move.w	sr,-(a7)
+	move.w	#0x\the_pc,-(a7)
+	move.w	#0,-(a7)
+	jbsr	osd_log_cpu
+	addq.w	#4,a7
+	move.w	(a7)+,sr
+	.endm
+	
+	.macro	ENABLE_LOG_REGS
+	moveq	#1,d6		| enable
+	jbsr	osd_cpu_logging_control	
+	.endm
+	.macro	DISABLE_LOG_REGS
+	moveq	#0,d6		| disable
+	jbsr	osd_cpu_logging_control	
+	.endm	
+	.endif

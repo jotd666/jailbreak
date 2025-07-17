@@ -304,9 +304,9 @@ reset_81a6:
 81E0: 4F          CLRA
 81E1: 8E 82 82    LDX    #$0000
 81E4: B7 11 82    STA    system_3300
-81E7: A7 AC       STA    ,X
-81E9: A1 08       CMPA   ,X+
-81EB: 26 8D       BNE    $8192
+81E7: A7 AC       STA    ,X			; [video_address]
+81E9: A1 08       CMPA   ,X+		; [video_address]
+81EB: 26 8D       BNE    $8192		; if happens (non-zero) just reset
 81ED: 8C A8 88    CMPX   #scroll_x_2000
 81F0: 25 D0       BCS    $81E4
 81F2: 8B D7       ADDA   #$55
@@ -347,6 +347,7 @@ reset_81a6:
 823E: 8D E4       BSR    $82AC
 8240: CE E6 DE    LDU    #$C45C
 8243: 10 8E 22 82 LDY    #$0000
+* looks like code checksum
 8247: 8E 68 28    LDX    #speech_4000
 824A: 4F          CLRA
 824B: 5F          CLRB

@@ -832,8 +832,8 @@ do_irq:
 	* set base for RAM
 	jbsr	cpu_init
 	GET_MEMORY_START_AND_DP
-	* OR irq_b05d
-	jra			irq_8a57					| pass control to the cpu core
+	* should be 10 times faster!!
+	jra			irq_b05d					| pass control to the cpu core
 	
 * just in case some hardware calls nmi
 _nmi:
@@ -966,7 +966,9 @@ osd_log_cpu:
 	*CHECK_ZERO_MSW	d3
 	*CHECK_ZERO_MSW	d4
 	move.w	(6,a7),last_known_m6809_pc
-
+	
+	move.w	last_known_m6809_pc,0x100
+	
 	move.l	a6,-(a7)
 	* check if cpu log is enabled
 	tst.b	cpu_log_enable
