@@ -94,7 +94,7 @@ FG_SCREEN_PLANE_SIZE = FG_NB_BYTES_PER_ROW*NB_PLAYFIELD_LINES
 BG_SCREEN_SIZE = BG_SCREEN_PLANE_SIZE*NB_TILE_PLANES
 FG_SCREEN_SIZE = FG_SCREEN_PLANE_SIZE*NB_BOB_PLANES
 
-VIDEO_ADDRESS = 0x2000
+VIDEO_ADDRESS = 0
 
 NB_HOST_SPRITES = 8
 
@@ -1181,8 +1181,8 @@ really_update_tiles:
 	jeq		1f
 	subq.b	#1,(-1,a0)	| decrease dirty counter
 	* read tile & color codes from RAM
-	move.b	(a6,d7.w),d0
-	move.b	(a5,d7.w),d1
+	move.b	(a5,d7.w),d0		| code
+	move.b	(a6,d7.w),d1		| color/attribute
 	movem.l	d2/d3/d7/a0/a1/a5,-(a7)
 	jbsr	update_bg_tile
 	movem.l	(a7)+,d2/d3/d7/a0/a1/a5
@@ -1247,34 +1247,38 @@ update_bobs_and_hw_sprites:
 	move.w	#NB_TARGET_SPRITES-1,d7
 	move.l	bob_previous_drawn_sprites(pc),a6
 1:
-	jbsr	update_one_bob
+	**jbsr	update_one_bob
 	subq.w	#TARGET_SPRITE_SIZEOF,a0
 	dbf		d7,1b
 2:
 	rts
 	
 
-*void base_state::draw_sprites( bitmap_ind16 &bitmap, const rectangle &cliprect )
+*void jailbrek_state::draw_sprites(bitmap_ind16 &bitmap, const rectangle &cliprect)
 *{
-*	for (int offs = m_spriteram.bytes() - 4; offs >= 0; offs -= 4)
+*	for (int i = 0; i < m_spriteram.bytes(); i += 4)
 *	{
-*		int sx = m_spriteram[offs + 3];
-*		int sy = 240 - m_spriteram[offs + 1];
-*		int const code = m_spriteram[offs + 2] + 8 * (m_spriteram[offs] & 0x20);
-*		int const color = m_spriteram[offs] & 0x0f;
-*		int const flipx = ~m_spriteram[offs] & 0x40;
-*		int flipy = m_spriteram[offs] & 0x80;
+*		int const attr = m_spriteram[i + 1];    // attributes = ?tyxcccc
+*		int const code = m_spriteram[i] + ((attr & 0x40) << 2);
+*		int const color = attr & 0x0f;
+*		int flipx = attr & 0x10;
+*		int flipy = attr & 0x20;
+*		int sx = m_spriteram[i + 2] - ((attr & 0x80) << 1);
+*		int sy = m_spriteram[i + 3];
 *
 *		if (flip_screen())
 *		{
+*			sx = 240 - sx;
 *			sy = 240 - sy;
+*			flipx = !flipx;
 *			flipy = !flipy;
 *		}
 *
-*		/* Note that this adjustment must be done AFTER handling flip_screen(), thus
-*		   proving that this is a hardware related "feature" */
-*
-*		sy += 1;
+*		m_gfxdecode->gfx(1)->transmask(bitmap, cliprect, code, color, flipx, flipy,
+*			sx, sy,
+*			m_palette->transpen_mask(*m_gfxdecode->gfx(1), color, 0));
+*	}
+*}
 
 * < A0: sprite array
 * < A2: sprite group table
@@ -2227,7 +2231,7 @@ video_byte_dirty:
 
 
 	.ifndef	RELEASE
-	cmp.l	#0x4000,d7
+	cmp.l	#VIDEO_ADDRESS+0x1000,d7
 	jcs		0f
 	jbsr	osd_get_last_known_pc
 	BREAKPOINT	"write videoram out of range (D7 >= $3800), PC in D6"
@@ -2235,8 +2239,12 @@ video_byte_dirty:
 0:
 	.endif
 
-	* remove 0x8000 offset (ram starts at 0x8000)
+	* remove offset
+	.ifne	VIDEO_ADDRESS
 	sub.w	#VIDEO_ADDRESS,d7
+	.else
+	tst.w	d7
+	.endif
 	* in this game (around 892B) the code is used with either
 	* a video address or a RAM address, so ignore if too low
 	jmi		osd_video_dirty_out
@@ -2245,7 +2253,9 @@ video_byte_dirty:
 	jpl	1f
 
 	* should not happen
+	.ifne	VIDEO_ADDRESS
 	add.w	#VIDEO_ADDRESS,d7
+	.endif
 	jbsr	osd_get_last_known_pc
 	BREAKPOINT	"write videoram out of range (D7 < $3000), PC in D6"
 	jra		osd_video_dirty_out
@@ -2310,19 +2320,10 @@ compute_tile_xy_portrait:
 
 
 
-*{
-*	int const code = m_videoram[tile_index] + ((m_colorram[tile_index] & 0x80) << 1) + ((m_colorram[tile_index] & 0x60) << 4);
-*	int const color = m_colorram[tile_index] & 0x0f;
-*	int const flags = (m_colorram[tile_index] & 0x10) ? TILE_FLIPX : 0;
-*
-*	tileinfo.set(1, code, color, flags);
+*	int const attr = m_colorram[tile_index];
+*	int const code = m_videoram[tile_index] + ((attr & 0xc0) << 2);
+*	int const color = attr & 0x0f;
 
-
-
-* addresses 0x2000->0x207F don't map to visible tiles (2 first rows)
-* addresses 0x2780->0x27FF don't map to visible tiles (2 last rows)
-* each column has 0x20*8 = 256 pixels
-* each visible row has 28*8 = 244 pixels
 
 * < D7: 0-0x800 address
 * < D0: tile code

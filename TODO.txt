@@ -1,5 +1,6 @@
-- generate include.inc generic should be adapted
-- l_8358: protect with pushsr
+- connect proper graphics
+- decode graphics properly in amiga.68k
+- which irq at which freq??? check MAME timings
 
 log sounds: bpset xxx,,{print A;g}
 sim sound on credit: bpset xxx,,{A=$81;g}
