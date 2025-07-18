@@ -1,6 +1,6 @@
-- connect proper graphics
 - decode graphics properly in amiga.68k
 - which irq at which freq??? check MAME timings
+- 82DA called twice then $153C gets clobbered
 
 log sounds: bpset xxx,,{print A;g}
 sim sound on credit: bpset xxx,,{A=$81;g}

@@ -71,6 +71,10 @@ with open(source_dir / "conv.s") as f:
         elif "[$836d" in line:
             line = "\tPOP_SR\n"+line
             lines[i+1] = ""
+        elif "[$8090:" in line:
+            line = change_instruction("pea\tevent_loop_poll_8073",lines,i)
+        elif "[$8094:" in line:
+            line = remove_instruction(lines,i)
         elif "[$a790" in line:
             line = "\tPUSH_SR\n"+line
             lines[i+2] = "\tPOP_SR\n"+lines[i+2]

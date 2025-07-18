@@ -84,6 +84,9 @@ speech_6000 = $6000
 nop_2040 = $2040
 nop_2043 = $2043
 
+queue_event_pointer_3a = $3a
+queue_event_pointer_3c = $3C
+ 
 start_8000:
 8000: 8E 32 82    LDX    #$1000
 8003: 4F          CLRA
@@ -98,9 +101,10 @@ start_8000:
 8017: 8C 3F 88    CMPX   #$17A0
 801A: 25 7E       BCS    $8012
 801C: BD AA 22    JSR    $82AA
+; init event queue: no events pending, all events acked
 801F: 8E 36 E2    LDX    #$14C0
-8022: 9F B8       STX    $3A
-8024: 9F 1E       STX    $3C
+8022: 9F B8       STX    queue_event_pointer_3a
+8024: 9F 1E       STX    queue_event_pointer_3c
 8026: CC 7D D7    LDD    #$FFFF
 8029: ED 09       STD    ,X++
 802B: 8C 3D 28    CMPX   #$1500
@@ -114,7 +118,7 @@ start_8000:
 8040: 0D 07       TST    $25
 8042: 27 8E       BEQ    $8050
 8044: 8E 36 42    LDX    #$14C0
-8047: 9F 12       STX    $3A
+8047: 9F 12       STX    queue_event_pointer_3a
 8049: CC 77 77    LDD    #$FFFF
 804C: ED AC       STD    ,X
 804E: ED 8A       STD    $2,X
@@ -135,7 +139,7 @@ start_8000:
 8071: 1C 6D       ANDCC  #$EF
 ; poll event queue
 event_loop_poll_8073:
-8073: 9E 1E       LDX    $3C
+8073: 9E 1E       LDX    queue_event_pointer_3c
 8075: EC 06       LDD    ,X
 8077: 48          ASLA
 8078: 25 D1       BCS    event_loop_poll_8073
@@ -146,9 +150,9 @@ event_loop_poll_8073:
 8083: 8C 36 DD    CMPX   #$14FF
 8086: 23 81       BLS    $808B
 8088: 8E 3C 48    LDX    #$14C0
-808B: 9F 14       STX    $3C
+808B: 9F 14       STX    queue_event_pointer_3c
 808D: 8E 35 9C    LDX    #event_table_bd14
-8090: 10 8E 02 F1 LDY    #$8073
+8090: 10 8E 02 F1 LDY    #$8073		; return to event_loop_poll_8073
 8094: 34 02       PSHS   Y
 8096: 6E 14       JMP    [A,X]        ; [jump_table]
 
@@ -159,12 +163,12 @@ event_loop_poll_8073:
 809F: 20 23       BRA    $80A2
 80A1: 4F          CLRA
 80A2: 34 92       PSHS   X
-80A4: 9E 18       LDX    $3A
-80A6: ED 03       STD    ,X++
+80A4: 9E 18       LDX    queue_event_pointer_3a
+80A6: ED 03       STD    ,X++		; [video_address_word]
 80A8: 8C 3D 88    CMPX   #$1500
 80AB: 25 2B       BCS    $80B0
 80AD: 8E 9C 48    LDX    #$14C0
-80B0: 9F 18       STX    $3A
+80B0: 9F 18       STX    queue_event_pointer_3a
 80B2: 35 92       PULS   X
 80B4: 39          RTS
 80B5: 5F          CLRB
@@ -439,18 +443,18 @@ resume_boot_81ad:
 82D9: 39          RTS
 
 82DA: 86 9D       LDA    #$15
-82DC: 1F A3       TFR    A,DP
+82DC: 1F A3       TFR    A,DP			; set DP to $15xx
 82DE: 8E 35 02    LDX    #$BD20
 82E1: 58          ASLB
 82E2: 25 A3       BCS    $8305
 82E4: EE A7       LDU    B,X
 82E6: 5F          CLRB
-82E7: A6 EC       LDA    ,U
+82E7: A6 EC       LDA    ,U		; [video_address]
 82E9: 81 8F       CMPA   #$07
 82EB: 22 2A       BHI    $82EF
-82ED: E6 48       LDB    ,U+
-82EF: AE E3       LDX    ,U++
-82F1: A6 42       LDA    ,U+
+82ED: E6 48       LDB    ,U+	; [video_address]
+82EF: AE E3       LDX    ,U++	; [video_address_word]
+82F1: A6 42       LDA    ,U+	; [video_address]
 82F3: 81 1D       CMPA   #$3F
 82F5: 27 AD       BEQ    $8326
 82F7: 81 07       CMPA   #$2F
@@ -847,7 +851,7 @@ resume_boot_81ad:
 863C: 26 DF       BNE    $8635
 863E: 39          RTS
 863F: 8D 21       BSR    $8644
-8641: 30 0A B8    LEAX   $3A,X
+8641: 30 0A B8    LEAX   queue_event_pointer_3a,X
 8644: 8D 20       BSR    $8648
 8646: 8D 82       BSR    $8648
 8648: EC E9       LDD    ,U++
@@ -873,7 +877,7 @@ resume_boot_81ad:
 8670: 86 26       LDA    #$04
 8672: 1F 0B       TFR    A,B
 8674: 8D 21       BSR    $8679
-8676: 30 0A 12    LEAX   $3A,X
+8676: 30 0A 12    LEAX   queue_event_pointer_3a,X
 8679: ED 09       STD    ,X++
 867B: ED A9       STD    ,X++
 867D: ED 09       STD    ,X++
@@ -4695,7 +4699,7 @@ A741: 7A 92 73    DEC    $10F1
 A744: 26 CE       BNE    $A732
 A746: 39          RTS
 A747: 30 0C       LEAX   $4,Y
-A749: EC 4C       LDD    ,U
+A749: EC 4C       LDD    ,U		; [video_address_word]
 A74B: 20 2C       BRA    $A751
 A74D: 30 AE       LEAX   $6,Y
 A74F: EC 60       LDD    $2,U
