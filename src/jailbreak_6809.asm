@@ -1,7 +1,7 @@
 ;	map(0x0000, 0x07ff).ram().w(FUNC(jailbrek_state::colorram_w)).share(m_colorram);
 ;	map(0x0800, 0x0fff).ram().w(FUNC(jailbrek_state::videoram_w)).share(m_videoram);
 ;	map(0x1000, 0x10bf).ram().share(m_spriteram);
-;	map(0x10c0, 0x14ff).ram(); // ???
+;	map(0x10c0, 0x14ff).ram();
 ;	map(0x1500, 0x1fff).ram(); // work RAM
 ;	map(0x2000, 0x203f).ram().share(m_scroll_x);
 ;	map(0x2040, 0x2040).nopw(); // ???
@@ -130,12 +130,16 @@ start_8000:
 8068: C6 2B       LDB    #$03
 806A: D8 A9       EORB   $21
 806C: D7 09       STB    $21
+; enable interrupts, let the game run
 806E: F7 A8 66    STB    ctrl_2044
 8071: 1C 6D       ANDCC  #$EF
+; poll event queue
+event_loop_poll_8073:
 8073: 9E 1E       LDX    $3C
 8075: EC 06       LDD    ,X
 8077: 48          ASLA
-8078: 25 D1       BCS    $8073
+8078: 25 D1       BCS    event_loop_poll_8073
+; ack event
 807A: 84 F7       ANDA   #$7F
 807C: 10 8E 77 77 LDY    #$FFFF
 8080: 10 AF 03    STY    ,X++
@@ -143,10 +147,11 @@ start_8000:
 8086: 23 81       BLS    $808B
 8088: 8E 3C 48    LDX    #$14C0
 808B: 9F 14       STX    $3C
-808D: 8E 35 9C    LDX    #table_bd14
+808D: 8E 35 9C    LDX    #event_table_bd14
 8090: 10 8E 02 F1 LDY    #$8073
 8094: 34 02       PSHS   Y
 8096: 6E 14       JMP    [A,X]        ; [jump_table]
+
 8098: 86 29       LDA    #$01
 809A: 20 8E       BRA    $80A2
 809C: 5F          CLRB
@@ -226,24 +231,24 @@ start_8000:
 812C: 8E 28 88    LDX    #$0000
 812F: 4F          CLRA
 8130: 5F          CLRB
-8131: ED 03       STD    ,X++
-8133: ED A3       STD    ,X++
-8135: ED 03       STD    ,X++
-8137: ED A9       STD    ,X++
-8139: ED 09       STD    ,X++
-813B: ED A9       STD    ,X++
-813D: ED 09       STD    ,X++
-813F: ED A3       STD    ,X++
+8131: ED 03       STD    ,X++       ; [video_address_word]
+8133: ED A3       STD    ,X++       ; [video_address_word]
+8135: ED 03       STD    ,X++       ; [video_address_word]
+8137: ED A9       STD    ,X++       ; [video_address_word]
+8139: ED 09       STD    ,X++       ; [video_address_word]
+813B: ED A9       STD    ,X++       ; [video_address_word]
+813D: ED 09       STD    ,X++       ; [video_address_word]
+813F: ED A3       STD    ,X++       ; [video_address_word]
 8141: 30 0B 85 D2 LEAX   $07F0,X
 8145: 1F B2       TFR    U,D
-8147: ED A9       STD    ,X++
-8149: ED 09       STD    ,X++
-814B: ED A9       STD    ,X++
-814D: ED 09       STD    ,X++
-814F: ED A3       STD    ,X++
-8151: ED 03       STD    ,X++
-8153: ED A3       STD    ,X++
-8155: ED 03       STD    ,X++
+8147: ED A9       STD    ,X++       ; [video_address_word]
+8149: ED 09       STD    ,X++       ; [video_address_word]
+814B: ED A9       STD    ,X++       ; [video_address_word]
+814D: ED 09       STD    ,X++       ; [video_address_word]
+814F: ED A3       STD    ,X++       ; [video_address_word]
+8151: ED 03       STD    ,X++       ; [video_address_word]
+8153: ED A3       STD    ,X++       ; [video_address_word]
+8155: ED 03       STD    ,X++       ; [video_address_word]
 8157: 30 A1 D0 88 LEAX   -$0800,X
 815B: 8C 20 28    CMPX   #$0800
 815E: 25 47       BCS    $812F
@@ -432,6 +437,7 @@ resume_boot_81ad:
 82D6: 5A          DECB
 82D7: 26 D3       BNE    $82D4
 82D9: 39          RTS
+
 82DA: 86 9D       LDA    #$15
 82DC: 1F A3       TFR    A,DP
 82DE: 8E 35 02    LDX    #$BD20
@@ -450,8 +456,8 @@ resume_boot_81ad:
 82F7: 81 07       CMPA   #$2F
 82F9: 27 63       BEQ    $82E6
 82FB: 80 18       SUBA   #$30
-82FD: E7 01 70 22 STB    -$0800,X
-8301: A7 02       STA    ,X+
+82FD: E7 01 70 22 STB    -$0800,X	; [video_address]
+8301: A7 02       STA    ,X+	; [video_address]
 8303: 20 CE       BRA    $82F1
 8305: EE 07       LDU    B,X
 8307: 5F          CLRB
@@ -470,6 +476,7 @@ resume_boot_81ad:
 8322: A7 02       STA    ,X+
 8324: 20 CE       BRA    $8312
 8326: 39          RTS
+
 8327: 96 0D       LDA    $25
 8329: 81 8A       CMPA   #$02
 832B: 27 3E       BEQ    $8343
@@ -1599,7 +1606,7 @@ irq_8a57:
 8C82: 30 0A 0C    LEAX   $2E,X
 8C85: 10 8E 82 21 LDY    #$0009
 8C89: EC 49       LDD    ,U++
-8C8B: ED A9       STD    ,X++
+8C8B: ED A9       STD    ,X++		; [video_address_word]
 8C8D: 31 B7       LEAY   -$1,Y
 8C8F: 26 DA       BNE    $8C89
 8C91: 39          RTS
@@ -2074,8 +2081,8 @@ irq_8a57:
 9064: CC B2 C2    LDD    #$9040
 9067: 8E 24 69    LDX    #$0C41
 906A: 10 8E 28 36 LDY    #$001E
-906E: E7 01 DA 22 STB    -$0800,X
-9072: A7 02       STA    ,X+
+906E: E7 01 DA 22 STB    -$0800,X	; [video_address]
+9072: A7 02       STA    ,X+		; [video_address]
 9074: 31 1D       LEAY   -$1,Y
 9076: 26 74       BNE    $906E
 9078: 30 A0 AA    LEAX   $22,X
@@ -5743,11 +5750,12 @@ B055: FD 94 46    STD    $16C4
 B058: 86 D7       LDA    #$FF
 B05A: 7E 27 BE    JMP    play_sound_af96
 
+; speech handling
 irq_b05d:
 B05D: 86 76       LDA    #$FE
 B05F: B4 37 03    ANDA   $1521
 B062: B7 97 03    STA    $1521
-B065: B7 A2 C6    STA    ctrl_2044
+B065: B7 A2 C6    STA    ctrl_2044		; ack interrupt
 B068: B6 3F 85    LDA    $170D
 B06B: 27 39       BEQ    $B07E
 B06D: B6 E8 88    LDA    speech_6000
@@ -5778,6 +5786,7 @@ B0AE: BA 9D 03    ORA    $1521
 B0B1: B7 97 A3    STA    $1521
 B0B4: B7 02 C6    STA    ctrl_2044
 B0B7: 3B          RTI
+
 B0B8: 8E 98 F6    LDX    #$B07E
 B0BB: 34 38       PSHS   X
 B0BD: 7A 9F 86    DEC    $170E
@@ -7131,7 +7140,7 @@ BCE7: CE 94 9F    LDU    #$BCB7
 BCEA: CC 8E 26    LDD    #$060E
 BCED: ED 2C       STD    ,Y
 BCEF: 39          RTS
-table_bd14:
+event_table_bd14:
 	dc.w	$82da	; $bd14
 	dc.w	$8327	; $bd16
 	dc.w	$8344	; $bd18

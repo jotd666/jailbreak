@@ -130,11 +130,9 @@
 	.endm
 
 
-	.macro SET_I_FLAG
-	ERROR	"TODO: insert interrupt disable code here"
-	.endm
+
 	.macro CLR_I_FLAG
-	ERROR	"TODO: insert interrupt enable code here"
+	jbsr	osd_enable_interrupts
 	.endm
 
 	.ifdef	MC68020

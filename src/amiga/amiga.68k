@@ -226,6 +226,8 @@ start:
 		.global osd_read_system_inputs
 		.global osd_wait
 		.global	osd_set_scroll_direction
+		.global osd_set_speech_status
+		.global osd_get_speech_status
 		
 		* read/write on memory
 		.ifndef	RELEASE
@@ -832,8 +834,7 @@ do_irq:
 	* set base for RAM
 	jbsr	cpu_init
 	GET_MEMORY_START_AND_DP
-	* should be 10 times faster!!
-	jra			irq_b05d					| pass control to the cpu core
+	jra			irq_8a57					| pass control to the cpu core
 	
 * just in case some hardware calls nmi
 _nmi:
@@ -944,6 +945,11 @@ _vblank:
     movem.l (a7)+,d0-d7/a0-a6
     rte
 	
+osd_get_speech_status:
+	move.b	#0,d0
+	rts
+osd_set_speech_status:
+	rts
 osd_set_scroll_direction:
 	rts
 	
