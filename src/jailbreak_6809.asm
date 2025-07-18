@@ -68,7 +68,8 @@
 ;	PORT_BIT( 0x04, IP_ACTIVE_LOW, IPT_UNUSED )        PORT_DIPLOCATION( "SW3:3" )
 ;	PORT_BIT( 0x08, IP_ACTIVE_LOW, IPT_UNUSED )        PORT_DIPLOCATION( "SW3:4" )
 
-system_3300 = $3000
+system_3300 = $3300		| also watchdog
+watchdog_3300 = $3300
 in0_3301 = $3301
 in1_3302 = $3302
 dsw1_3303 = $3303
@@ -80,16 +81,19 @@ scroll_x_2000 = $2000
 coin_3000 = $3000
 speech_4000 = $4000
 speech_6000 = $6000
+nop_2040 = $2040
+nop_2043 = $2043
 
+start_8000:
 8000: 8E 32 82    LDX    #$1000
 8003: 4F          CLRA
 8004: 5F          CLRB
-8005: B7 B1 82    STA    system_3300
+8005: B7 B1 82    STA    watchdog_3300
 8008: ED A9       STD    ,X++
 800A: 8C 9F 28    CMPX   #$1700
 800D: 25 7E       BCS    $8005
 800F: 8E 33 E2    LDX    #$11C0
-8012: B7 B1 22    STA    system_3300
+8012: B7 B1 22    STA    watchdog_3300
 8015: ED 03       STD    ,X++
 8017: 8C 3F 88    CMPX   #$17A0
 801A: 25 7E       BCS    $8012
@@ -116,13 +120,13 @@ speech_6000 = $6000
 804E: ED 8A       STD    $2,X
 8050: B6 34 42    LDA    $16C0
 8053: BD AB 20    JSR    $8902
-8056: B7 B1 28    STA    system_3300
+8056: B7 B1 28    STA    watchdog_3300
 8059: BD 39 C0    JSR    $B148
-805C: B7 1B 88    STA    system_3300
+805C: B7 1B 88    STA    watchdog_3300
 805F: 86 60       LDA    #$42
 8061: 88 02       EORA   #$80
 8063: 97 00       STA    $22
-8065: B7 A2 C1    STA    $2043
+8065: B7 A2 C1    STA    nop_2043
 8068: C6 2B       LDB    #$03
 806A: D8 A9       EORB   $21
 806C: D7 09       STB    $21
@@ -217,7 +221,7 @@ speech_6000 = $6000
 8121: ED 03       STD    ,X++
 8123: ED A3       STD    ,X++
 8125: ED 03       STD    ,X++
-8127: 8C 08 68    CMPX   #$2040
+8127: 8C 08 68    CMPX   #nop_2040
 812A: 25 7B       BCS    $811F
 812C: 8E 28 88    LDX    #$0000
 812F: 4F          CLRA
@@ -275,15 +279,18 @@ speech_6000 = $6000
 81A3: BD A0 BC    JSR    $829E
 
 reset_81a6:
-81A6: 10 CE 3F D8 LDS    #$17F0
-81AA: 7E 27 8A    JMP    $AFA2
+81A6: 10 CE 3F D8 LDS    #$17F0		; set stack
+81AA: 7E 27 8A    JMP    continue_boot_afa2
+
+resume_boot_81ad:
 81AD: 86 8A       LDA    #$02
-81AF: B7 02 61    STA    $2043
+81AF: B7 02 61    STA    nop_2043		; does nothing?
 81B2: 5F          CLRB
 81B3: 4F          CLRA
-81B4: FD 02 C2    STD    $2040
+81B4: FD 02 C2    STD    nop_2040
 81B7: 86 2A       LDA    #$02
 81B9: B7 A8 CA    STA    scroll_dir_2042
+; reset row scroll registers
 81BC: 8E 08 88    LDX    #scroll_x_2000
 81BF: C6 62       LDB    #$40
 81C1: 4F          CLRA
@@ -295,36 +302,43 @@ reset_81a6:
 81CB: 25 2A       BCS    $81CF
 81CD: 86 80       LDA    #$08
 81CF: 8E 22 22    LDX    #$0000
-81D2: B7 B1 22    STA    system_3300
+81D2: B7 B1 22    STA    watchdog_3300
 81D5: B7 A2 C6    STA    ctrl_2044
 81D8: 30 29       LEAX   $1,X
-81DA: 26 7E       BNE    $81D2
+81DA: 26 7E       BNE    $81D2				; do it 65536 times...
 81DC: 86 3D       LDA    #$15
-81DE: 1F 03       TFR    A,DP
+81DE: 1F 03       TFR    A,DP				; set page $15 as direct page
 81E0: 4F          CLRA
+; now that DP has been set we can skip all this
+; checksum/memtest crap and directly jump
+; to $8000 to avoid slowdowns at boot
+
+; write memory from 0 to $2000 and check it
 81E1: 8E 82 82    LDX    #$0000
-81E4: B7 11 82    STA    system_3300
+81E4: B7 11 82    STA    watchdog_3300
 81E7: A7 AC       STA    ,X			; [video_address]
 81E9: A1 08       CMPA   ,X+		; [video_address]
-81EB: 26 8D       BNE    $8192		; if happens (non-zero) just reset
+81EB: 26 8D       BNE    $8192		; if happens (non-zero) just reset, mem test?
 81ED: 8C A8 88    CMPX   #scroll_x_2000
 81F0: 25 D0       BCS    $81E4
 81F2: 8B D7       ADDA   #$55
 81F4: 81 76       CMPA   #$54
-81F6: 26 6B       BNE    $81E1
+81F6: 26 6B       BNE    $81E1		; do it with different memory values
 81F8: 4C          INCA
 81F9: 81 77       CMPA   #$FF
 81FB: 26 29       BNE    $81FE
+; now in the other direction...
 81FD: 4F          CLRA
-81FE: B7 BB 22    STA    system_3300
+81FE: B7 BB 22    STA    watchdog_3300
 8201: A7 00       STA    ,-X
 8203: A1 A6       CMPA   ,X
 8205: 26 09       BNE    $8192
 8207: 8C 28 28    CMPX   #$0000
 820A: 22 64       BHI    $81F8
 820C: 4F          CLRA
+; now the scroll registers
 820D: 8E A8 88    LDX    #scroll_x_2000
-8210: B7 11 82    STA    system_3300
+8210: B7 11 82    STA    watchdog_3300
 8213: A7 A6       STA    ,X
 8215: A1 02       CMPA   ,X+
 8217: 10 26 D7 EA LBNE   $817D
@@ -337,7 +351,7 @@ reset_81a6:
 8227: 81 D7       CMPA   #$FF
 8229: 26 89       BNE    $822C
 822B: 4F          CLRA
-822C: B7 1B 88    STA    system_3300
+822C: B7 1B 88    STA    watchdog_3300
 822F: A7 A0       STA    ,-X
 8231: A1 06       CMPA   ,X
 8233: 10 26 DD C4 LBNE   $817D
@@ -347,30 +361,33 @@ reset_81a6:
 823E: 8D E4       BSR    $82AC
 8240: CE E6 DE    LDU    #$C45C
 8243: 10 8E 22 82 LDY    #$0000
-* looks like code checksum
+; ROM checksum
 8247: 8E 68 28    LDX    #speech_4000
 824A: 4F          CLRA
 824B: 5F          CLRB
-824C: B7 1B 88    STA    system_3300
+824C: B7 1B 88    STA    watchdog_3300
 824F: EB 80       ADDB   ,-Y
 8251: 89 82       ADCA   #$00
 8253: 30 3D       LEAX   -$1,X
 8255: 26 77       BNE    $824C
-8257: 10 A3 EB    CMPD   ,--U
-825A: 34 89       PSHS   CC
+8257: 10 A3 EB    CMPD   ,--U		; test checksum here: 3FC7 in C458
+825A: 34 89       PSHS   CC			; save comparison result for later, pushing on stack never popping!
 825C: 11 83 4C D0 CMPU   #$C458
-8260: 26 C7       BNE    $8247
+8260: 26 C7       BNE    $8247	
+; ROM checksum address correct, proceed	
 8262: BD 00 9D    JSR    $82BF
 8265: C6 90       LDB    #$12
 8267: BD AA F2    JSR    $82DA
 826A: 8E 82 BA    LDX    #$0A92
 826D: 35 89       PULS   CC
+; if checksum correct, continue
 826F: 27 29       BEQ    $827C
 8271: CC 90 93    LDD    #$1211
 8274: A7 A6       STA    ,X
 8276: E7 83       STB    $1,X
 8278: 86 3C       LDA    #$14
 827A: A7 8A       STA    $2,X
+; continue do shit
 827C: 30 A1 88 08 LEAX   $0080,X
 8280: 8C 29 10    CMPX   #$0B92
 8283: 26 CA       BNE    $826D
@@ -383,9 +400,10 @@ reset_81a6:
 8295: 8D 85       BSR    $829E
 8297: 8D 39       BSR    $82AA
 8299: 8D 8B       BSR    $829E
-829B: 7E A8 28    JMP    $8000
+829B: 7E A8 28    JMP    start_8000		; really start game now
+
 829E: 8E 88 22    LDX    #$0000
-82A1: B7 B1 82    STA    system_3300
+82A1: B7 B1 82    STA    watchdog_3300
 82A4: 3D          MUL
 82A5: 30 9D       LEAX   -$1,X
 82A7: 26 D0       BNE    $82A1
@@ -393,17 +411,18 @@ reset_81a6:
 82AA: C6 77       LDB    #$FF
 82AC: 8E 20 88    LDX    #$0800
 82AF: 4F          CLRA
-82B0: B7 11 82    STA    system_3300
-82B3: A7 AB DA 82 STA    -$0800,X
-82B7: E7 A8       STB    ,X+
+; clear video ram... again
+82B0: B7 11 82    STA    watchdog_3300
+82B3: A7 AB DA 82 STA    -$0800,X	; [video_address]
+82B7: E7 A8       STB    ,X+		; [video_address]
 82B9: 8C 98 88    CMPX   #$1000
 82BC: 25 DA       BCS    $82B0
 82BE: 39          RTS
 82BF: 86 20       LDA    #$02
-82C1: B7 A2 C1    STA    $2043
+82C1: B7 A2 C1    STA    nop_2043
 82C4: 5F          CLRB
 82C5: 4F          CLRA
-82C6: FD A2 68    STD    $2040
+82C6: FD A2 68    STD    nop_2040
 82C9: 86 8A       LDA    #$02
 82CB: B7 08 6A    STA    scroll_dir_2042
 82CE: 8E A8 22    LDX    #scroll_x_2000
@@ -1324,9 +1343,9 @@ irq_8a57:
 8A5D: 84 75       ANDA   #$FD
 8A5F: 97 03       STA    $21
 8A61: B7 A2 C6    STA    ctrl_2044
-8A64: B7 11 82    STA    system_3300
+8A64: B7 11 82    STA    watchdog_3300
 8A67: 96 0A       LDA    $22
-8A69: B7 A8 CB    STA    $2043
+8A69: B7 A8 CB    STA    nop_2043
 8A6C: 0C 1E       INC    $36
 8A6E: 8D 85       BSR    $8A7D
 8A70: BD B0 8B    JSR    $9209
@@ -5632,6 +5651,7 @@ AF8E: C6 8B       LDB    #$03
 AF90: F7 32 7E    STB    $10FC
 AF93: 39          RTS
 AF94: 86 C5       LDA    #$E7
+
 play_sound_af96:
 AF96: 12          NOP
 AF97: 12          NOP
@@ -5641,13 +5661,16 @@ AF9A: 12          NOP
 AF9B: B7 19 28    STA    dsw2_3100
 AF9E: B7 BA 22    STA    dsw3_3200
 AFA1: 39          RTS
+
+continue_boot_afa2:
 AFA2: C6 86       LDB    #$04
 AFA4: 86 BD       LDA    #$9F
 AFA6: BD 2D BE    JSR    play_sound_af96
 AFA9: 8B A8       ADDA   #$20
 AFAB: 5A          DECB
 AFAC: 26 D0       BNE    $AFA6
-AFAE: 7E 09 8F    JMP    $81AD
+AFAE: 7E 09 8F    JMP    resume_boot_81ad
+
 AFB1: C6 86       LDB    #$04
 AFB3: 86 BD       LDA    #$9F
 AFB5: BD 2D 14    JSR    play_sound_af96
