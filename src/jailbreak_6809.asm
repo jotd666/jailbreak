@@ -449,12 +449,12 @@ resume_boot_81ad:
 82E2: 25 A3       BCS    $8305
 82E4: EE A7       LDU    B,X
 82E6: 5F          CLRB
-82E7: A6 EC       LDA    ,U		; [video_address]
+82E7: A6 EC       LDA    ,U
 82E9: 81 8F       CMPA   #$07
 82EB: 22 2A       BHI    $82EF
-82ED: E6 48       LDB    ,U+	; [video_address]
-82EF: AE E3       LDX    ,U++	; [video_address_word]
-82F1: A6 42       LDA    ,U+	; [video_address]
+82ED: E6 48       LDB    ,U+
+82EF: AE E3       LDX    ,U++
+82F1: A6 42       LDA    ,U+
 82F3: 81 1D       CMPA   #$3F
 82F5: 27 AD       BEQ    $8326
 82F7: 81 07       CMPA   #$2F
@@ -476,8 +476,8 @@ resume_boot_81ad:
 8318: 81 07       CMPA   #$2F
 831A: 27 63       BEQ    $8307
 831C: 86 38       LDA    #$10
-831E: E7 01 DA 22 STB    -$0800,X
-8322: A7 02       STA    ,X+
+831E: E7 01 DA 22 STB    -$0800,X	; [video_address]
+8322: A7 02       STA    ,X+		; [video_address]
 8324: 20 CE       BRA    $8312
 8326: 39          RTS
 
@@ -494,8 +494,8 @@ resume_boot_81ad:
 8337: 8D 2C       BSR    $833D
 8339: D6 AC       LDB    $24
 833B: C4 27       ANDB   #$0F
-833D: A7 01 70 22 STA    -$0800,X
-8341: E7 02       STB    ,X+
+833D: A7 01 70 22 STA    -$0800,X		; [video_address]
+8341: E7 02       STB    ,X+			; [video_address]
 8343: 39          RTS
 8344: 0D 66       TST    $44
 8346: 27 79       BEQ    $8343
@@ -619,13 +619,13 @@ resume_boot_81ad:
 842B: 8D 2C       BSR    $8431
 842D: A6 CA       LDA    $2,U
 842F: 84 2D       ANDA   #$0F
-8431: A7 02       STA    ,X+
+8431: A7 02       STA    ,X+		; [video_address]
 8433: 39          RTS
-8434: A6 3C       LDA    -$2,X
+8434: A6 3C       LDA    -$2,X		; [video_address]
 8436: 81 92       CMPA   #$10
 8438: 26 2A       BNE    $843C
-843A: A7 97       STA    -$1,X
-843C: 6F AC       CLR    ,X
+843A: A7 97       STA    -$1,X		; [video_address]
+843C: 6F AC       CLR    ,X			; [video_address]
 843E: 39          RTS
 843F: CC 22 25    LDD    #$0007
 8442: 1F 80       TFR    D,Y
@@ -644,15 +644,15 @@ resume_boot_81ad:
 845A: CC 58 F9    LDD    #$D0D1
 845D: 34 A8       PSHS   Y
 845F: 8E 2A BC    LDX    #$089E
-8462: A7 06       STA    ,X
-8464: E7 AA C2    STB    $40,X
+8462: A7 06       STA    ,X			; [video_address]
+8464: E7 AA C2    STB    $40,X		; [video_address]
 8467: 30 37       LEAX   -$1,X
 8469: 31 B7       LEAY   -$1,Y
 846B: 26 DD       BNE    $8462
 846D: 35 A8       PULS   Y
 846F: 8E 22 BC    LDX    #$009E
-8472: 6F 06       CLR    ,X
-8474: 6F AA C2    CLR    $40,X
+8472: 6F 06       CLR    ,X			; [video_address]
+8474: 6F AA C2    CLR    $40,X      ; [video_address]
 8477: 30 37       LEAX   -$1,X
 8479: 31 B7       LEAY   -$1,Y
 847B: 26 DD       BNE    $8472
@@ -754,8 +754,8 @@ resume_boot_81ad:
 8570: 26 02       BNE    $8592
 8572: A6 DD       LDA    -$1,U
 8574: E6 E2       LDB    ,U+
-8576: E7 06       STB    ,X
-8578: A7 A1 70 88 STA    -$0800,X
+8576: E7 06       STB    ,X			; [video_address]
+8578: A7 A1 70 88 STA    -$0800,X	; [video_address]
 857C: 30 A0 C8    LEAX   $40,X
 857F: 31 1D       LEAY   -$1,Y
 8581: 26 73       BNE    $8574
@@ -783,8 +783,8 @@ resume_boot_81ad:
 85AC: A6 77       LDA    -$1,U
 85AE: 84 48       ANDA   #$C0
 85B0: E6 E2       LDB    ,U+
-85B2: E7 06       STB    ,X
-85B4: A7 AB 7A 82 STA    -$0800,X
+85B2: E7 06       STB    ,X			; [video_address]
+85B4: A7 AB 7A 82 STA    -$0800,X	; [video_address]
 85B8: 30 A0 C8    LEAX   $40,X
 85BB: 31 17       LEAY   -$1,Y
 85BD: 26 79       BNE    $85B0
@@ -799,8 +799,8 @@ resume_boot_81ad:
 85CD: E6 C9       LDB    $1,U
 85CF: 35 20       PULS   A
 85D1: 84 42       ANDA   #$C0
-85D3: E7 A6       STB    ,X
-85D5: A7 0B 7A 28 STA    -$0800,X
+85D3: E7 A6       STB    ,X				; [video_address]
+85D5: A7 0B 7A 28 STA    -$0800,X		; [video_address]
 85D9: 30 00 C8    LEAX   $40,X
 85DC: 31 17       LEAY   -$1,Y
 85DE: 26 7B       BNE    $85D3
@@ -855,7 +855,7 @@ resume_boot_81ad:
 8644: 8D 20       BSR    $8648
 8646: 8D 82       BSR    $8648
 8648: EC E9       LDD    ,U++
-864A: ED 09       STD    ,X++
+864A: ED 09       STD    ,X++		; [video_address_word]
 864C: 39          RTS
 864D: D6 10       LDB    $98
 864F: 4F          CLRA
@@ -878,9 +878,9 @@ resume_boot_81ad:
 8672: 1F 0B       TFR    A,B
 8674: 8D 21       BSR    $8679
 8676: 30 0A 12    LEAX   queue_event_pointer_3a,X
-8679: ED 09       STD    ,X++
-867B: ED A9       STD    ,X++
-867D: ED 09       STD    ,X++
+8679: ED 09       STD    ,X++		; [video_address_word
+867B: ED A9       STD    ,X++		; [video_address_word
+867D: ED 09       STD    ,X++		; [video_address_word
 867F: 39          RTS
 8680: 96 73       LDA    $51
 8682: 84 86       ANDA   #$04
@@ -1187,9 +1187,9 @@ resume_boot_81ad:
 88E2: 30 0A 32    LEAX   $10,X
 88E5: 33 C7       LEAU   $5,U
 88E7: EC E9       LDD    ,U++
-88E9: ED 09       STD    ,X++
+88E9: ED 09       STD    ,X++	; [video_address_word]
 88EB: A6 EC       LDA    ,U
-88ED: A7 0C       STA    ,X
+88ED: A7 0C       STA    ,X		; [video_address]
 88EF: 9E 7D       LDX    $5F
 88F1: 30 0B 82 A2 LEAX   $0080,X
 88F5: 9F DD       STX    $5F
@@ -1664,18 +1664,19 @@ irq_8a57:
 8CF2: BD 02 83    JSR    $80A1
 8CF5: C6 92       LDB    #$10
 8CF7: 7E A8 89    JMP    $80A1
+
 8CFA: 96 A6       LDA    $2E
 8CFC: 44          LSRA
 8CFD: 44          LSRA
 8CFE: 44          LSRA
 8CFF: 44          LSRA
-8D00: A7 A6       STA    ,X
+8D00: A7 A6       STA    ,X		; [video_address]
 8D02: 96 B2       LDA    $30
 8D04: 44          LSRA
 8D05: 44          LSRA
 8D06: 44          LSRA
 8D07: 44          LSRA
-8D08: A7 A1 88 08 STA    $0080,X
+8D08: A7 A1 88 08 STA    $0080,X		; [video_address]
 8D0C: 39          RTS
 8D0D: D6 DB       LDB    $53
 8D0F: 96 06       LDA    $24
@@ -1919,8 +1920,8 @@ irq_8a57:
 8EFF: 34 32       PSHS   X
 8F01: 10 8E 82 2E LDY    #$000C
 8F05: EC 43       LDD    ,U++
-8F07: A7 AC       STA    ,X
-8F09: E7 00 C8    STB    $40,X
+8F07: A7 AC       STA    ,X			; [video_address]
+8F09: E7 00 C8    STB    $40,X			; [video_address]
 8F0C: 30 A1 88 08 LEAX   $0080,X
 8F10: 31 1D       LEAY   -$1,Y
 8F12: 26 73       BNE    $8F05
@@ -2230,8 +2231,8 @@ irq_8a57:
 91B1: 1F 1A       TFR    B,A
 91B3: AB E0       ADDA   ,-U
 91B5: 80 B2       SUBA   #$30
-91B7: A7 AA       STA    ,-X
-91B9: 6F 01 70 28 CLR    -$0800,X
+91B7: A7 AA       STA    ,-X			; [video_address]
+91B9: 6F 01 70 28 CLR    -$0800,X		; [video_address]
 91BD: 5A          DECB
 91BE: 31 B7       LEAY   -$1,Y
 91C0: 26 CD       BNE    $91B1

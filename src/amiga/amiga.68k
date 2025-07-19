@@ -48,7 +48,7 @@ _custom = 0xDFF000
 
 
 RAM_START = 0x1000
-ROM_START = 0x4000
+ROM_START = 0x8000
 
 
 

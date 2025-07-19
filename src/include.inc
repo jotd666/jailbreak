@@ -403,6 +403,8 @@ get_address:
 	cmp.w	#0x6000,a0
 	jcs		10f				| ROM: OK
 	jbsr	osd_get_last_known_pc
+		jbsr	osd_dump_logs
+
 	BREAKPOINT	"illegal range 0x6000-0x8000, PC in D6"
 10:
 	lea		(a6,a0.l),a0
