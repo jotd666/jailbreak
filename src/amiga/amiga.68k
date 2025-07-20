@@ -1154,6 +1154,7 @@ really_update_scroll:
 	movem.l	a0-a1/d0-d2,-(a7)
 	jbsr	set_static_bitplanes
 	movem.l	(a7)+,a0-a1/d0-d2
+	
 1:
 	addq	#4,a1
 	add.w	#BG_NB_BYTES_PER_ROW*8,a4	| next row address
