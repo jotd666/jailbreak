@@ -83,7 +83,7 @@ speech_4000 = $4000
 speech_6000 = $6000
 nop_2040 = $2040
 nop_2043 = $2043
-
+road_row_counter_0830 = $0830
 queue_event_pointer_3a = $3a
 queue_event_pointer_3c = $3C
  
@@ -1595,7 +1595,7 @@ irq_8a57:
 8C58: 8D 38       BSR    $8C6A
 8C5A: 30 00 0C    LEAX   $24,X
 8C5D: 8D 83       BSR    $8C6A
-8C5F: BD B2 7D    JSR    $905F
+8C5F: BD B2 7D    JSR    draw_title_road_905f
 8C62: C6 A6       LDB    #$24
 8C64: BD AE 70    JSR    $8CF2
 8C67: 7E B9 BD    JMP    $9195
@@ -2067,7 +2067,7 @@ irq_8a57:
 9036: 96 19       LDA    $9B
 9038: 81 2C       CMPA   #$04
 903A: 27 82       BEQ    $9046
-903C: 8D 09       BSR    $905F
+903C: 8D 09       BSR    draw_title_road_905f
 903E: BD 19 B7    JSR    $9195
 9041: C6 A1       LDB    #$23
 9043: 7E A2 83    JMP    $80A1
@@ -2081,19 +2081,22 @@ irq_8a57:
 9058: 8E 27 08    LDX    #$0F80
 905B: BF 28 19    STX    >$0031
 905E: 39          RTS
+
+draw_title_road_905f:
 905F: 86 2A       LDA    #$08
-9061: B7 8A B2    STA    $0830
-9064: CC B2 C2    LDD    #$9040
-9067: 8E 24 69    LDX    #$0C41
-906A: 10 8E 28 36 LDY    #$001E
+9061: B7 8A B2    STA    road_row_counter_0830		; 8 rows (using video memory argh)
+9064: CC B2 C2    LDD    #$9040		; color and code of gray road tile
+9067: 8E 24 69    LDX    #$0C41		; start video address
+906A: 10 8E 28 36 LDY    #$001E		; 30 columns
 906E: E7 01 DA 22 STB    -$0800,X	; [video_address]
 9072: A7 02       STA    ,X+		; [video_address]
 9074: 31 1D       LEAY   -$1,Y
 9076: 26 74       BNE    $906E
-9078: 30 A0 AA    LEAX   $22,X
-907B: 7A 20 18    DEC    $0830
+9078: 30 A0 AA    LEAX   $22,X		; next row
+907B: 7A 20 18    DEC    road_row_counter_0830
 907E: 26 62       BNE    $906A
 9080: 39          RTS
+
 9081: 96 19       LDA    $9B
 9083: 81 26       CMPA   #$04
 9085: 27 C1       BEQ    $90CA

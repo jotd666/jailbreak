@@ -19,10 +19,12 @@
 
 	.macro	VIDEO_BYTE_DIRTY
 	| called when a byte write was done in a0
+	jbsr	osd_video_byte_dirty
 	.endm
 
 	.macro	VIDEO_WORD_DIRTY
 	| called when a word write was done in a0
+	jbsr	osd_video_word_dirty
 	.endm
 
 	.ifdef	RELEASE

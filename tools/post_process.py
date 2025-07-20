@@ -35,6 +35,10 @@ with open(source_dir / "conv.s") as f:
         if store_to_video.search(line):
             line = line.rstrip() + " [video_address]\n"
 
+        if "road_row_counter_0830" in line and ":" in line:
+            # special case: not really a video address
+            line = line.replace("_ADDRESS","_UNCHECKED_ADDRESS")
+
         if "[video_address" in line:
             # give me the original instruction
             line = line.replace("_ADDRESS","_UNCHECKED_ADDRESS")

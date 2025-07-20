@@ -47,7 +47,7 @@ Y_MAX = 256
 _custom = 0xDFF000
 
 
-RAM_START = 0x1000
+RAM_START = 0x0000
 ROM_START = 0x8000
 
 
@@ -150,7 +150,7 @@ BIT_LEFT_2P = 6
 	.ifdef	RELEASE
 	lea		ram_buffer-RAM_START,a6
 	.else
-	move.l		ram_start_1000,a6
+	move.l		ram_start_0000,a6
 	
 	* adjust offset to avoid subbing at run-time
 	sub.w	#RAM_START,a6
@@ -768,7 +768,7 @@ demo_game:
 	clr.w	d0
 	move.l	d0,d1
 	add.l	#0x10000+RAM_START,d1
-	move.l	d1,ram_start_1000		| memory (0x1000-0xFFFF)
+	move.l	d1,ram_start_0000		| memory (0x1000-0xFFFF)
 	
 	* relocate rom tables just after shared RAM
 	* memory is contiguous (only 1 segment of memory RAM+ROM)
@@ -1177,7 +1177,7 @@ really_update_tiles:
 	moveq	#0,d3
 3:
 	tst.b	(a1)+
-	jeq		2f
+	*jeq		2f
 	lea		tiles_refresh_table(pc),a0
 	subq.b	#1,(-1,a1)
 	move.w	#0x3F,d2		| 0X40 cols!
@@ -1186,7 +1186,7 @@ really_update_tiles:
 	add.w	d7,a0
 0:
 	tst.b	(a0)+
-	jeq		1f
+	*jeq		1f
 	subq.b	#1,(-1,a0)	| decrease dirty counter
 	* read tile & color codes from RAM
 	move.b	(a5,d7.w),d0		| code
@@ -2237,15 +2237,10 @@ video_byte_dirty:
 	move.l	a0,d7		| save address
 	sub.l	a6,d7
 
-
-	.ifndef	RELEASE
+	* sometimes game uses same code to set video or non video
+	* memory. We don't want to be alerted
 	cmp.l	#VIDEO_ADDRESS+0x1000,d7
-	jcs		0f
-	jbsr	osd_get_last_known_pc
-	BREAKPOINT	"write videoram out of range (D7 >= $3800), PC in D6"
-	jra		osd_video_dirty_out
-0:
-	.endif
+	jcc		osd_video_dirty_out
 
 	* remove offset
 	.ifne	VIDEO_ADDRESS
@@ -2253,22 +2248,9 @@ video_byte_dirty:
 	.else
 	tst.w	d7
 	.endif
-	* in this game (around 892B) the code is used with either
-	* a video address or a RAM address, so ignore if too low
 	jmi		osd_video_dirty_out
-	
-	.ifndef	RELEASE
-	jpl	1f
 
-	* should not happen
-	.ifne	VIDEO_ADDRESS
-	add.w	#VIDEO_ADDRESS,d7
-	.endif
-	jbsr	osd_get_last_known_pc
-	BREAKPOINT	"write videoram out of range (D7 < $3000), PC in D6"
-	jra		osd_video_dirty_out
-	.endif
-1:	
+
 	
 	* now set the flag for tile refresh in copper interrupt (so it doesn't
 	* interfere with blits. This game uses a lot of tile animation in the background
@@ -2276,6 +2258,7 @@ video_byte_dirty:
 	* the smoothness even in double buffering mode)
 
 	and.w	#0x7FF,d7
+
 
 	lea		tiles_refresh_table(pc),a0
 	add.w	d7,a0
@@ -2338,15 +2321,16 @@ compute_tile_xy_portrait:
 * < D1: color code
 
 update_bg_tile:
+
 	moveq	#0,d2			| mask up to 255
 	move.b	d0,d2			| tile code
 	moveq	#0,d3
 	move.b	d1,d3			| CLUT & tile code & flags
-	bclr	#7,d3
+	bclr	#6,d3
 	jeq		0f
 	bset	#8,d2			| add 0x100
 0:
-	bclr	#6,d3
+	bclr	#7,d3
 	jeq		0f
 	add.w	#0x200,d2		| add 0x200
 0:
@@ -2360,6 +2344,7 @@ update_bg_tile:
 	st.b	(a0,d3.l)
 	movem.w	(a7)+,d2-d3
 	.endif
+
 
 	bsr		compute_tile_xy
 	cmp.w	#FG_NB_BYTES_PER_ROW,d0

@@ -20,9 +20,9 @@ SCORE_FILE_SIZE = 3+30*3
 .macro	GET_MEMORY_START_IN_A6
 	move.l	m6809_direct_page_pointer,a4
 	.ifdef	RELEASE
-	lea		ram_buffer-0x1000,a6
+	lea		ram_buffer,a6
 	.else
-	move.l		ram_start_1000,a6
+	move.l		ram_start_0000,a6
 	
 	* adjust offset to avoid subbing at run-time
 	sub.w	#0x1000,a6
