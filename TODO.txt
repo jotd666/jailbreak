@@ -1,5 +1,6 @@
-- decode graphics properly in amiga.68k
-
+- fix scroll in amiga.68k
+- crash when sprites are displayed
+- prison break scene missing tiles now
 
 log sounds: bpset xxx,,{print A;g}
 sim sound on credit: bpset xxx,,{A=$81;g}

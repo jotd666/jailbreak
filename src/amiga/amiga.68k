@@ -1327,9 +1327,8 @@ update_one_bob:
 	bset	#8,d0		| adds 0x100 to X
 112:
 	and.b	#0xF,d2		| CLUT
-
+	
 	* check if it is a grouped sprite in the table with 0x100 pre-computed entries
-	jra		10f		| no grouping right now
 	
 	tst.b	(a2,d3.w)
 	jeq		10f
