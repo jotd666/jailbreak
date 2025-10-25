@@ -1,7 +1,7 @@
 *
-*	Amiga-specific portions of Track'N'Field
+*	Amiga-specific portions of JailBreak
 *
-* (c) JOTD 2025
+* (c) JOTD 2025-2026
 *
 
 	* first instruction (includes contain code)
@@ -390,6 +390,17 @@ _user:
 	move.l	#-1,184(A0)	| pr_WindowPtr: no more system requesters (insert volume, write protected...)
 
 .no_forbid:
+	
+	.ifndef	RELEASE
+	move.l	#log_buffer,log_ptr
+	lea	log_buffer_end,a0
+	move.l	#0xCAFECAFE,d0
+	move.l	d0,(a0)+
+	move.l	d0,(a0)+
+	move.l	d0,(a0)+
+	move.l	d0,(a0)+
+	.endif
+
 
 	lea		_custom,a5
 	lea		debug_copperlist,a0
@@ -3183,19 +3194,6 @@ _end_of_ng_code:
 palette:	
 	.include "palette.68k"
 
-	.ifndef	RELEASE
-log_ptr:
-	.long	log_buffer
-
-log_buffer:
-	.skip	LOG_BUFFER_SIZE
-	.rept	20
-	.long	0xCAFECAFE
-	.endr
-
-cpu_log_enable:
-	.word	0
-	.endif
 
 current_scroll_values:
 	.rept	NB_SCROLL_ROWS+2
@@ -3213,7 +3211,7 @@ scroll_table:
 	* easier to debug game to have memory aligned on 0x10000
 
 	.ifne	OPT_ENABLE_LOGGING
-	.section	.bss
+	.section	.bsspublic
 
 sprite_log_table:
 	* 16 cluts, 512 tiles
@@ -3224,6 +3222,19 @@ character_log_table:
 	* a lot of combinations aren't used (fortunately!)
 	.skip	16*NB_POSSIBLE_TILES
 	.endif
+	
+
+log_ptr:
+	.long	0
+
+log_buffer:
+	.skip	LOG_BUFFER_SIZE
+log_buffer_end:
+	.skip	16
+
+cpu_log_enable:
+	.word	0
+
 	.endif
 
 

@@ -18,12 +18,12 @@
 	.endm
 
 	.macro	VIDEO_BYTE_DIRTY
-	| called when a byte write was done in a0
+	| called when a write to video memory was done in a0
 	jbsr	osd_video_byte_dirty
 	.endm
 
 	.macro	VIDEO_WORD_DIRTY
-	| called when a word write was done in a0
+	| called when a word write to video memory was done in a0
 	jbsr	osd_video_word_dirty
 	.endm
 
@@ -168,6 +168,15 @@
 	move.w	(\src),\dest
 	.endm
 
+	.macro	CMP_W_TO_REG	src,dest
+	cmp.w	(\src),\dest
+	.endm
+	.macro	ADD_W_TO_REG	src,dest
+	add.w	(\src),\dest
+	.endm
+	.macro	SUB_W_TO_REG	src,dest
+	sub.w	(\src),\dest
+	.endm
 	.macro	MOVE_W_FROM_REG    src,dest
 	move.w	\src,(\dest)
 	.endm
@@ -262,16 +271,25 @@
 
 
 	.macro GET_DP_ADDRESS	offset
-	lea	(a5,\offset\().W),a0
+	lea	(a4,\offset\().W),a0
 	.endm
 
+	.macro OP_1_ON_DP_ADDRESS	inst,offset
+	\inst\().b	(a4,\offset\().W)
+	.endm
 
+	.macro OP_R_ON_DP_ADDRESS	inst,offset,reg
+	\inst\().b	(a4,\offset\().W),\reg
+	.endm
+	.macro OP_W_ON_DP_ADDRESS	inst,offset,reg
+	\inst\().b	\reg,(a4,\offset\().W)
+	.endm
 	.macro SET_DP_FROM_A
 	lsl.w    #8,d0
 	move.l    d0,a0
 	GET_ADDRESS_FUNC
-	move.l	a0,a5
-	move.l	a5,m6809_direct_page_pointer
+	move.l	a0,a4
+	move.l	a4,m6809_direct_page_pointer
 	lsr.w    #8,d0
 	.endm
 
@@ -419,8 +437,8 @@ multiply_ab:
 	and.w	#0xFF,d1
 	mulu	d0,d1
 	ror.w	#8,d1
-	move.b	d1,d0
-	ror.w	#8,d1
+	move.b	d1,d0	| A
+	ror.w	#8,d1	| D
 	rts
 	
 	
@@ -453,11 +471,11 @@ multiply_ab:
 	move.w	(a7)+,sr
 	.endm
 	
-	.macro	ENABLE_LOG_REGS
+	.macro	ENABLE_REGS_LOG
 	moveq	#1,d6		| enable
 	jbsr	osd_cpu_logging_control	
 	.endm
-	.macro	DISABLE_LOG_REGS
+	.macro	DISABLE_REGS_LOG
 	moveq	#0,d6		| disable
 	jbsr	osd_cpu_logging_control	
 	.endm	
