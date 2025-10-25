@@ -1,3 +1,5 @@
+- check post processing vs new version
+  (locks up!)
 - fix scroll in amiga.68k
 - crash when sprites are displayed
 - prison break scene missing tiles now

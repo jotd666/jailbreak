@@ -47,3 +47,11 @@ equates = []
 this_dir = pathlib.Path(__file__).absolute().parent
 
 source_dir = this_dir / "../src"
+
+
+
+def remove_error(line):
+    if "ERROR" in line:
+        return ""
+    else:
+        raise Exception(f"No ERROR to remove in {line}")

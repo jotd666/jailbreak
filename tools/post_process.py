@@ -14,6 +14,13 @@ input_dict = {"system_3300":"read_system_inputs",
 
 }
 
+def get_line_address(line):
+    try:
+        toks = line.split("|")
+        address = toks[1].strip(" [$").split(":")[0]
+        return int(address,16)
+    except (ValueError,IndexError):
+        return None
 
 
 # various dirty but at least automatic patches applying on the specific track and field code
@@ -57,6 +64,8 @@ with open(source_dir / "conv.s") as f:
 
         line = re.sub(tablere,subt,line)
 
+        address = get_line_address(line)
+
         if "[$81e0:" in line:
             line = "\tjmp\tstart_8000   | skip all self-tests\n"
         if "dsw1_" in line and "lda" in line:
@@ -74,25 +83,25 @@ with open(source_dir / "conv.s") as f:
             lines[i+2] = "\tPOP_SR\n"+lines[i+2]
         elif "[$836d" in line:
             line = "\tPOP_SR\n"+line
-            lines[i+1] = ""
-        elif "[$8090:" in line:
+            lines[i+1] = remove_error(lines[i+1])
+        elif address == 0x8090:
             line = change_instruction("pea\tevent_loop_poll_8073",lines,i)
-        elif "[$8094:" in line:
+        elif address == 0x8094:
             line = remove_instruction(lines,i)
-        elif "[$a790" in line:
+        elif address == 0xa790:
             line = "\tPUSH_SR\n"+line
             lines[i+2] = "\tPOP_SR\n"+lines[i+2]
-            lines[i+3] = ""
-        elif "[$b0c9" in line:
+            lines[i+3] = remove_error(lines[i+3])
+        elif address == 0xb0c9:
             line = change_instruction("INDIRECT_JMP_U",lines,i)
 
-        elif any(x in line for x in ["[$951f","[$9538","[$954b","[$955e","[$9571"]):
+        elif address in (0x951f,0x9538,0x954b,0x955e,0x9571):
             # functions return condition code (C) set
-            lines[i+1] = ""
-        elif any(x in line for x in ["[$a62b","[$a666"]):
+            lines[i+1] = remove_error(lines[i+1])
+        elif address in (0xa62b,0xa666):
             line = lines[i+1]
             lines[i+1] = lines[i]
-            lines[i+3] = ""  # remove error
+            lines[i+3] = remove_error(lines[i+3])
             i += 2
 
         if "multiply_ab" in line and "MAKE_D" in lines[i+1]:
@@ -158,7 +167,7 @@ with open(source_dir / "data.inc","w") as fw:
 
 with open(source_dir / "jailbreak.68k","w") as fw:
     fw.write("""\t*.include "jailbreak.inc"
-.include "data.inc"
+\t.include "data.inc"
 \t.global\tirq_8a57
 \t.global\tirq_b05d
 \t.global\treset_81a6
