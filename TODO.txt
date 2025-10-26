@@ -1,5 +1,10 @@
-- check post processing vs new version
-  (locks up!)
+	LOG_REGS	a4eb   | added by add_reg_log.py
+	lea	table_eba0,a2                  	| [$a4eb: ldx    #table_eba0]
+	LOG_REGS	a4ee   | added by add_reg_log.py
+	JSR_A_INDEXED	A2,3  
+	but D0 = 0x48!!
+	trace cpu before see value of D0????
+	
 - fix scroll in amiga.68k
 - crash when sprites are displayed
 - prison break scene missing tiles now

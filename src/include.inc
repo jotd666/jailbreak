@@ -14,9 +14,18 @@
 
 
 	.macro	ERROR	arg
-	*.error	"\arg"     | comment out to disable errors
+	.error	"\arg"     | comment out to disable errors
 	.endm
 
+	.macro	CHECK_MAX	reg,arg
+	.ifndef	RELEASE
+	cmp.b	#\arg*2,\reg
+	jcs		okay\@
+	BREAKPOINT	"\reg exceeds \arg*2"
+okay\@:
+	.endif
+	.endm
+	
 	.macro	VIDEO_BYTE_DIRTY
 	| called when a write to video memory was done in a0
 	jbsr	osd_video_byte_dirty
@@ -51,6 +60,10 @@
 	.endm
 	.endif
 	
+	.macro	COM	reg
+	not.b	\reg
+	SET_XC_FLAGS
+	.endm
 
 	.macro	SEX
 	move.b	d1,d0
@@ -142,13 +155,15 @@
 
 * 68020 compliant & optimized
 
-    .macro    JXX_A_INDEXED    inst,reg
+    .macro    JXX_A_INDEXED    inst,reg,nb_cases
     and.w    #0xFF,d0  | mask 8 bits
+	CHECK_MAX	d0,\nb_cases
     \inst    ([\reg,d0.W*2])
     .endm
 
-    .macro    JXX_B_INDEXED    inst,reg
+    .macro    JXX_B_INDEXED    inst,reg,nb_cases
     and.w    #0xFF,d1  | mask 8 bits
+	CHECK_MAX	d1,\nb_cases
     \inst    ([\reg,d1.W*2])
     .endm
 
@@ -194,13 +209,15 @@
 * 68000 compliant
     .macro    JXX_A_INDEXED    inst,reg
     and.w    #0xFF,d0  | mask 8 bits
+	CHECK_MAX	d0,\nb_cases
     add.w    d0,d0    | *2 (16 -> 32 bits)
     move.l    (\reg,d0.w),\reg
     \inst    (\reg)
     .endm
     .macro    JXX_B_INDEXED    inst,reg
     and.w    #0xFF,d1  | mask 8 bits
-    add.w    d0,d1    | *2 (16 -> 32 bits)
+ 	CHECK_MAX	d1,\nb_cases
+    add.w    d1,d1    | *2 (16 -> 32 bits)
     move.l    (\reg,d1.w),\reg
     \inst    (\reg)
     .endm
@@ -247,17 +264,17 @@
 	.endif
 
 
-    .macro    JSR_A_INDEXED    reg
-    JXX_A_INDEXED	jsr,\reg
+    .macro    JSR_A_INDEXED    reg,nb_cases
+    JXX_A_INDEXED	jsr,\reg,\nb_cases
     .endm
-    .macro    JMP_A_INDEXED    reg
-    JXX_A_INDEXED	jmp,\reg
+    .macro    JMP_A_INDEXED    reg,nb_cases
+    JXX_A_INDEXED	jmp,\reg,\nb_cases
     .endm
-    .macro    JSR_B_INDEXED    reg
-    JXX_B_INDEXED	jsr,\reg
+    .macro    JSR_B_INDEXED    reg,nb_cases
+    JXX_B_INDEXED	jsr,\reg,\nb_cases
     .endm
-    .macro    JMP_B_INDEXED    reg
-    JXX_B_INDEXED	jmp,\reg
+    .macro    JMP_B_INDEXED    reg,nb_cases
+    JXX_B_INDEXED	jmp,\reg,\nb_cases
     .endm
 
 

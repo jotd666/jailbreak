@@ -14,6 +14,29 @@ input_dict = {"system_3300":"read_system_inputs",
 
 }
 
+nb_cases_dict = {0x8096:6,
+0x86b1:9,
+0x8bfe:10,
+0x8c06:7,0x8d26:29,
+0X8e0b:24,0X8e43:15,
+0x8f5f:5,
+0x973a:6,
+0x9792:4,0x97d8:3,
+0x9bb2:4,
+0xa0d2:32,
+0xa9ea:5,
+0xa27e:4,0xa4d6:53,
+0xa4ee:3,0xa9e1:5,
+0xab50:9,
+0xac1d:12,
+0xad5e:4,
+0xb0fc:25,
+0Xb297:8
+
+
+
+}
+
 def get_line_address(line):
     try:
         toks = line.split("|")
@@ -78,7 +101,7 @@ with open(source_dir / "conv.s") as f:
         elif address in (0x835d,0x8364,0x836b):
             # protect abcd X flag
             line = "\tPUSH_SR\n"+line
-        elif address in (0x836b,0x8368):
+        elif address in (0x836b,0x8368,0x8361):
             # pop sr (protect abcd)
             lines[i+2] = "\tPOP_SR\n"+lines[i+2]
         elif address == 0x836d:
@@ -154,7 +177,8 @@ with open(source_dir / "conv.s") as f:
                 inst = m.group(1).upper()
                 reg = {"x":"A2","y":"A3","u":"A4"}[m.group(3)]
                 rest = re.sub(".*\"","",line)
-                line = f"\t{inst}_{ireg}_INDEXED\t{reg}{rest}"
+                nb_cases = nb_cases_dict[address]
+                line = f"\t{inst}_{ireg}_INDEXED\t{reg},{nb_cases}{rest}"
         if "ERROR" in line:
             print(line,end="")
         lines[i] = line
