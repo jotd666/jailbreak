@@ -66,7 +66,7 @@ with open(source_dir / "conv.s") as f:
 
         address = get_line_address(line)
 
-        if "[$81e0:" in line:
+        if address == 0x81e0:
             line = "\tjmp\tstart_8000   | skip all self-tests\n"
         if "dsw1_" in line and "lda" in line:
             line = change_instruction("jbsr\tosd_read_dsw_1",lines,i)
@@ -75,13 +75,13 @@ with open(source_dir / "conv.s") as f:
         elif "dsw3_" in line and "lda" in line:
             line = change_instruction("jbsr\tosd_read_dsw_3",lines,i)
 
-        elif "[$835d" in line or "[$8364" in line or "[$836b" in line:
+        elif address in (0x835d,0x8364,0x836b):
             # protect abcd X flag
             line = "\tPUSH_SR\n"+line
-        elif "[$836b" in line or "[$8368" in line:
+        elif address in (0x836b,0x8368):
             # pop sr (protect abcd)
             lines[i+2] = "\tPOP_SR\n"+lines[i+2]
-        elif "[$836d" in line:
+        elif address == 0x836d:
             line = "\tPOP_SR\n"+line
             lines[i+1] = remove_error(lines[i+1])
         elif address == 0x8090:
@@ -94,7 +94,8 @@ with open(source_dir / "conv.s") as f:
             lines[i+3] = remove_error(lines[i+3])
         elif address == 0xb0c9:
             line = change_instruction("INDIRECT_JMP_U",lines,i)
-
+        elif address == 0xb116:
+            line = remove_instruction(lines,i)
         elif address in (0x951f,0x9538,0x954b,0x955e,0x9571):
             # functions return condition code (C) set
             lines[i+1] = remove_error(lines[i+1])
