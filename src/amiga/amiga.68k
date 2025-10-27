@@ -2317,13 +2317,13 @@ update_bg_tile:
 0:
 	.ifne	OPT_ENABLE_LOGGING
 	lea		character_log_table,a0
-	movem.w	d2-d3,-(a7)
+	movem.l	d2-d3,-(a7)
 	and.w	#0xF,d3
 	lsl.w	#4,d2		| 16 cluts
 	add.w	d2,d3		| clut offset
 
 	st.b	(a0,d3.l)
-	movem.w	(a7)+,d2-d3
+	movem.l	(a7)+,d2-d3
 	.endif
 
 
@@ -2372,7 +2372,6 @@ update_bg_tile:
 	move.b	d3,d1
 	and.w	#0xF,d3
 	.ifdef	N068020
-	add.w	d3,d3
 	add.w	d3,d3
 	add.w	d3,d3
 	move.l	(a2,d3.w),d0			| pointer on tile bitplanes for that CLUT
