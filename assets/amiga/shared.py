@@ -38,7 +38,7 @@ player_single_sprites = {}
 
 group_sprite_pairs = (
 sr2(0x1F0,0x200) | sr2(0x1A0,0x1B0) | sr2(0x1BA,0x1C0) |
-{0x173,0xA4,0xB0,0xB4,0X1D0,0x1D2,0xD8,0x126,0X183,0x156,0xA6,0x17A,0x17E,0x122,0x124,0x193} |
+{0x75,0x77,0x173,0x46,0X4A,0x4C,0xA4,0xB0,0x54,0x56,0xB4,0x1C8,0x1CA,0X1D0,0x1D2,0xD8,0x126,0X183,0x156,0xA6,0x17A,0x17E,0x122,0x124,0x193} |
 sr2(0x1B0,0x1B8) | sr2(0X186,0x18C)
 )
 
@@ -48,14 +48,52 @@ def set_names(rval,start,end,name):
 def get_sprite_names():
 
     rval = dict()
+    set_names(rval,0x1D0,0x1D4,"police_van")
+    set_names(rval,0x1C3,0x1C4,"police_van")
+    set_names(rval,0x182,0X185,"police_van")
+    set_names(rval,0x18A,0X18D,"police_van")
     set_names(rval,0x1F0,0x200,"police_car")
+    set_names(rval,0x140,0x14A,"woman_and_baby")
+    rval[0x4E] = "rpg"
+    rval[0x32] = "policeman"
+    rval[0x3F] = "blank"
+    rval[0x155] = "blank"
+    set_names(rval,0x100,0x103,"bullet")
+
+    rval[0x10B] = "shell"
+    rval[0x10C] = "shell"
+    rval[0x126] = "dead_convict"
+    rval[0x12A] = "dead_convict"
+    rval[0x12C] = "dead_convict"
+    rval[0x46] = "bike"
+    rval[0x1C6] = "barrel"
+    rval[0x138] = "bullet"
+    rval[0x139] = "bullet"
+    rval[0x131] = "score"
+    rval[0x12E] = "score"
+    rval[0x12F] = "score"
+    rval[0x4A] = "policeman_rpg"
+    rval[0x4C] = "policeman_rpg"
+    rval[0x51] = "policeman_rpg"
+    rval[0x75] = "policeman_rpg"
+    rval[0x77] = "policeman_rpg"
+    rval[0x54] = "policeman_rpg"
+    rval[0x56] = "policeman_rpg"
+
     rval[0x181] = "police_car"
+    rval[0x1C8] = "garbage_truck"
+    rval[0x1CA] = "garbage_truck"
     set_names(rval,0,0x20,"policeman")
+    set_names(rval,0x15A,0x15F,"policeman")
+    set_names(rval,0x23,0x2A,"policeman")
+    set_names(rval,0x1A0,0x1B8,"manhole_cover")
+    set_names(rval,0x1B8,0x1C0,"convict_in_manhole")
     set_names(rval,0X122,0x125,"policeman")
     set_names(rval,0x80,0xEF,"convict")
     set_names(rval,0x1A8,0x1B0,"convict")
     set_names(rval,0x16E,0x170,"child")
     set_names(rval,0x160,0x162,"worker")
+    set_names(rval,0x150,0x153,"worker")
 
 
     return rval
