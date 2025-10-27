@@ -1193,8 +1193,10 @@ really_update_tiles:
 	jeq		1f
 	subq.b	#1,(-1,a0)	| decrease dirty counter
 	* read tile & color codes from RAM
+
 	move.b	(a5,d7.w),d0		| code
 	move.b	(a6,d7.w),d1		| color/attribute
+
 	movem.l	d2/d3/d7/a0/a1/a5,-(a7)
 	jbsr	update_bg_tile
 	movem.l	(a7)+,d2/d3/d7/a0/a1/a5
@@ -1454,7 +1456,8 @@ update_one_bob:
 	* flip
 	neg.w	d4
 101:
-	*jbsr		blit_planes_any_internal_cookie_cut
+	move.w	#NB_BOB_PLANES,d3
+	jbsr		blit_planes_any_internal_cookie_cut
 	move.l	(a7)+,a0
 	rts
 21:
@@ -1624,6 +1627,10 @@ cpu_log_name:
 * returns: start of destination in A1 (computed from old A1+X,Y)
 * trashes: a1
 blit_planes_any_internal_cookie_cut:
+	move.l	a0,0x110
+	move.l	a1,0x114
+	movem.w	d0-d5,0x118
+	
     movem.l d0-d7/a4,-(a7)
     * pre-compute the maximum of shit here
 	tst.w	d4
@@ -2393,7 +2400,7 @@ update_bg_tile:
 	lea		mirror_jump_table(pc),a4
 	ror.b	#4,d1			        | modifiers on first bits
 	and.w	#3,d1
-	moveq	#0,d1			| TEMP no mirror
+	*moveq	#0,d1			| TEMP no mirror
 	.ifdef	NO68020
 	add.w	d1,d1
 	add.w	d1,d1	

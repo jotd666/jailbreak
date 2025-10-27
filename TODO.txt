@@ -1,11 +1,9 @@
-- remove sprite wrap: ok but now blits go berzerk
-- save used tiles on first part
+
 - cop displayed on bottom left
-- upper tiles missing when convicts escape this looks like 
-  a refresh issue. Maybe force refresh on AGA
+- upper tiles missing when convicts escape
 check video dirty stuff with address
 - fix scroll in amiga.68k
-- immediate crash when sprites are displayed during gameplay
-
+- mirror attribute not working
+- create an excluding config to remove some parasite sprite combinations 
 log sounds: bpset xxx,,{print A;g}
 sim sound on credit: bpset xxx,,{A=$81;g}
