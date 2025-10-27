@@ -288,25 +288,25 @@ okay\@:
 
 
 	.macro GET_DP_ADDRESS	offset
-	lea	(a4,\offset\().W),a0
+	lea	(a5,\offset\().W),a0
 	.endm
 
 	.macro OP_1_ON_DP_ADDRESS	inst,offset
-	\inst\().b	(a4,\offset\().W)
+	\inst\().b	(a5,\offset\().W)
 	.endm
-
+	
 	.macro OP_R_ON_DP_ADDRESS	inst,offset,reg
-	\inst\().b	(a4,\offset\().W),\reg
+	\inst\().b	(a5,\offset\().W),\reg
 	.endm
 	.macro OP_W_ON_DP_ADDRESS	inst,offset,reg
-	\inst\().b	\reg,(a4,\offset\().W)
+	\inst\().b	\reg,(a5,\offset\().W)
 	.endm
 	.macro SET_DP_FROM_A
 	lsl.w    #8,d0
 	move.l    d0,a0
 	GET_ADDRESS_FUNC
-	move.l	a0,a4
-	move.l	a4,m6809_direct_page_pointer
+	move.l	a0,a5
+	move.l	a5,m6809_direct_page_pointer
 	lsr.w    #8,d0
 	.endm
 
