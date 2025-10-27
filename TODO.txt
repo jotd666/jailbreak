@@ -1,9 +1,12 @@
 
 - cop displayed on bottom left
+- cop lower part sometimes not matching actual sprite
 - upper tiles missing when convicts escape
 check video dirty stuff with address
 - fix scroll in amiga.68k
-- mirror attribute not working
+- optimize: remove some sprites from mirror to save memory
+  (vehicles)
 - create an excluding config to remove some parasite sprite combinations 
+
 log sounds: bpset xxx,,{print A;g}
 sim sound on credit: bpset xxx,,{A=$81;g}

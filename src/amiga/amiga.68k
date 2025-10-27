@@ -1399,7 +1399,6 @@ update_one_bob:
     * flip_x = D3 & 0x10
     * flip_y = D3 & 0x20
 	btst	#MIRROR_X_BIT,d3
-	jra		101f
 	jeq		101f
 	* mirror (most sprites don't have that, it will just display
 	* the next frame if not generated, which can be off-putting!
@@ -1412,7 +1411,7 @@ update_one_bob:
 	move.b	(TARGET_SPRITE_ATTR,a1),d2
 	btst.b	#6,d2
 	jeq		111f
-	bset	#8,d3		| add 256
+	bset	#8,d3		| add 256 for logging message
 111:
 	BREAKPOINT	"unexpected mirror bit set, tile code in d3"
 	jra		21f
@@ -1626,11 +1625,7 @@ cpu_log_name:
 * blit mask set
 * returns: start of destination in A1 (computed from old A1+X,Y)
 * trashes: a1
-blit_planes_any_internal_cookie_cut:
-	move.l	a0,0x110
-	move.l	a1,0x114
-	movem.w	d0-d5,0x118
-	
+blit_planes_any_internal_cookie_cut:	
     movem.l d0-d7/a4,-(a7)
     * pre-compute the maximum of shit here
 	tst.w	d4
@@ -1638,8 +1633,9 @@ blit_planes_any_internal_cookie_cut:
 	sub.w	d4,d1	| pre-add height to d1
 	subq.w	#1,d1	| minus one
 1:	
-	tst	d1
+	tst.w	d1
     beq.b   2f    | optim
+	jmi		8f		| negative: don't display
     lea		mulFG_NB_BYTES_PER_ROW_table(pc),a4
 	.ifdef	NO68020
 	add.w	d1,d1
@@ -1709,7 +1705,7 @@ blit_planes_any_internal_cookie_cut:
 	dbf		d3,6b
 7:
 	jbsr	process_1_plane
-    
+8:
     movem.l (a7)+,d0-d7/a4
     rts
 	
