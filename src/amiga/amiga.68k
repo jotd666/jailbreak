@@ -1351,7 +1351,7 @@ update_one_bob:
 	jne		2f			| not mirrored
 	* mirrored, right part: display but correct X and code
 	subq.w	#1,d3
-	*sub.w	#0x10,d0	| correct display
+	sub.w	#0x10,d0	| correct display
 	jra		100f
 50:
 	btst	#6,(TARGET_SPRITE_ATTR,a0)
