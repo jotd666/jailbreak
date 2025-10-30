@@ -1371,7 +1371,6 @@ update_one_bob:
 	movem.l	(a7)+,a2/d2-d3
 	.endif
 
-
 	.ifdef	NO68020
 	add.w	d3,d3
 	add.w	d3,d3
@@ -1381,6 +1380,12 @@ update_one_bob:
 	.endif
 	jeq		2f
 	* entry is valid, now what about clut?
+	.ifndef	RELEASE
+	cmp.l	#0x200000,d4
+	jcs		5555f
+	BREAKPOINT	"illegal memory for bob table, bob id in D3"
+5555:
+	.endif
 	
 	move.l	d4,a1
 	.ifdef	NO68020
@@ -2305,7 +2310,9 @@ compute_tile_xy_portrait:
 * < D1: color code
 
 update_bg_tile:
-
+	move.b	D0,0x110
+	move.b	D1,0x111
+	
 	moveq	#0,d2			| mask up to 255
 	move.b	d0,d2			| tile code
 	moveq	#0,d3
@@ -2396,7 +2403,6 @@ update_bg_tile:
 	lea		mirror_jump_table(pc),a4
 	ror.b	#4,d1			        | modifiers on first bits
 	and.w	#3,d1
-	*moveq	#0,d1			| TEMP no mirror
 	.ifdef	NO68020
 	add.w	d1,d1
 	add.w	d1,d1	
@@ -2414,7 +2420,6 @@ update_bg_tile:
 	movem.l	(a7)+,a1/a2
 	* draw the same thing more to the right
 	add.w	#64,a1
-	move.w	#NB_TILE_PLANES-1,d4
 20:
 	jmp		(a4)
 	
@@ -2452,6 +2457,7 @@ update_bg_tile:
 * tile bitplane should not be copied into the backbuffer as sprites
 * only use 4 planes
 standard_tile:
+	move.w	#NB_TILE_PLANES-1,d4
 
 	* just copy
 
@@ -2476,6 +2482,7 @@ standard_tile:
 	jra		41b
 
 flipped_tile:	
+	move.w	#NB_TILE_PLANES-1,d4
 4:
 	move.l	(a2)+,d0		| next plane
 	jeq		5f
@@ -2497,6 +2504,7 @@ flipped_tile:
 	jra		41b
 	
 mirror_tile:
+	move.w	#NB_TILE_PLANES-1,d4
 	lea		mirror_bits(pc),a4
 	moveq	#0,d1
 4:
@@ -2525,6 +2533,7 @@ mirror_tile:
 	jra		41b
 	
 mirror_flipped_tile:
+	move.w	#NB_TILE_PLANES-1,d4
 	lea		mirror_bits(pc),a4
 	moveq	#0,d1
 4:

@@ -53,12 +53,12 @@ okay\@:
 	.macro	GET_UNCHECKED_ADDRESS_FUNC
 	lea		(a6,a0.l),a0
 	.endm
+	.endif
 	.macro	ABX
 	moveq	#0,d6
 	move.b	d1,d6
-	add.w	d1,d2
+	add.w	d6,d2
 	.endm
-	.endif
 	
 	.macro	COM	reg
 	not.b	\reg
@@ -96,27 +96,17 @@ okay\@:
 	.endm
 
 	.macro CLR_XC_FLAGS
-	move.w	d7,-(a7)
-	moveq	#0,d6
-	roxl.b	#1,d6
-	movem.w	(a7)+,d6
+	and.b	#0xEE,ccr	| bit 4 = X, bit 0 = C
 	.endm
 
 	.macro SET_XC_FLAGS
-	move.w	d6,-(a7)
-	st	d6
-	roxl.b	#1,d6
-	movem.w	(a7)+,d6
+	or.b	#0x11,ccr	| bit 4 = X, bit 0 = C
 	.endm
 
 
 
 	.macro INVERT_XC_FLAGS
-	PUSH_SR
-	move.w	(sp),d6
-	eor.b	#0x11,d6
-	move.w	d6,(sp)
-	POP_SR
+	eor.b	#0x11,ccr
 	.endm
 
 * useful to recall C from X (add then move then bcx)
@@ -207,14 +197,14 @@ okay\@:
 	.else
 
 * 68000 compliant
-    .macro    JXX_A_INDEXED    inst,reg
+    .macro    JXX_A_INDEXED    inst,reg,nb_cases
     and.w    #0xFF,d0  | mask 8 bits
 	CHECK_MAX	d0,\nb_cases
     add.w    d0,d0    | *2 (16 -> 32 bits)
     move.l    (\reg,d0.w),\reg
     \inst    (\reg)
     .endm
-    .macro    JXX_B_INDEXED    inst,reg
+    .macro    JXX_B_INDEXED    inst,reg,nb_cases
     and.w    #0xFF,d1  | mask 8 bits
  	CHECK_MAX	d1,\nb_cases
     add.w    d1,d1    | *2 (16 -> 32 bits)
