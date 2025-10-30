@@ -2420,6 +2420,7 @@ update_bg_tile:
 	movem.l	(a7)+,a1/a2
 	* draw the same thing more to the right
 	add.w	#64,a1
+	move.w	#NB_TILE_PLANES-1,d4
 20:
 	jmp		(a4)
 	
@@ -2457,7 +2458,6 @@ update_bg_tile:
 * tile bitplane should not be copied into the backbuffer as sprites
 * only use 4 planes
 standard_tile:
-	move.w	#NB_TILE_PLANES-1,d4
 
 	* just copy
 
@@ -2482,7 +2482,6 @@ standard_tile:
 	jra		41b
 
 flipped_tile:	
-	move.w	#NB_TILE_PLANES-1,d4
 4:
 	move.l	(a2)+,d0		| next plane
 	jeq		5f
@@ -2504,7 +2503,6 @@ flipped_tile:
 	jra		41b
 	
 mirror_tile:
-	move.w	#NB_TILE_PLANES-1,d4
 	lea		mirror_bits(pc),a4
 	moveq	#0,d1
 4:
@@ -2533,7 +2531,6 @@ mirror_tile:
 	jra		41b
 	
 mirror_flipped_tile:
-	move.w	#NB_TILE_PLANES-1,d4
 	lea		mirror_bits(pc),a4
 	moveq	#0,d1
 4:

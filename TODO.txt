@@ -1,4 +1,6 @@
-
+- Exception "Access Fault" ($7008) PC = $390A Byte Read from $36200036
+  tile check value of A2 (in chip, like 61154) and check if value not corrupted at some
+  point (same value at start?)
 - crash BOB pointer (breakpoint set)
 - upper tiles missing when convicts escape: scroll value is wrong!
 - fix scroll in amiga.68k
