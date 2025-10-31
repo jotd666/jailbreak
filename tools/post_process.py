@@ -127,6 +127,10 @@ with open(source_dir / "conv.s") as f:
             lines[i+1] = lines[i]
             lines[i+3] = remove_error(lines[i+3])
             i += 2
+        elif address == 0xad46:
+            # replace d2/d4 restore by double address pop no register change
+            # (else it puts non-zero value in d2 MSB!)
+            line = change_instruction("addq\t#8,a7",lines,i)
 
         if "multiply_ab" in line and "MAKE_D" in lines[i+1]:
             lines[i+1] = ""
