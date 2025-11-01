@@ -1,10 +1,9 @@
-- get DSW for lives number
+- DSW for lives number is wrong
 - sometimes character changes places... highly buggy...
   (when going too low)
 - highest part of the screen scrolls...
 - sprites should be displayed even if more on the left
   (disappear too fast)
-- shifting with some grouped sprites
 - double buffering to implement
 - optimize: remove some sprites from mirror to save memory
   (vehicles)

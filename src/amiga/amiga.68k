@@ -502,6 +502,7 @@ _user:
 	move.l	difficulty_level(pc),d0
 	ror.b	#4,d0
 	or.b	d0,d1
+	bset	#5,d1		| 30k-70k for extra lives
 	
 	move.b	d1,dip_switches_2
 	
@@ -1344,16 +1345,15 @@ update_one_bob:
 	jeq		10f
 	jpl		50f
 	* right part: display only if mirrored
-	btst	#6,(TARGET_SPRITE_ATTR,a0)
-	jne		2f			| not mirrored
-	* mirrored, right part: display but correct X and code
+	btst	#MIRROR_X_BIT,(TARGET_SPRITE_ATTR,a0)
+	jeq		2f			| not mirrored
+	* mirrored, right part: display but correct code
 	subq.w	#1,d3
-	sub.w	#0x10,d0	| correct display
 	jra		100f
 50:
-	btst	#6,(TARGET_SPRITE_ATTR,a0)
-	jeq		2f			| mirrored: don't display
-
+	btst	#MIRROR_X_BIT,(TARGET_SPRITE_ATTR,a0)
+	jne		2f			| mirrored: don't display
+	
 100:
 10:
 	* here D3 is code and D2 is clut
@@ -2819,6 +2819,7 @@ osd_read_dsw_2:
 	* actual dipswitches
 	move.b	dip_switches_2(pc),d0
 	not.b	d0		| active low
+	BREAKPOINT	"read dsw2"
 	rts
 osd_read_dsw_3:
 	* actual dipswitches

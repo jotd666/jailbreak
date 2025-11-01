@@ -41,5 +41,5 @@ def merge(used_name,nb_items,forced_cluts=None):
         with open(merged_path_file / used_name,"wb") as f:
             f.write(contents)
 
-merge("used_sprites",512,{0x1C9:[14,15],0x4B:[5,0XE],0x4D:[5],0x187:list(range(0,16)),0x1F1:list(range(0,16)),0x76:[7,8,9,10,11,12,13,14,15],0x1D1:[15],0x1D3:[15],0x157:[7,8,9]})
+merge("used_sprites",512,{0x1AF:[0xC],0x127:[2],0x1C9:[14,15],0x4B:[5,0XE],0x4D:[5],0x187:list(range(0,16)),0x1F1:list(range(0,16)),0x76:[7,8,9,10,11,12,13,14,15],0x1D1:[15],0x1D3:[15],0x157:[7,8,9]})
 merge("used_tiles",0x400)

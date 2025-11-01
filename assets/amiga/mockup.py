@@ -76,8 +76,8 @@ def process(the_dump,name_filter=None,hide_named_sprite=None):
         attr = m_spriteram[i + 1]
         code = m_spriteram[i] + ((attr & 0x40) << 2)
         color = attr & 0x0f
-        flipx = attr & 0x10
-        flipy = attr & 0x20
+        flipx = bool(attr & 0x10)
+        flipy = bool(attr & 0x20)
         sx = m_spriteram[i + 2] - ((attr & 0x80) << 1)
         sy = m_spriteram[i + 3];
 
