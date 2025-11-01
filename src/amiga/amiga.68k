@@ -498,6 +498,8 @@ _user:
 	
 	move	#0x80,d1	| demo sounds on always
 	move.l	start_lives(pc),d0
+	not.b	d0
+	and.b	#3,d0
 	or.b	d0,d1
 	move.l	difficulty_level(pc),d0
 	ror.b	#4,d0
@@ -968,10 +970,10 @@ osd_set_scroll_direction:
 	
 osd_log_cpu:
 	* first, check that registers don't have a wrong longword mask
-	*CHECK_ZERO_MSW	d1
+	CHECK_ZERO_MSW	d1
 	CHECK_ZERO_MSW	d2
-	*CHECK_ZERO_MSW	d3
-	*CHECK_ZERO_MSW	d4
+	CHECK_ZERO_MSW	d3
+	CHECK_ZERO_MSW	d4
 	move.w	(6,a7),last_known_m6809_pc
 	
 	move.w	last_known_m6809_pc,0x100
@@ -1308,12 +1310,10 @@ update_one_bob:
 	move.b	(TARGET_SPRITE_Y,a0),d1  | sprite Y
 	move.b	(TARGET_SPRITE_X,a0),d0
 
-	* filter out if X=0 AND Y=0
+	* filter out if Y=0
 	tst.b	d1
-	jne		0f
-	tst.b	d0
-	jeq	2f
-0:
+	jeq		2f
+
 
 	.ifne	SPRITE_Y_CORRECTION
 	add.w	#SPRITE_Y_CORRECTION,d1
@@ -2073,7 +2073,7 @@ platform_init:
 	move.w	#BASE_BPLCON3_VALUE,bplcon3(a5)
  	*         VVHH
     move.w #0x99-0X18+0x40+(COPPER_Y_START<<8),diwstrt(a5)
-    move.w #0x79+0x3F+(COPPER_Y_START<<8),diwstop(a5)
+    move.w #0x79+0x3F+(COPPER_Y_START<<8)-0x1000,diwstop(a5)
     move.w #0x0038,ddfstrt(a5)
     move.w #0x00D0,ddfstop(a5)
 
@@ -2819,7 +2819,7 @@ osd_read_dsw_2:
 	* actual dipswitches
 	move.b	dip_switches_2(pc),d0
 	not.b	d0		| active low
-	BREAKPOINT	"read dsw2"
+	*BREAKPOINT	"read dsw2"
 	rts
 osd_read_dsw_3:
 	* actual dipswitches

@@ -131,33 +131,13 @@ with open(source_dir / "conv.s") as f:
             # replace d2/d4 restore by double address pop no register change
             # (else it puts non-zero value in d2 MSB!)
             line = change_instruction("addq\t#8,a7",lines,i)
-
+        elif address in {0xaa42}:   # 0xad77,0xa395,0xa3ce,0Xa513,0xa57e,
+            # replace d2 restore by address pop no register change
+            # (else it puts non-zero value in d2 MSB!)
+            line = change_instruction("addq\t#4,a7",lines,i)
         if "multiply_ab" in line and "MAKE_D" in lines[i+1]:
             lines[i+1] = ""
-##        if "tfr" in line and "POP_SR" in lines[i+1] and "PUSH_SR" in lines[i-1]:
-##            # we don't need to save SR in this game when a TFR is done
-##            lines[i-1] = ""
-##            lines[i+1] = ""
-##        if "rox" in line and "POP_SR" in lines[i-1] and "PUSH_SR" in lines[i-3]:
-##            # we don't need to save SR as roxx uses X flag
-##            lines[i-3] = ""
-##            lines[i-1] = ""
 
-
-
-
-##        elif "flip_screen_set_1080" in line:
-##            line = remove_instruction(lines,i)
-##            remove_continuing_lines(lines,i)
-##
-##        elif "irq_mask_w_1487" in line:
-##            # check next line
-##            next_line = lines[i+1]
-##            if "clr" in next_line:
-##                line = change_instruction("jbsr\tosd_disable_interrupts",lines,i)
-##            else:
-##                line = change_instruction("jbsr\tosd_enable_interrupts",lines,i)
-##                lines[i-1] = remove_instruction(lines,i-1)
 
         if "GET_ADDRESS" in line:
             val = line.split()[1]

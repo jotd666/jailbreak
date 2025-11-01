@@ -1,7 +1,9 @@
-- DSW for lives number is wrong
 - sometimes character changes places... highly buggy...
-  (when going too low)
-- highest part of the screen scrolls...
+  we have to find which part is changing the character position that much
+  or change the scroll that much???
+- DSW for lives number is wrong
+- explosion for molotov wrong sprite (bullet instead of explosion)
+- highscore entry: missing joystick read? missing time elapsing  
 - sprites should be displayed even if more on the left
   (disappear too fast)
 - double buffering to implement

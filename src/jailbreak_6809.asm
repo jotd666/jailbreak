@@ -1029,8 +1029,8 @@ resume_boot_81ad:
 87AA: 24 83       BCC    $87B7
 87AC: 9E 4A       LDX    $62
 87AE: CC 98 32    LDD    #$1010
-87B1: ED 80       STD    $2,X
-87B3: ED 26       STD    $4,X
+87B1: ED 80       STD    $2,X	; [video_address_word]
+87B3: ED 26       STD    $4,X	; [video_address_word]
 87B5: 20 87       BRA    $87BC
 87B7: C6 37       LDB    #$1F
 87B9: BD 0A 52    JSR    $82DA
@@ -1111,7 +1111,7 @@ resume_boot_81ad:
 884E: A6 0C       LDA    ,X
 8850: 8B 29       ADDA   #$0B
 8852: 9E EA       LDX    $68
-8854: A7 21       STA    $3,X
+8854: A7 21       STA    $3,X	; [video_address]
 8856: E6 46       LDB    ,U
 8858: 96 4D       LDA    $65
 885A: 26 BA       BNE    $888E
