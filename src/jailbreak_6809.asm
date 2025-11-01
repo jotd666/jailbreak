@@ -4706,7 +4706,7 @@ A747: 30 0C       LEAX   $4,Y
 A749: EC 4C       LDD    ,U		; [video_address_word]
 A74B: 20 2C       BRA    $A751
 A74D: 30 AE       LEAX   $6,Y
-A74F: EC 60       LDD    $2,U
+A74F: EC 60       LDD    $2,U		; [video_address_word]
 A751: 27 71       BEQ    $A746
 A753: 6D 26       TST    $4,X
 A755: 27 87       BEQ    $A75C

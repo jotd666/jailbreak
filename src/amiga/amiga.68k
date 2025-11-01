@@ -137,18 +137,15 @@ BIT_INSERT_COIN_2 = 1
 BIT_START_1P = 3
 BIT_START_2P = 4
 
-* in0 bits
-BIT_START_3P = 3
-* in1 bits (the only interesting one is 4P start)
-BIT_START_4P = 3
 
-BIT_RIGHT_1P = 0
-BIT_FIRE_1P = 1
-BIT_LEFT_1P = 2
 
-BIT_RIGHT_2P = 4
-BIT_FIRE_2P = 5
-BIT_LEFT_2P = 6
+BIT_UP = 2
+BIT_DOWN = 3
+BIT_RIGHT = 1
+BIT_LEFT = 0
+BIT_FIRE = 4
+BIT_FIRE2 = 5
+
 
 
 .macro	GET_MEMORY_START_AND_DP
@@ -847,9 +844,9 @@ _vblank:
 
 	clr.b	vbl_sync_flag
 	
-	moveq	#0,d0
-	jsr	_read_joystick
-	move.l	d0,_joypad_2_state
+*	moveq	#0,d0
+*	jsr	_read_joystick
+*	move.l	d0,_joypad_2_state
 
 	move.l	_joypad_1_state(pc),d1
 	moveq	#1,d0
@@ -1136,13 +1133,13 @@ really_update_scroll:
 	move.l		background_ptr,a4
 	lea	current_scroll_values,a3
 0:
-
+    * m_bg_tilemap->set_scrollx(i, ((m_scroll_x[i + 32] << 8) + m_scroll_x[i]));
 	* get LSB+MSB scroll value
-	move.b	(1,a6),d5
+	move.b	(0x20,a6),d5
 	and.b	#1,d5		| consider only bit 0 for MSB
 	rol.w	#8,d5
 	move.b	(a6),d5
-	addq	#2,a6
+	addq	#1,a6
 	move.w	(a3)+,d6
 	cmp.w	d5,d6
 	jeq		1f
@@ -2076,7 +2073,7 @@ platform_init:
 	move.w	#BASE_BPLCON3_VALUE,bplcon3(a5)
  	*         VVHH
     move.w #0x99-0X18+0x40+(COPPER_Y_START<<8),diwstrt(a5)
-    move.w #0x79+0x48+(COPPER_Y_START<<8),diwstop(a5)
+    move.w #0x79+0x3F+(COPPER_Y_START<<8),diwstop(a5)
     move.w #0x0038,ddfstrt(a5)
     move.w #0x00D0,ddfstop(a5)
 
@@ -2694,10 +2691,6 @@ osd_read_inputs_2:
 	movem.l	a0/d1,-(a7)
 	lea		keyboard_table(pc),a0
 
-	tst.b	(4,a0)		| "4" key like in MAME
-	beq.b	0f
-	bclr	#BIT_START_4P,d0
-0:	
 	
 	movem.l	(a7)+,a0/d1
 	rts
@@ -2752,79 +2745,70 @@ osd_read_inputs_1:
 
 	lea		keyboard_table(pc),a0
 
-	tst.b	(3,a0)		| "3" key like in MAME
-	beq.b	0f
-	bclr	#BIT_START_3P,d0
-0:	
 	tst.b	(0x4F,a0)		| "<-" key
 	beq.b	0f
-	bclr	#BIT_LEFT_1P,d0
+	bclr	#BIT_LEFT,d0
 0:
 	tst.b	(0x4E,a0)		| "->" key
 	beq.b	0f
-	bclr	#BIT_RIGHT_1P,d0
+	bclr	#BIT_RIGHT,d0
+0:
+	tst.b	(76,a0)		| "^" key
+	beq.b	0f
+	bclr	#BIT_UP,d0
+0:
+	tst.b	(77,a0)		| "V" key
+	beq.b	0f
+	bclr	#BIT_DOWN,d0
 0:
 	tst.b	(0x63,a0)		| "ctrl" key
 	beq.b	0f
-	bclr	#BIT_FIRE_1P,d0
+	bclr	#BIT_FIRE,d0
 0:
-	tst.b	(45,a0)		| "4" num key
+	tst.b	(0x64,a0)		| "ctrl" key
 	beq.b	0f
-	bclr	#BIT_LEFT_2P,d0
-0:
-	tst.b	(47,a0)		| "6" num key
-	beq.b	0f
-	bclr	#BIT_RIGHT_2P,d0
-0:
-	tst.b	(15,a0)		| "0" num key
-	beq.b	0f
-	bclr	#BIT_FIRE_2P,d0
+	bclr	#BIT_FIRE2,d0
 0:
 
 
 	* directions + fire
 	move.l	_joypad_1_state(pc),d1
-	jbsr	read_player_joypad_1P
-
-	* 2P active with joypad only if joypad connected
-	tst.b	controller_joypad_0
-	jeq		0f
-	move.l	_joypad_2_state(pc),d1
-	jbsr	read_player_joypad_2P
+	btst	#JPB_BTN_LEFT,d1
+	beq.b	0f
+	bclr	#BIT_LEFT,d0
 0:
+	btst	#JPB_BTN_RIGHT,d1
+	beq.b	0f
+	bclr	#BIT_RIGHT,d0
+0:
+	btst	#JPB_BTN_UP,d1
+	beq.b	0f
+	bclr	#BIT_UP,d0
+0:
+	btst	#JPB_BTN_DOWN,d1
+	beq.b	0f
+	bclr	#BIT_DOWN,d0
+0:
+	btst	#JPB_BTN_RED,d1
+	beq.b	0f
+	bclr	#BIT_FIRE,d0
+0:
+	btst	#JPB_BTN_BLU,d1
+	beq.b	0f
+	bclr	#BIT_FIRE2,d0
+
+0:
+	* 2P active with joypad only if joypad connected
+*	tst.b	controller_joypad_0
+*	jeq		0f
+*	move.l	_joypad_2_state(pc),d1
+*	jbsr	read_player_joypad_2P
+*0:
 
 	movem.l	(a7)+,a0/d1
 	rts
 	
 	
-	.macro		READ_PLAYER_JOYPAD	pname
-read_player_joypad_\pname:
-	btst	#JPB_BTN_LEFT,d1
-	beq.b	0f
-	bclr	#BIT_LEFT_\pname,d0
-0:
-	btst	#JPB_BTN_RIGHT,d1
-	beq.b	0f
-	bclr	#BIT_RIGHT_\pname,d0
-0:
-	btst	#JPB_BTN_RED,d1
-	beq.b	0f
-	bclr	#BIT_FIRE_\pname,d0
-0:
-	btst	#JPB_BTN_BLU,d1
-	beq.b	0f
-	bclr	#BIT_RIGHT_\pname,d0
-0:
-	btst	#JPB_BTN_GRN,d1
-	beq.b	0f
-	bclr	#BIT_LEFT_\pname,d0
-0:
-	rts
-	.endm
-	
-	READ_PLAYER_JOYPAD	1P
-	READ_PLAYER_JOYPAD	2P
-
 	
 osd_read_dsw_1:
 	* actual dipswitches
