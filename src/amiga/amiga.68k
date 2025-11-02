@@ -933,13 +933,14 @@ _vblank:
 	eor.b	#1,flip_flop
 	jeq		23f
 0:
-	jbsr		really_update_tiles
 	jbsr		really_update_sprites
 	
 	
 	.ifne	OPT_ENABLE_DOUBLE_BUFFERING
 	bsr		switch_screen_buffers
 	.endif
+
+	jbsr		really_update_tiles
 	
 23:
 
