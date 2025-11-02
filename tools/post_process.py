@@ -16,17 +16,21 @@ input_dict = {"system_3300":"read_system_inputs",
 
 nb_cases_dict = {0x8096:6,
 0x86b1:9,
-0x8bfe:10,
-0x8c06:7,0x8d26:29,
-0X8e0b:24,0X8e43:15,
+0x8bfe:4,
+0x8c06:7,
+0x8d26:5,
+0X8e0b:9,
+0X8e43:11,
 0x8f5f:5,
 0x973a:6,
 0x9792:4,0x97d8:3,
 0x9bb2:4,
 0xa0d2:32,
 0xa9ea:5,
-0xa27e:4,0xa4d6:53,
-0xa4ee:3,0xa9e1:5,
+0xa27e:4,
+0xa4d6:38,
+0xa4ee:3,
+0xa9e1:5,
 0xab50:9,
 0xac1d:12,
 0xad5e:4,
@@ -119,7 +123,7 @@ with open(source_dir / "conv.s") as f:
             line = change_instruction("INDIRECT_JMP_U",lines,i)
         elif address == 0xb116:
             line = remove_instruction(lines,i)
-        elif address in (0x951f,0x9538,0x954b,0x955e,0x9571):
+        elif address in {0x951f,0x9538,0x954b,0x955e,0x9571}:
             # functions return condition code (C) set
             lines[i+1] = remove_error(lines[i+1])
         elif address in (0xa62b,0xa666):
@@ -127,11 +131,19 @@ with open(source_dir / "conv.s") as f:
             lines[i+1] = lines[i]
             lines[i+3] = remove_error(lines[i+3])
             i += 2
+        elif address == 0x91ed:
+            line = f"\ttst.b\tinfinite_lives_flag\n\tjne\t0f\n{line}0:\n"
+        elif address == 0x9b57:
+            line += f"\ttst.b\tinvincible_flag\n\tjeq\t0f\n\trts  | no enemy collision\n0:\n"
+        elif address == 0x9a7e:
+            line += f"\ttst.b\tinvincible_flag\n\tjne\tl_9a84\n"
+        elif address == 0x9aec:
+            line += f"\ttst.b\tinvincible_flag\n\tjeq\t0f\n\trts  | no enemy collision\n0:\n"
         elif address == 0xad46:
             # replace d2/d4 restore by double address pop no register change
             # (else it puts non-zero value in d2 MSB!)
             line = change_instruction("addq\t#8,a7",lines,i)
-        elif address in {0xaa42}:   # 0xad77,0xa395,0xa3ce,0Xa513,0xa57e,
+        elif address in {0xaa42,0xad77,0xa57e,0Xa513}:   # ,0xa395,0xa3ce,,,
             # replace d2 restore by address pop no register change
             # (else it puts non-zero value in d2 MSB!)
             line = change_instruction("addq\t#4,a7",lines,i)

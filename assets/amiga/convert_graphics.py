@@ -82,6 +82,7 @@ dump=False,name_dict=None,cluts=None,tile_number=0,is_bob=False):
                     img.save(os.path.join(dump_subdir,f"{name}_{tile_number:02x}_{palette_index:02x}.png"))
             tile_number += 1
 
+    other_tile_failure = False
     if is_bob:
         # rework & dump grouped / non grouped sprites
         # rework tiles which are grouped
@@ -92,12 +93,13 @@ dump=False,name_dict=None,cluts=None,tile_number=0,is_bob=False):
                 other_tile_index = tile_number+1
                 other_tile = tileset_1[other_tile_index]
                 if not other_tile:
-                    raise Exception(f"other tile index 0x{other_tile_index:02x} not found (palette ${palette_index:x})")
+                    print(f"warn: other tile index 0x{other_tile_index:02x} not found (palette ${palette_index:x})")
+                    other_tile_failure = True
                 new_tile = Image.new("RGB",(wtile.size[0]*2,wtile.size[1]))
 
                 new_tile.paste(wtile)
-
-                new_tile.paste(other_tile,(wtile.size[0],0))
+                if other_tile:
+                    new_tile.paste(other_tile,(wtile.size[0],0))
                 tileset_1[tile_number] = new_tile
                 tileset_1[tile_number+1] = None  # discatd
                 wtile = new_tile
@@ -111,8 +113,7 @@ dump=False,name_dict=None,cluts=None,tile_number=0,is_bob=False):
                 img.save(os.path.join(dump_subdir,f"{name}_{tile_number:02x}_{palette_index:02x}.png"))
 
 
-
-    return sorted(set(palette)),tileset_1
+    return sorted(set(palette)),tileset_1,other_tile_failure
 
 all_tile_cluts = False
 
@@ -209,7 +210,7 @@ tile_palette = set()
 tile_set_list = []
 
 for i,tsd in tile_sheet_dict.items():
-    tp,tile_set = load_tileset(tsd,i,8,8,"tiles",dump_dir,dump=dump_it,
+    tp,tile_set,_ = load_tileset(tsd,i,8,8,"tiles",dump_dir,dump=dump_it,
     cluts=tile_cluts,
     name_dict=None)
     tile_set_list.append(tile_set)
@@ -233,14 +234,18 @@ sprite_dump_dir.mkdir(exist_ok=True)
 
 cluts = sprite_cluts
 
+global_other_tile_failure = False
 for clut_index,tsd in sprite_sheet_dict.items():
     # BOBs
 
-    sp,sprite_set = load_tileset(tsd,clut_index,16,16,"sprites",dump_dir,dump=dump_it,
+    sp,sprite_set,other_tile_failure = load_tileset(tsd,clut_index,16,16,"sprites",dump_dir,dump=dump_it,
     name_dict=sprite_names,cluts=sprite_cluts,is_bob=True)
     sprite_set_list[clut_index] = sprite_set
     sprite_palette.update(sp)
+    global_other_tile_failure |= other_tile_failure
 
+if global_other_tile_failure:
+    raise Exception("Some associated tiles weren't found")
 
 sprite_palette = sorted(sprite_palette)
 magi = sprite_palette.index(magenta)

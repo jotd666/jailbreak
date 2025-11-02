@@ -86,7 +86,13 @@ nop_2043 = $2043
 road_row_counter_0830 = $0830
 queue_event_pointer_3a = $3a
 queue_event_pointer_3c = $3C
- 
+weapons_flag_98 = $98
+nb_lives_player_1_ce = $ce
+nb_lives_player_2_fe = $fe
+nb_lives_current_player_9e = $9e
+game_state_25 = $25
+game_sub_state_26 = $26
+
 start_8000:
 8000: 8E 32 82    LDX    #$1000
 8003: 4F          CLRA
@@ -115,7 +121,7 @@ start_8000:
 8037: 7F 3E E3    CLR    $16CB
 803A: BD 08 EA    JSR    $80C2
 803D: BD 08 3D    JSR    $80B5
-8040: 0D 07       TST    $25
+8040: 0D 07       TST    game_state_25
 8042: 27 8E       BEQ    $8050
 8044: 8E 36 42    LDX    #$14C0
 8047: 9F 12       STX    queue_event_pointer_3a
@@ -481,7 +487,7 @@ resume_boot_81ad:
 8324: 20 CE       BRA    $8312
 8326: 39          RTS
 
-8327: 96 0D       LDA    $25
+8327: 96 0D       LDA    game_state_25
 8329: 81 8A       CMPA   #$02
 832B: 27 3E       BEQ    $8343
 832D: 4F          CLRA
@@ -535,11 +541,11 @@ resume_boot_81ad:
 838A: 19          DAA
 838B: DD B4       STD    $9C
 838D: BD 1B CF    JSR    $9347
-8390: 96 BC       LDA    $9E
+8390: 96 BC       LDA    nb_lives_current_player_9e
 8392: 81 7D       CMPA   #$FF
 8394: 27 2D       BEQ    $83A5
-8396: 0C 1C       INC    $9E
-8398: 96 B6       LDA    $9E
+8396: 0C 1C       INC    nb_lives_current_player_9e
+8398: 96 B6       LDA    nb_lives_current_player_9e
 839A: 81 8F       CMPA   #$07
 839C: 22 2F       BHI    $83A5
 839E: 34 B8       PSHS   Y,X
@@ -631,7 +637,7 @@ resume_boot_81ad:
 8442: 1F 80       TFR    D,Y
 8444: CC 32 92    LDD    #$1010
 8447: 8D 3C       BSR    $845D
-8449: D6 16       LDB    $9E
+8449: D6 16       LDB    nb_lives_current_player_9e
 844B: 5D          TSTB
 844C: 27 D8       BEQ    $843E
 844E: 5A          DECB
@@ -822,7 +828,7 @@ resume_boot_81ad:
 85FF: 0F A7       CLR    $85
 8601: 39          RTS
 8602: 8D CB       BSR    $864D
-8604: D6 BA       LDB    $98
+8604: D6 BA       LDB    weapons_flag_98
 8606: 4F          CLRA
 8607: 1F 2A       TFR    D,Y
 8609: CE 49 12    LDU    #$C19A
@@ -832,7 +838,7 @@ resume_boot_81ad:
 8614: 31 1D       LEAY   -$1,Y
 8616: 26 75       BNE    $860F
 8618: C6 2C       LDB    #$04
-861A: D0 10       SUBB   $98
+861A: D0 10       SUBB   weapons_flag_98
 861C: 26 2C       BNE    $8622
 861E: 20 96       BRA    $863E
 8620: C6 21       LDB    #$03
@@ -857,7 +863,7 @@ resume_boot_81ad:
 8648: EC E9       LDD    ,U++
 864A: ED 09       STD    ,X++		; [video_address_word]
 864C: 39          RTS
-864D: D6 10       LDB    $98
+864D: D6 10       LDB    weapons_flag_98
 864F: 4F          CLRA
 8650: 1F 20       TFR    D,Y
 8652: 8E 85 23    LDX    #$0701
@@ -1062,7 +1068,7 @@ resume_boot_81ad:
 87F1: BD 11 84    JSR    $9306
 87F4: 4F          CLRA
 87F5: 5F          CLRB
-87F6: DD A7       STD    $25
+87F6: DD A7       STD    game_state_25
 87F8: DD 0F       STD    $27
 87FA: 97 A1       STA    $29
 87FC: 96 0C       LDA    $24
@@ -1378,7 +1384,7 @@ irq_8a57:
 8A91: B6 B1 82    LDA    system_3300
 8A94: 43          COMA
 8A95: 97 D1       STA    $53
-8A97: 96 0E       LDA    $26
+8A97: 96 0E       LDA    game_sub_state_26
 8A99: 81 89       CMPA   #$01
 8A9B: 27 2C       BEQ    $8AA1
 8A9D: 0D CC       TST    $44
@@ -1392,7 +1398,7 @@ irq_8a57:
 8AAD: 96 D8       LDA    $50
 8AAF: 81 D2       CMPA   #$F0
 8AB1: 10 24 83 0B LBCC   $8BDE
-8AB5: 96 A7       LDA    $25
+8AB5: 96 A7       LDA    game_state_25
 8AB7: 81 2B       CMPA   #$03
 8AB9: 10 27 89 09 LBEQ   $8BDE
 8ABD: 0D F9       TST    $71
@@ -1408,7 +1414,7 @@ irq_8a57:
 8AD5: 26 80       BNE    $8AD9
 8AD7: 86 20       LDA    #$08
 8AD9: C6 89       LDB    #$01
-8ADB: D7 0D       STB    $25
+8ADB: D7 0D       STB    game_state_25
 8ADD: 39          RTS
 
 8ADE: 0D C0       TST    $48
@@ -1455,7 +1461,7 @@ irq_8a57:
 8B31: C4 85       ANDB   #$07
 8B33: 10 27 22 25 LBEQ   $8BDE
 8B37: 34 2E       PSHS   D
-8B39: 96 AD       LDA    $25
+8B39: 96 AD       LDA    game_state_25
 8B3B: 81 2A       CMPA   #$02
 8B3D: 27 8D       BEQ    $8B44
 8B3F: C6 2D       LDB    #$0F
@@ -1514,27 +1520,27 @@ irq_8a57:
 8BAC: 27 18       BEQ    $8BDE
 8BAE: 86 89       LDA    #$01
 8BB0: 97 66       STA    $44
-8BB2: 96 A7       LDA    $25
+8BB2: 96 A7       LDA    game_state_25
 8BB4: 81 20       CMPA   #$02
 8BB6: 27 81       BEQ    $8BBB
 8BB8: BD BB DE    JSR    $9356
 8BBB: 0D 6C       TST    $44
 8BBD: 27 8C       BEQ    $8BC3
-8BBF: 96 07       LDA    $25
+8BBF: 96 07       LDA    game_state_25
 8BC1: 26 8D       BNE    $8BD2
 8BC3: 86 23       LDA    #$01
-8BC5: 97 A7       STA    $25
+8BC5: 97 A7       STA    game_state_25
 8BC7: 97 6C       STA    $44
-8BC9: 0F AE       CLR    $26
+8BC9: 0F AE       CLR    game_sub_state_26
 8BCB: 0F 0F       CLR    $27
 8BCD: BD 09 E9    JSR    $8161
 8BD0: 20 2E       BRA    $8BDE
 8BD2: 81 80       CMPA   #$02
 8BD4: 27 2A       BEQ    $8BDE
-8BD6: 96 A4       LDA    $26
+8BD6: 96 A4       LDA    game_sub_state_26
 8BD8: 81 2A       CMPA   #$02
 8BDA: 26 8A       BNE    $8BDE
-8BDC: 0A 0E       DEC    $26
+8BDC: 0A 0E       DEC    game_sub_state_26
 8BDE: 9E C8       LDX    $40
 8BE0: 9C 1C       CMPX   $3E
 8BE2: 27 96       BEQ    $8BF8
@@ -1546,12 +1552,12 @@ irq_8a57:
 8BF1: 23 81       BLS    $8BF6
 8BF3: 8E 37 22    LDX    #$1500
 8BF6: 9F C2       STX    $40
-8BF8: 96 0D       LDA    $25
+8BF8: 96 0D       LDA    game_state_25
 8BFA: 48          ASLA
 8BFB: 8E EA 6C    LDX    #table_c244
 8BFE: 6E 1E       JMP    [A,X]        ; [jump_table]
 
-8C00: 96 04       LDA    $26
+8C00: 96 04       LDA    game_sub_state_26
 8C02: 48          ASLA
 8C03: 8E E0 6E    LDX    #table_c24c
 8C06: 6E 14       JMP    [A,X]        ; [jump_table]
@@ -1559,16 +1565,16 @@ irq_8a57:
 8C08: BD A9 9D    JSR    $8115
 8C0B: C6 D7       LDB    #$FF
 8C0D: D7 D7       STB    $5F
-8C0F: 96 04       LDA    $26
+8C0F: 96 04       LDA    game_sub_state_26
 8C11: 27 80       BEQ    $8C15
 8C13: C6 82       LDB    #$A0
 8C15: D7 AE       STB    $2C
-8C17: 0C 0E       INC    $26
+8C17: 0C 0E       INC    game_sub_state_26
 8C19: 7E 0E 06    JMP    $868E
 8C1C: BD 87 92    JSR    $AF1A
 8C1F: 0A 7D       DEC    $5F
 8C21: 26 81       BNE    $8C26
-8C23: 0C 04       INC    $26
+8C23: 0C 04       INC    game_sub_state_26
 8C25: 39          RTS
 8C26: 96 DD       LDA    $5F
 8C28: 81 D6       CMPA   #$FE
@@ -1589,7 +1595,7 @@ irq_8a57:
 8C4A: 8D AC       BSR    $8C70
 8C4C: 8D 0A       BSR    $8C70
 8C4E: 8D A8       BSR    $8C70
-8C50: 30 AA A4    LEAX   $26,X
+8C50: 30 AA A4    LEAX   game_sub_state_26,X
 8C53: 8D 37       BSR    $8C6A
 8C55: 30 0A A1    LEAX   $23,X
 8C58: 8D 38       BSR    $8C6A
@@ -1601,7 +1607,7 @@ irq_8a57:
 8C67: 7E B9 BD    JMP    $9195
 8C6A: 10 8E 28 26 LDY    #$000E
 8C6E: 20 91       BRA    $8C89
-8C70: 30 AA A4    LEAX   $26,X
+8C70: 30 AA A4    LEAX   game_sub_state_26,X
 8C73: 10 8E 22 8F LDY    #$000D
 8C77: 20 38       BRA    $8C89
 8C79: 30 00 A4    LEAX   $2C,X
@@ -1616,7 +1622,7 @@ irq_8a57:
 8C91: 39          RTS
 8C92: 0A AE       DEC    $2C
 8C94: 26 27       BNE    $8C9B
-8C96: 0C A4       INC    $26
+8C96: 0C A4       INC    game_sub_state_26
 8C98: 0F 19       CLR    $31
 8C9A: 39          RTS
 8C9B: 96 04       LDA    $2C
@@ -1688,12 +1694,12 @@ irq_8a57:
 8D1A: 86 8E       LDA    #$06
 8D1C: C5 20       BITB   #$08
 8D1E: 26 8B       BNE    $8D23
-8D20: 96 04       LDA    $26
+8D20: 96 04       LDA    game_sub_state_26
 8D22: 48          ASLA
 8D23: 8E E1 D4    LDX    #table_c3f6
 8D26: 6E 14       JMP    [A,X]        ; [jump_table]
 
-8D28: 0C 0E       INC    $26
+8D28: 0C 0E       INC    game_sub_state_26
 8D2A: 7E 09 3D    JMP    $8115
 8D2D: BD 0E 06    JSR    $868E
 8D30: 0F 0A       CLR    $28
@@ -1716,7 +1722,7 @@ irq_8a57:
 8D51: BD 02 23    JSR    $80A1
 8D54: 86 02       LDA    #$20
 8D56: 97 DD       STA    $5F
-8D58: 0C 0E       INC    $26
+8D58: 0C 0E       INC    game_sub_state_26
 8D5A: 39          RTS
 8D5B: 0A 77       DEC    $5F
 8D5D: 26 8F       BNE    $8D66
@@ -1742,7 +1748,7 @@ irq_8a57:
 8D86: 19          DAA
 8D87: 97 0C       STA    $24
 8D89: BD 08 10    JSR    $8098
-8D8C: 0C 0D       INC    $25
+8D8C: 0C 0D       INC    game_state_25
 8D8E: 96 CC       LDA    $44
 8D90: 27 2B       BEQ    $8D9B
 8D92: CC 82 22    LDD    #$0000
@@ -1754,17 +1760,17 @@ irq_8a57:
 8D9F: 97 A1       STA    $83
 8DA1: 97 06       STA    $84
 8DA3: BD A3 43    JSR    $8161
-8DA6: 8D C0       BSR    $8DEA
+8DA6: 8D C0       BSR    clear_player_data_8dea
 8DA8: 96 03       LDA    $2B
-8DAA: 97 16       STA    $9E
-8DAC: 97 E6       STA    $CE
-8DAE: 97 76       STA    $FE
+8DAA: 97 16       STA    nb_lives_current_player_9e
+8DAC: 97 E6       STA    nb_lives_player_1_ce
+8DAE: 97 76       STA    nb_lives_player_2_fe
 8DB0: DC 0F       LDD    $2D
 8DB2: DD 1E       STD    $9C
 8DB4: DD EE       STD    $CC
 8DB6: DD 7E       STD    $FC
 8DB8: 86 29       LDA    #$01
-8DBA: 97 10       STA    $98
+8DBA: 97 10       STA    weapons_flag_98
 8DBC: 97 E0       STA    $C8
 8DBE: 97 70       STA    $F8
 8DC0: 86 02       LDA    #$20
@@ -1789,7 +1795,9 @@ irq_8a57:
 8DE6: 5C          INCB
 8DE7: D7 EF       STB    $C7
 8DE9: 39          RTS
-8DEA: 8E 9D B8    LDX    #$1590
+
+clear_player_data_8dea:
+8DEA: 8E 9D B8    LDX    #$1590		; pointer on nb lives
 8DED: CC 88 88    LDD    #$0000
 8DF0: ED A3       STD    ,X++
 8DF2: 8C 94 3F    CMPX   #$161D
@@ -1956,7 +1964,7 @@ irq_8a57:
 8F4A: BD 0D CA    JSR    $85E2
 8F4D: BD 19 D6    JSR    $915E
 8F50: BD B6 D6    JSR    $9454
-8F53: BD 83 BF    JSR    $A19D
+8F53: BD 83 BF    JSR    animate_most_sprites_a19d
 8F56: 7E 13 EB    JMP    $91C3
 8F59: 96 E0       LDA    $68
 8F5B: 48          ASLA
@@ -1975,7 +1983,7 @@ irq_8a57:
 8F77: BD A7 FA    JSR    $8FD2
 8F7A: CC 88 2A    LDD    #$0002
 8F7D: DD D7       STD    $5F
-8F7F: D6 BC       LDB    $9E
+8F7F: D6 BC       LDB    nb_lives_current_player_9e
 8F81: 96 C0       LDA    $42
 8F83: 26 27       BNE    $8F8A
 8F85: 5D          TSTB
@@ -2016,7 +2024,7 @@ irq_8a57:
 8FC9: 96 B9       LDA    $31
 8FCB: 27 2C       BEQ    $8FD1
 8FCD: 86 8C       LDA    #$04
-8FCF: 97 04       STA    $26
+8FCF: 97 04       STA    game_sub_state_26
 8FD1: 39          RTS
 8FD2: CE 97 B2    LDU    #$1590
 8FD5: 8E 97 42    LDX    #$15C0
@@ -2052,7 +2060,7 @@ irq_8a57:
 9014: BD A5 73    JSR    $87F1
 9017: 4F          CLRA
 9018: C6 29       LDB    #$01
-901A: D7 AD       STB    $25
+901A: D7 AD       STB    game_state_25
 901C: 7E A5 AB    JMP    $8D23
 901F: BD A5 D3    JSR    $87F1
 9022: 86 8A       LDA    #$08
@@ -2186,7 +2194,7 @@ draw_title_road_905f:
 9142: 1F B3       TFR    U,X
 9144: 8D 29       BSR    $9151
 9146: 10 8E 28 38 LDY    #$0010
-914A: ED 09       STD    ,X++
+914A: ED 09       STD    ,X++		; [video_address_word]
 914C: 31 17       LEAY   -$1,Y
 914E: 26 72       BNE    $914A
 9150: 39          RTS
@@ -2262,7 +2270,7 @@ draw_title_road_905f:
 91E7: 97 89       STA    $A1
 91E9: 0F 34       CLR    $BC
 91EB: 0F B7       CLR    $9F
-91ED: 0A 16       DEC    $9E
+91ED: 0A 16       DEC    nb_lives_current_player_9e
 91EF: 0C 0A       INC    $28
 91F1: 0C AA       INC    $28
 91F3: 8D 26       BSR    $91F9
@@ -2339,7 +2347,7 @@ draw_title_road_905f:
 9295: EC 4A AC    LDD    $2E,U
 9298: ED A9       STD    ,X++
 929A: A6 40 0C    LDA    $24,U
-929D: E6 40 AE    LDB    $26,U
+929D: E6 40 AE    LDB    game_sub_state_26,U
 92A0: ED A3       STD    ,X++
 92A2: EC 4A 1C    LDD    $3E,U
 92A5: ED 03       STD    ,X++
@@ -2369,7 +2377,7 @@ draw_title_road_905f:
 92E0: EC EA AC    LDD    $2E,U
 92E3: ED A3       STD    ,X++
 92E5: A6 4A A6    LDA    $24,U
-92E8: E6 E0 AE    LDB    $26,U
+92E8: E6 E0 AE    LDB    game_sub_state_26,U
 92EB: ED A9       STD    ,X++
 92ED: EC 40 B6    LDD    $3E,U
 92F0: ED A3       STD    ,X++
@@ -2455,7 +2463,7 @@ draw_title_road_905f:
 939B: 86 6C       LDA    #$44
 939D: 20 89       BRA    $93A0
 939F: 4F          CLRA
-93A0: D6 07       LDB    $25
+93A0: D6 07       LDB    game_state_25
 93A2: C1 81       CMPB   #$03
 93A4: 27 33       BEQ    $93B7
 93A6: 0D C6       TST    $44
@@ -2573,7 +2581,7 @@ draw_title_road_905f:
 94B0: A6 E4       LDA    A,U
 94B2: A7 0A 30    STA    $12,X
 94B5: 20 9D       BRA    $94D6
-94B7: 96 B0       LDA    $98
+94B7: 96 B0       LDA    weapons_flag_98
 94B9: 81 89       CMPA   #$01
 94BB: 27 30       BEQ    $94D5
 94BD: BD 1B A7    JSR    $932F
@@ -2581,7 +2589,7 @@ draw_title_road_905f:
 94C2: BD 02 80    JSR    $80A2
 94C5: B6 92 44    LDA    $10C6
 94C8: 4C          INCA
-94C9: 91 10       CMPA   $98
+94C9: 91 10       CMPA   weapons_flag_98
 94CB: 23 2A       BLS    $94CF
 94CD: 86 89       LDA    #$01
 94CF: B7 32 E4    STA    $10C6
@@ -2691,7 +2699,7 @@ draw_title_road_905f:
 95C3: 35 32       PULS   X
 95C5: BD 14 44    JSR    $96C6
 95C8: 20 2B       BRA    $95CD
-95CA: 6F 00 0E    CLR    $26,X
+95CA: 6F 00 0E    CLR    game_sub_state_26,X
 95CD: 6F 00 BE    CLR    $36,X
 95D0: A6 AA A1    LDA    $23,X
 95D3: 26 20       BNE    $95D7
@@ -2816,7 +2824,7 @@ draw_title_road_905f:
 96D5: AB 86       ADDA   $4,X
 96D7: A7 A0 0C    STA    $24,X
 96DA: EB 00 3E    ADDB   $16,X
-96DD: E7 00 AE    STB    $26,X
+96DD: E7 00 AE    STB    game_sub_state_26,X
 96E0: 39          RTS
 96E1: B6 92 44    LDA    $10C6
 96E4: 81 23       CMPA   #$01
@@ -3066,7 +3074,7 @@ draw_title_road_905f:
 98F7: B7 38 D7    STA    $10FF
 98FA: BD 1B DA    JSR    $93F2
 98FD: 86 89       LDA    #$01
-98FF: 97 BA       STA    $98
+98FF: 97 BA       STA    weapons_flag_98
 9901: B7 92 44    STA    $10C6
 9904: 86 27       LDA    #$05
 9906: BD 02 8A    JSR    $80A2
@@ -3238,7 +3246,7 @@ draw_title_road_905f:
 9A7A: 81 82       CMPA   #$0A
 9A7C: 22 2E       BHI    $9A84
 9A7E: CC 88 23    LDD    #$0001
-9A81: 7E 19 A6    JMP    $9B24
+9A81: 7E 19 A6    JMP    player_killed_9b24
 9A84: 33 EA 92    LEAU   $10,U
 9A87: 31 17       LEAY   -$1,Y
 9A89: 26 45       BNE    $9A58
@@ -3286,16 +3294,17 @@ draw_title_road_905f:
 9AE5: A6 46       LDA    ,U
 9AE7: BD B3 C2    JSR    $9BEA
 9AEA: 81 8F       CMPA   #$07
-9AEC: 27 27       BEQ    $9AFD
+9AEC: 27 27       BEQ    $9AFD		; award weapon on hostage release
+; killed
 9AEE: CC 88 20    LDD    #$0002
-9AF1: 7E 19 A6    JMP    $9B24
+9AF1: 7E 19 A6    JMP    player_killed_9b24
 9AF4: 33 EA C2    LEAU   $40,U
 9AF7: 7A 38 C8    DEC    $10E0
 9AFA: 26 13       BNE    $9A97
 9AFC: 39          RTS
 9AFD: A6 40 AF    LDA    $27,U
 9B00: 26 D8       BNE    $9AFC
-9B02: 96 1A       LDA    $98
+9B02: 96 1A       LDA    weapons_flag_98
 9B04: 4C          INCA
 9B05: 81 81       CMPA   #$03
 9B07: 23 2F       BLS    $9B10
@@ -3307,10 +3316,12 @@ draw_title_road_905f:
 9B15: 86 87       LDA    #$05
 9B17: BD A8 8A    JSR    $80A2
 9B1A: 35 8A       PULS   A
-9B1C: 97 B0       STA    $98
+9B1C: 97 B0       STA    weapons_flag_98
 9B1E: 86 89       LDA    #$01
 9B20: A7 EA A5    STA    $27,U
 9B23: 39          RTS
+
+player_killed_9b24:
 9B24: A7 AA 98    STA    $1A,X
 9B27: E7 29       STB    $1,X
 9B29: 4F          CLRA
@@ -3339,7 +3350,7 @@ draw_title_road_905f:
 9B55: 81 A2       CMPA   #$20
 9B57: 22 2E       BHI    $9B5F
 9B59: CC 88 8A    LDD    #$0002
-9B5C: 7E B3 AC    JMP    $9B24
+9B5C: 7E B3 AC    JMP    player_killed_9b24
 9B5F: 39          RTS
 9B60: 8E 33 42    LDX    #$11C0
 9B63: A6 AA 35    LDA    $17,X
@@ -3484,7 +3495,7 @@ draw_title_road_905f:
 9C86: A6 0A 32    LDA    $1A,X
 9C89: 26 AB       BNE    $9CAE
 9C8B: 86 29       LDA    #$01
-9C8D: 97 10       STA    $98
+9C8D: 97 10       STA    weapons_flag_98
 9C8F: BD B1 53    JSR    $9371
 9C92: CC 7E 62    LDD    #$FC40
 9C95: ED 0A 9A    STD    $18,X
@@ -3735,7 +3746,7 @@ draw_title_road_905f:
 9EA4: ED AA A9    STD    $2B,X
 9EA7: 86 23       LDA    #$0B
 9EA9: B7 9A E8    STA    $1260
-9EAC: 6F A0 AE    CLR    $26,X
+9EAC: 6F A0 AE    CLR    game_sub_state_26,X
 9EAF: 31 A6       LEAY   ,X
 9EB1: 7E 25 1E    JMP    $A79C
 9EB4: 5C          INCB
@@ -3803,7 +3814,7 @@ draw_title_road_905f:
 9F4A: 8B 98       ADDA   #$10
 9F4C: C0 38       SUBB   #$10
 9F4E: A7 00 06    STA    $24,X
-9F51: E7 0A A4    STB    $26,X
+9F51: E7 0A A4    STB    game_sub_state_26,X
 9F54: BD A6 FC    JSR    $847E
 9F57: B6 38 C8    LDA    $10E0
 9F5A: 81 9C       CMPA   #$14
@@ -4033,7 +4044,7 @@ A14C: 7C 38 76    INC    $10FE
 A14F: C1 62       CMPB   #$40
 A151: 25 8C       BCS    $A161
 A153: 86 23       LDA    #$01
-A155: 97 1C       STA    $9E
+A155: 97 1C       STA    nb_lives_current_player_9e
 A157: 97 94       STA    $BC
 A159: BD 09 9F    JSR    $8117
 A15C: C6 39       LDB    #$11
@@ -4062,6 +4073,9 @@ A192: 7C 91 42    INC    $1360
 A195: 86 8B       LDA    #$09
 A197: B7 3A 48    STA    $1260
 A19A: 7E 2A AE    JMP    $A286
+; animate enemies, projectiles, ..., everything except
+; main character
+animate_most_sprites_a19d:
 A19D: 10 8E 9A 22 LDY    #$1200
 A1A1: BD 2D E2    JSR    $AF60
 A1A4: B6 32 75    LDA    $10F7
@@ -4358,7 +4372,7 @@ A43F: A7 0B       STA    $9,Y
 A441: 6F 2A A3    CLR    $21,Y
 A444: A6 09       LDA    $B,Y
 A446: B7 92 D8    STA    $10F0
-A449: E6 20 AD    LDB    $25,Y
+A449: E6 20 AD    LDB    game_state_25,Y
 A44C: BD 80 3A    JSR    $A8B2
 A44F: CE CE DD    LDU    #$ECFF
 A452: A6 AB       LDA    $9,Y
@@ -4401,7 +4415,7 @@ A4A7: E7 81 28 0E STB    $0086,Y
 A4AB: C0 38       SUBB   #$10
 A4AD: E7 20 9E    STB    $16,Y
 A4B0: C0 32       SUBB   #$10
-A4B2: E7 2A 04    STB    $26,Y
+A4B2: E7 2A 04    STB    game_sub_state_26,Y
 A4B5: E6 A6       LDB    $4,Y
 A4B7: E7 80 3C    STB    $14,Y
 A4BA: E7 20 0C    STB    $24,Y
@@ -4584,13 +4598,14 @@ A643: 10 BF 32 72 STY    $10F0
 A647: CE 3B E8    LDU    #$13C0
 A64A: E6 08       LDB    ,X+
 A64C: 11 B3 98 78 CMPU   $10F0
-A650: 27 2E       BEQ    $A65E
+A650: 27 2E       BEQ    animate_molotovs_a65e
 A652: 33 4A 32    LEAU   $10,U
 A655: 4A          DECA
 A656: 26 70       BNE    $A64A
 A658: 86 2F       LDA    #$07
 A65A: 30 8B       LEAX   $3,X
 A65C: 20 C4       BRA    $A64A
+animate_molotovs_a65e:
 A65E: 6C 97       INC    -$1,X
 A660: 4F          CLRA
 A661: C1 B5       CMPB   #$37
@@ -5512,7 +5527,7 @@ AE40: A7 0E       STA    $C,Y
 AE42: A7 A1       STA    $3,Y
 AE44: A7 00       STA    $2,Y
 AE46: E6 AA       LDB    $8,Y
-AE48: E7 80 AD    STB    $25,Y
+AE48: E7 80 AD    STB    game_state_25,Y
 AE4B: E6 24       LDB    $C,X
 AE4D: 27 85       BEQ    $AE5C
 AE4F: 4C          INCA
@@ -7148,6 +7163,7 @@ BCE7: CE 94 9F    LDU    #$BCB7
 BCEA: CC 8E 26    LDD    #$060E
 BCED: ED 2C       STD    ,Y
 BCEF: 39          RTS
+
 event_table_bd14:
 	dc.w	$82da	; $bd14
 	dc.w	$8327	; $bd16
@@ -7155,8 +7171,6 @@ event_table_bd14:
 	dc.w	$843f	; $bd1a
 	dc.w	$85e2	; $bd1c
 	dc.w	$8602	; $bd1e
-
-
 
 table_c1be:
 	dc.w	$86b3	; $c1be
@@ -7173,13 +7187,6 @@ table_c244:
 	dc.w	$8d0d	; $c246
 	dc.w	$8e05	; $c248
 	dc.w	$82da	; $c24a
-	dc.w	$8c08	; $c24c
-	dc.w	$8c1c	; $c24e
-	dc.w	$8c08	; $c250
-	dc.w	$8c92	; $c252
-	dc.w	$8c08	; $c254
-	dc.w	$8ca7	; $c256
-	dc.w	$8c08	; $c258
 table_c24c:
 	dc.w	$8c08	; $c24c
 	dc.w	$8c1c	; $c24e
@@ -7194,31 +7201,6 @@ table_c3f6:
 	dc.w	$8d5b	; $c3fa
 	dc.w	$8d72	; $c3fc
 	dc.w	$8d7b	; $c3fe
-	dc.w	$8e0d	; $c400
-	dc.w	$8e13	; $c402
-	dc.w	$8e3d	; $c404
-	dc.w	$8f29	; $c406
-	dc.w	$8f59	; $c408
-	dc.w	$8e10	; $c40a
-	dc.w	$8f77	; $c40c
-	dc.w	$8fea	; $c40e
-	dc.w	$8ff6	; $c410
-	dc.w	$8e45	; $c412
-	dc.w	$8e59	; $c414
-	dc.w	$8e73	; $c416
-	dc.w	$8e8a	; $c418
-	dc.w	$8ea0	; $c41a
-	dc.w	$8e50	; $c41c
-	dc.w	$8e50	; $c41e
-	dc.w	$8e50	; $c420
-	dc.w	$8e50	; $c422
-	dc.w	$8e50	; $c424
-	dc.w	$8929	; $c426
-	dc.w	$902d	; $c428
-	dc.w	$9081	; $c42a
-	dc.w	$908d	; $c42c
-	dc.w	$9090	; $c42e
-	dc.w	$90b1	; $c430
 table_c400:
 	dc.w	$8e0d	; $c400
 	dc.w	$8e13	; $c402
@@ -7229,22 +7211,6 @@ table_c400:
 	dc.w	$8f77	; $c40c
 	dc.w	$8fea	; $c40e
 	dc.w	$8ff6	; $c410
-	dc.w	$8e45	; $c412
-	dc.w	$8e59	; $c414
-	dc.w	$8e73	; $c416
-	dc.w	$8e8a	; $c418
-	dc.w	$8ea0	; $c41a
-	dc.w	$8e50	; $c41c
-	dc.w	$8e50	; $c41e
-	dc.w	$8e50	; $c420
-	dc.w	$8e50	; $c422
-	dc.w	$8e50	; $c424
-	dc.w	$8929	; $c426
-	dc.w	$902d	; $c428
-	dc.w	$9081	; $c42a
-	dc.w	$908d	; $c42c
-	dc.w	$9090	; $c42e
-	dc.w	$90b1	; $c430
 table_c412:
 	dc.w	$8e45	; $c412
 	dc.w	$8e59	; $c414
@@ -7257,11 +7223,6 @@ table_c412:
 	dc.w	$8e50	; $c422
 	dc.w	$8e50	; $c424
 	dc.w	$8929	; $c426
-	dc.w	$902d	; $c428
-	dc.w	$9081	; $c42a
-	dc.w	$908d	; $c42c
-	dc.w	$9090	; $c42e
-	dc.w	$90b1	; $c430
 table_c428:
 	dc.w	$902d	; $c428
 	dc.w	$9081	; $c42a
@@ -7328,6 +7289,7 @@ table_eb98:
 	dc.w	$a29e	; $eb9a
 	dc.w	$a2a4	; $eb9c
 	dc.w	$a29c	; $eb9e
+table_eba0:
 	dc.w	$a522	; $eba0
 	dc.w	$a54e	; $eba2
 	dc.w	$a58d	; $eba4
@@ -7371,25 +7333,6 @@ table_ebe5:
 	dc.w	$aa0c	; $ec2b
 	dc.w	$aa1c	; $ec2d
 	dc.w	$aa2a	; $ec2f
-	dc.w	$aa83	; $ec31
-	dc.w	$aa92	; $ec33
-	dc.w	$aaa3	; $ec35
-	dc.w	$aab3	; $ec37
-	dc.w	$aac3	; $ec39
-	dc.w	$ab97	; $ec3b
-	dc.w	$ab58	; $ec3d
-	dc.w	$ab6d	; $ec3f
-	dc.w	$ab79	; $ec41
-	dc.w	$ab84	; $ec43
-	dc.w	$ab98	; $ec45
-	dc.w	$abad	; $ec47
-	dc.w	$abb9	; $ec49
-	dc.w	$abca	; $ec4b
-
-table_eba0:
-	dc.w	$a522	; $eba0
-	dc.w	$a54e	; $eba2
-	dc.w	$a58d	; $eba4
 table_ec31:
 	dc.w	$aa83	; $ec31
 	dc.w	$aa92	; $ec33

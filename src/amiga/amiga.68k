@@ -2752,6 +2752,12 @@ osd_read_inputs_1:
 	tst.b	(0x4E,a0)		| "->" key
 	beq.b	0f
 	bclr	#BIT_RIGHT,d0
+	btst	#BIT_LEFT,d0
+	jne		0f
+	* both up and down pressed! don't let that happen
+	* else game behaves unexpectedly
+	bset	#BIT_RIGHT,d0
+	bset	#BIT_LEFT,d0
 0:
 	tst.b	(76,a0)		| "^" key
 	beq.b	0f
@@ -2760,6 +2766,12 @@ osd_read_inputs_1:
 	tst.b	(77,a0)		| "V" key
 	beq.b	0f
 	bclr	#BIT_DOWN,d0
+	btst	#BIT_UP,d0
+	jne		0f
+	* both up and down pressed! don't let that happen
+	* else game behaves unexpectedly
+	bset	#BIT_UP,d0
+	bset	#BIT_DOWN,d0
 0:
 	tst.b	(0x63,a0)		| "ctrl" key
 	beq.b	0f

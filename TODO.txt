@@ -1,11 +1,13 @@
-- sometimes character changes places... highly buggy...
-  we have to find which part is changing the character position that much
-  or change the scroll that much???
-- DSW for lives number is wrong
+- garbage truck sometimes wrong display
 - explosion for molotov wrong sprite (bullet instead of explosion)
+  debug: animate_molotovs_a65e
+- find a "level completed" cheat: identify mainloop?
+
+- vertical scrolling to support for end sequence
 - highscore entry: missing joystick read? missing time elapsing  
 - sprites should be displayed even if more on the left
   (disappear too fast)
+- command line for lives number is wrong: if user enters 4 ???
 - double buffering to implement
 - optimize: remove some sprites from mirror to save memory
   (vehicles)
