@@ -1378,12 +1378,6 @@ update_one_bob:
 	.endif
 	jeq		2f
 	* entry is valid, now what about clut?
-	.ifndef	RELEASE
-	cmp.l	#0x200000,d4
-	jcs		5555f
-	BREAKPOINT	"illegal memory for bob table, bob id in D3"
-5555:
-	.endif
 	
 	move.l	d4,a1
 	.ifdef	NO68020

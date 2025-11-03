@@ -126,11 +126,11 @@ with open(source_dir / "conv.s") as f:
         elif address in {0x951f,0x9538,0x954b,0x955e,0x9571}:
             # functions return condition code (C) set
             lines[i+1] = remove_error(lines[i+1])
-        elif address in (0xa62b,0xa666):
-            line = lines[i+1]
-            lines[i+1] = lines[i]
-            lines[i+3] = remove_error(lines[i+3])
-            i += 2
+        elif address in {0xa62e,0xa669}:
+            # swap instructions so sub+jcc are contiguous
+            # else addq #1,d0 (INC) changes carry on 68000 (not on 6809)
+            lines[i-1],lines[i-2] = lines[i-2],lines[i-1]
+            lines[i+1] = remove_error(lines[i+1])
         elif address == 0x91ed:
             line = f"\ttst.b\tinfinite_lives_flag\n\tjne\t0f\n{line}0:\n"
         elif address == 0x9b57:

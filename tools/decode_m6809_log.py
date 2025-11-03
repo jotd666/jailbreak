@@ -81,7 +81,11 @@ if sorted_cmp:
     lst.sort()
 
 with open("amiga.tr","w") as f:
-    f.writelines(lst)
+    prev = None
+    for line in lst:
+        if prev != line:
+            f.write(line)
+        prev = line
 
 # generated using log:     trace mame.tr,,noloop,{tracelog "A=%02X, B=%02X, D=%04X, X=%04X, Y=%04X, U=%04X ",a,b,d,x,y,u}
 lst = []

@@ -1,6 +1,4 @@
 - garbage truck sometimes wrong display
-- explosion for molotov wrong sprite (bullet instead of explosion)
-  debug: animate_molotovs_a65e
 - find a "level completed" cheat: identify mainloop?
 
 - vertical scrolling to support for end sequence
@@ -8,11 +6,11 @@
 - sprites should be displayed even if more on the left
   (disappear too fast)
 - command line for lives number is wrong: if user enters 4 ???
-- double buffering to implement
 - optimize: remove some sprites from mirror to save memory
   (vehicles)
 - create an excluding config to remove some parasite sprite combinations 
 - rip voices!
+- rip sounds using self tests
 
 log sounds: bpset xxx,,{print A;g}
 sim sound on credit: bpset xxx,,{A=$81;g}

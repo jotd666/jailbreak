@@ -4581,6 +4581,7 @@ A620: 25 2A       BCS    $A62A
 A622: 6F 9D       CLR    -$1,X
 A624: BD 84 6A    JSR    $A6E8
 A627: 7E 8C D8    JMP    $A4F0
+; divide B per 7, result in A
 A62A: 4F          CLRA
 A62B: C0 2F       SUBB   #$07
 A62D: 4C          INCA
@@ -4610,6 +4611,7 @@ A65E: 6C 97       INC    -$1,X
 A660: 4F          CLRA
 A661: C1 B5       CMPB   #$37
 A663: 25 23       BCS    $A666
+; divide B per 8, result in A
 A665: 5F          CLRB
 A666: C0 8A       SUBB   #$08
 A668: 4C          INCA
