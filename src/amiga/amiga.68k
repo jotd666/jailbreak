@@ -1106,6 +1106,13 @@ is_game_playing:
 	move.l	(a7)+,a5
 	rts
 	
+skip_level:
+	movem.l	a6/a5,-(a7)
+	GET_MEMORY_START_AND_DP
+	move.b	#1,level_completed_flag_9f(a5)					| no more lives
+	movem.l	(a7)+,a6/a5
+	rts
+
 lose_all_lives:
 	movem.l	a6/a5,-(a7)
 	GET_MEMORY_START_AND_DP
@@ -2870,14 +2877,14 @@ handle_keyboard:
 	btst	#4,cheat_flags+3
 	jeq		10f
 	* cheat keys
-	cmp.b	#0x50,d0	| F1 key: only 1 wolf
+	cmp.b	#0x50,d0	| F1 key: level skip
 	bne.b	0f
 	move.w	#0x0FF,_custom+color
 
 	st.b	cheat_used
-	
+	jbsr	skip_level
 0:
-	cmp.b	#0x51,d0	|² F2 key
+	cmp.b	#0x51,d0	| F2 key
 	bne.b	0f
 	st.b	cheat_used
 	move.w	#0x0FF,_custom+color

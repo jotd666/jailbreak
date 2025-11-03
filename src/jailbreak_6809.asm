@@ -92,6 +92,7 @@ nb_lives_player_2_fe = $fe
 nb_lives_current_player_9e = $9e
 game_state_25 = $25
 game_sub_state_26 = $26
+level_completed_flag_9f = $9f
 
 start_8000:
 8000: 8E 32 82    LDX    #$1000
@@ -227,6 +228,7 @@ event_loop_poll_8073:
 810F: 39          RTS
 8110: CE D0 70    LDU    #$F2F2
 8113: 20 27       BRA    $811A
+clear_screen_8115:
 8115: 8D C8       BSR    $8161
 8117: CE 38 38    LDU    #$1010
 811A: 4F          CLRA
@@ -1562,7 +1564,7 @@ irq_8a57:
 8C03: 8E E0 6E    LDX    #table_c24c
 8C06: 6E 14       JMP    [A,X]        ; [jump_table]
 
-8C08: BD A9 9D    JSR    $8115
+8C08: BD A9 9D    JSR    clear_screen_8115
 8C0B: C6 D7       LDB    #$FF
 8C0D: D7 D7       STB    $5F
 8C0F: 96 04       LDA    game_sub_state_26
@@ -1700,7 +1702,7 @@ irq_8a57:
 8D26: 6E 14       JMP    [A,X]        ; [jump_table]
 
 8D28: 0C 0E       INC    game_sub_state_26
-8D2A: 7E 09 3D    JMP    $8115
+8D2A: 7E 09 3D    JMP    clear_screen_8115
 8D2D: BD 0E 06    JSR    $868E
 8D30: 0F 0A       CLR    $28
 8D32: 5F          CLRB
@@ -1899,7 +1901,7 @@ clear_player_data_8dea:
 8EB9: BD 26 68    JSR    $AEE0
 8EBC: 0A 77       DEC    $5F
 8EBE: 26 85       BNE    $8ECD
-8EC0: BD A3 97    JSR    $8115
+8EC0: BD A3 97    JSR    clear_screen_8115
 8EC3: 0F B9       CLR    $9B
 8EC5: 0F 23       CLR    $A1
 8EC7: 86 22       LDA    #$0A
@@ -2068,7 +2070,7 @@ clear_player_data_8dea:
 9026: BD 05 D9    JSR    $87F1
 9029: 86 8E       LDA    #$06
 902B: 20 C3       BRA    $9018
-902D: BD 09 9D    JSR    $8115
+902D: BD 09 9D    JSR    clear_screen_8115
 9030: 86 DD       LDA    #$FF
 9032: 97 DD       STA    $5F
 9034: 0C 4A       INC    $68
@@ -2251,7 +2253,7 @@ draw_title_road_905f:
 91C3: 96 9E       LDA    $BC
 91C5: 4A          DECA
 91C6: 27 9F       BEQ    $91E5
-91C8: 96 B7       LDA    $9F
+91C8: 96 B7       LDA    level_completed_flag_9f
 91CA: 27 A4       BEQ    $91F8
 91CC: 97 8B       STA    $A3
 91CE: 0C A0       INC    $28
@@ -2259,7 +2261,7 @@ draw_title_road_905f:
 91D2: 97 B4       STA    $36
 91D4: 97 83       STA    $A1
 91D6: 0F EA       CLR    $68
-91D8: 0F B7       CLR    $9F
+91D8: 0F B7       CLR    level_completed_flag_9f
 91DA: 4F          CLRA
 91DB: 5F          CLRB
 91DC: DD B8       STD    $90
@@ -2269,13 +2271,15 @@ draw_title_road_905f:
 91E5: 86 7D       LDA    #$FF
 91E7: 97 89       STA    $A1
 91E9: 0F 34       CLR    $BC
-91EB: 0F B7       CLR    $9F
+91EB: 0F B7       CLR    level_completed_flag_9f
 91ED: 0A 16       DEC    nb_lives_current_player_9e
 91EF: 0C 0A       INC    $28
 91F1: 0C AA       INC    $28
 91F3: 8D 26       BSR    $91F9
 91F5: 7E 0D 3E    JMP    $8FBC
 91F8: 39          RTS
+
+; called on screen change
 91F9: 4F          CLRA
 91FA: 5F          CLRB
 91FB: 10 8E 28 80 LDY    #$0008
@@ -2284,6 +2288,7 @@ draw_title_road_905f:
 9204: 31 1D       LEAY   -$1,Y
 9206: 26 78       BNE    $9202
 9208: 39          RTS
+
 9209: 8E 99 48    LDX    #$11C0
 920C: A6 2E       LDA    $6,X
 920E: 31 0C       LEAY   ,X
@@ -2617,7 +2622,7 @@ draw_title_road_905f:
 94FF: FD 32 C0    STD    $10E2
 9502: 34 92       PSHS   X
 9504: BD B4 1C    JSR    $969E
-9507: BD 8F 4C    JSR    $A764
+9507: BD 8F 4C    JSR    animate_most_sprites_a764
 950A: BD 1E 15    JSR    $963D
 950D: 35 98       PULS   X
 950F: A6 AA 08    LDA    $2A,X
@@ -3523,7 +3528,7 @@ player_killed_9b24:
 9CD0: CE CA 75    LDU    #$E8F7
 9CD3: 34 32       PSHS   X
 9CD5: 31 06       LEAY   ,X
-9CD7: BD 8F 4C    JSR    $A764
+9CD7: BD 8F 4C    JSR    animate_most_sprites_a764
 9CDA: 35 98       PULS   X
 9CDC: 6C A0 92    INC    $1A,X
 9CDF: 39          RTS
@@ -3692,7 +3697,7 @@ player_killed_9b24:
 9E32: 26 53       BNE    $9E05
 9E34: 4F          CLRA
 9E35: 39          RTS
-9E36: 96 1D       LDA    $9F
+9E36: 96 1D       LDA    level_completed_flag_9f
 9E38: 26 6C       BNE    $9E7E
 9E3A: B6 99 C4    LDA    $11EC
 9E3D: 26 B7       BNE    $9E7E
@@ -3723,7 +3728,7 @@ player_killed_9b24:
 9E75: 26 8A       BNE    $9E7F
 9E77: 7C 38 DF    INC    $10F7
 9E7A: 20 8A       BRA    $9E7E
-9E7C: 0C B7       INC    $9F
+9E7C: 0C B7       INC    level_completed_flag_9f
 9E7E: 39          RTS
 9E7F: 7C 33 CE    INC    $11EC
 9E82: 39          RTS
@@ -3764,7 +3769,7 @@ player_killed_9b24:
 9ECF: FF 32 D1    STU    $10F3
 9ED2: CE 6B 18    LDU    #$E93A
 9ED5: 34 92       PSHS   X
-9ED7: BD 8F 4C    JSR    $A764
+9ED7: BD 8F 4C    JSR    animate_most_sprites_a764
 9EDA: 35 98       PULS   X
 9EDC: A6 A0 A3    LDA    $2B,X
 9EDF: 81 A2       CMPA   #$80
@@ -3772,7 +3777,7 @@ player_killed_9b24:
 9EE3: BD B1 CC    JSR    $93EE
 9EE6: 6A 0A 03    DEC    $2B,X
 9EE9: 26 8A       BNE    $9EED
-9EEB: 0C B7       INC    $9F
+9EEB: 0C B7       INC    level_completed_flag_9f
 9EED: 39          RTS
 9EEE: DC 2F       LDD    $A7
 9EF0: 10 83 82 82 CMPD   #$0000
@@ -3794,7 +3799,7 @@ player_killed_9b24:
 9F19: FF 98 7B    STU    $10F3
 9F1C: CE CE A5    LDU    #$E62D
 9F1F: 34 32       PSHS   X
-9F21: BD 25 E6    JSR    $A764
+9F21: BD 25 E6    JSR    animate_most_sprites_a764
 9F24: 35 32       PULS   X
 9F26: B6 92 C8    LDA    $10E0
 9F29: 34 9E       PSHS   X,D
@@ -4135,7 +4140,7 @@ A21F: 25 34       BCS    $A237
 A221: B7 92 7A    STA    $10F8
 A224: 81 26       CMPA   #$04
 A226: 25 DC       BCS    $A286
-A228: 0C B7       INC    $9F
+A228: 0C B7       INC    level_completed_flag_9f
 A22A: 20 D2       BRA    $A286
 A22C: 96 B3       LDA    $9B
 A22E: 48          ASLA
@@ -4364,7 +4369,7 @@ A42B: AE AD       LDX    B,X
 A42D: BF 98 7B    STX    $10F3
 A430: A6 0B       LDA    $9,Y
 A432: 34 A0       PSHS   Y,A
-A434: BD 85 E6    JSR    $A764
+A434: BD 85 E6    JSR    animate_most_sprites_a764
 A437: 35 0A       PULS   A,Y
 A439: E6 A1       LDB    $9,Y
 A43B: 10 26 28 01 LBNE   $A4C8
@@ -4404,7 +4409,7 @@ A48C: A6 80 9F    LDA    $17,Y
 A48F: 10 26 DC 98 LBNE   $A2AD
 A493: A6 0B       LDA    $9,Y
 A495: 34 A0       PSHS   Y,A
-A497: BD 8F 4C    JSR    $A764
+A497: BD 8F 4C    JSR    animate_most_sprites_a764
 A49A: 35 AA       PULS   A,Y
 A49C: E6 09       LDB    $1,Y
 A49E: C1 84       CMPB   #$0C
@@ -4734,6 +4739,8 @@ A75C: B7 38 78    STA    $10F0
 A75F: E3 A6       ADDD   ,X
 A761: ED 06       STD    ,X
 A763: 39          RTS
+
+animate_most_sprites_a764:
 A764: A6 0E       LDA    $C,Y
 A766: 26 88       BNE    $A772
 A768: 6C 04       INC    $C,Y
