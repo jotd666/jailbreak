@@ -1,5 +1,5 @@
-- garbage truck sometimes wrong display
-- find a "level completed" cheat: identify mainloop?
+- rip sound 0x22
+- garbage truck sometimes wrong display: log cpu & compare
 - skip intro? complete level check value of state 1525 1526 when doing so
 - vertical scrolling to support for end sequence
 - highscore entry: missing joystick read? missing time elapsing  
@@ -9,13 +9,15 @@
 - optimize: remove some sprites from mirror to save memory
   (vehicles)
 - create an excluding config to remove some parasite sprite combinations 
-- rip voices!
-- rip sounds using self tests
+- cheat start level (identify level number)
 
 invincible:
 bpset 9a7e,,{PC=$9a84;g}
 bpset 9aee,,{PC=$9afc;g}
 bpset 9b59,,{PC=$9afc;g}
 
-log sounds: bpset xxx,,{print A;g}
-sim sound on credit: bpset xxx,,{A=$81;g}
+propose levelskip cheat
+
+log sounds: bpset 93b7,,{print A;g}
+only play this C sound: bpset 93b7,A!=$C,{PC=93c9;g}
+sim sound on credit: bpset 93b7,,{A=$81;g}

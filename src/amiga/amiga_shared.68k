@@ -15,7 +15,7 @@
 	.include "include.inc"
 	.include "sounds.inc"
 
-SCORE_FILE_SIZE = 3+30*3
+SCORE_FILE_SIZE = 3+30*3   | wrong
 
 .macro	GET_MEMORY_START_IN_A6
 	move.l	m6809_direct_page_pointer,a4
@@ -186,14 +186,6 @@ osd_sound_start:
 	jbsr	osd_music_stop
 	jra		10f
 0:
-	* original sound stop commands have bit 7 set. But if we follow them, they'll kill the
-	btst	#7,d0
-	jeq		1f
-	clr.b	looped_sound_enabled
-	moveq	#2,d0		| the loop channel?
-	jbsr	_mt_stopfx
-	jra		10f
-1:
 
 
 	lsl.w	#3,d0
@@ -226,7 +218,7 @@ osd_sound_start:
 	move.w	d0,d1
 	lsr.w	#3,d1
 
-	**BREAKPOINT	"unknown sound (index in D1)"
+	BREAKPOINT	"unknown sound (index in D1)"
 	jra		10b
 	
 	* music
@@ -253,7 +245,10 @@ osd_sound_start:
     lea _custom,a6
  	movem.l	d0/a0,-(a7)
 	*lea	pooyan_tunes,a0
-
+	illegal
+	illegal
+	illegal
+	illegal
 	
 	move.b	d1,music_track_start_number
 	move.w	d1,d0
@@ -308,6 +303,6 @@ highscore_loaded:
 	.byte	0
 
 normal_hiscorename:
-	.asciz	"pooyan.high"
+	.asciz	"jailbreak.high"
 
 

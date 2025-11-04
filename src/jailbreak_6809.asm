@@ -2396,90 +2396,92 @@ draw_title_road_905f:
 9302: 7F 95 2B    CLR    $1709
 9305: 39          RTS
 9306: 4F          CLRA
-9307: 7E BB 9F    JMP    $93B7
+9307: 7E BB 9F    JMP    force_queue_sound_93b7
 930A: 86 80       LDA    #$08
-930C: 7E BB 28    JMP    $93A0
+930C: 7E BB 28    JMP    queue_sound_93a0
 930F: 86 24       LDA    #$06
-9311: 7E 11 22    JMP    $93A0
+9311: 7E 11 22    JMP    queue_sound_93a0
 9314: 86 01       LDA    #$23
-9316: 7E 11 88    JMP    $93A0
+9316: 7E 11 88    JMP    queue_sound_93a0
 9319: 86 84       LDA    #$0C
-931B: 7E BB 88    JMP    $93A0
+931B: 7E BB 88    JMP    queue_sound_93a0
 931E: 86 99       LDA    #$11
-9320: 7E B1 22    JMP    $93A0
+9320: 7E B1 22    JMP    queue_sound_93a0
 9323: 86 21       LDA    #$03
-9325: 20 FB       BRA    $93A0
+9325: 20 FB       BRA    queue_sound_93a0
 9327: 86 2C       LDA    #$04
-9329: 20 FD       BRA    $93A0
+9329: 20 FD       BRA    queue_sound_93a0
 932B: 86 38       LDA    #$10
-932D: 20 F9       BRA    $93A0
+932D: 20 F9       BRA    queue_sound_93a0
 932F: 86 06       LDA    #$24
-9331: 20 EF       BRA    $93A0
+9331: 20 EF       BRA    queue_sound_93a0
 9333: 86 2F       LDA    #$0D
-9335: 20 EB       BRA    $93A0
+9335: 20 EB       BRA    queue_sound_93a0
 9337: 86 08       LDA    #$20
-9339: 20 ED       BRA    $93A0
+9339: 20 ED       BRA    queue_sound_93a0
 933B: 86 09       LDA    #$21
-933D: 20 E9       BRA    $93A0
+933D: 20 E9       BRA    queue_sound_93a0
 933F: 86 28       LDA    #$0A
-9341: 20 DF       BRA    $93A0
+9341: 20 DF       BRA    queue_sound_93a0
 9343: 86 00       LDA    #$22
-9345: 20 DB       BRA    $93A0
+9345: 20 DB       BRA    queue_sound_93a0
 9347: 86 27       LDA    #$0F
-9349: 20 DD       BRA    $93A0
+9349: 20 DD       BRA    queue_sound_93a0
 934B: 86 3A       LDA    #$12
-934D: 20 D9       BRA    $93A0
+934D: 20 D9       BRA    queue_sound_93a0
 934F: 86 29       LDA    #$0B
 9351: 7F 95 8B    CLR    $1709
-9354: 20 68       BRA    $93A0
+9354: 20 68       BRA    queue_sound_93a0
 9356: 86 91       LDA    #$13
-9358: 20 6E       BRA    $93A0
+9358: 20 6E       BRA    queue_sound_93a0
 935A: 86 89       LDA    #$01
-935C: 20 6A       BRA    $93A0
+935C: 20 6A       BRA    queue_sound_93a0
 935E: 86 8D       LDA    #$05
-9360: 20 1C       BRA    $93A0
+9360: 20 1C       BRA    queue_sound_93a0
 9362: 86 7C       LDA    #$FE
-9364: 20 18       BRA    $93A0
+9364: 20 18       BRA    queue_sound_93a0
 9366: 86 C1       LDA    #$43
 9368: 20 25       BRA    $9377
 936A: 86 1A       LDA    #$92
 936C: 7F 3E 41    CLR    $16C9
-936F: 20 0D       BRA    $93A0
+936F: 20 0D       BRA    queue_sound_93a0
 9371: 86 93       LDA    #$11
-9373: 8D 09       BSR    $93A0
+9373: 8D 09       BSR    queue_sound_93a0
 9375: 86 16       LDA    #$94
 9377: F6 3D 6C    LDB    $1544
-937A: 26 AC       BNE    $93A0
+937A: 26 AC       BNE    queue_sound_93a0
 937C: 39          RTS
 937D: F6 9D CC    LDB    $1544
 9380: 27 D8       BEQ    $937C
 9382: 86 C2       LDA    #$40
-9384: 8D 38       BSR    $93A0
+9384: 8D 38       BSR    queue_sound_93a0
 9386: 86 0B       LDA    #$89
-9388: 20 3E       BRA    $93A0
+9388: 20 3E       BRA    queue_sound_93a0
 938A: 86 CD       LDA    #$45
-938C: 20 3A       BRA    $93A0
+938C: 20 3A       BRA    queue_sound_93a0
 938E: 86 CA       LDA    #$42
-9390: 20 2C       BRA    $93A0
+9390: 20 2C       BRA    queue_sound_93a0
 9392: F6 97 66    LDB    $1544
 9395: 27 67       BEQ    $937C
 9397: 86 69       LDA    #$41
-9399: 20 8D       BRA    $93A0
+9399: 20 8D       BRA    queue_sound_93a0
 939B: 86 6C       LDA    #$44
-939D: 20 89       BRA    $93A0
+939D: 20 89       BRA    queue_sound_93a0
 939F: 4F          CLRA
+queue_sound_93a0:
 93A0: D6 07       LDB    game_state_25
 93A2: C1 81       CMPB   #$03
-93A4: 27 33       BEQ    $93B7
+93A4: 27 33       BEQ    force_queue_sound_93b7
 93A6: 0D C6       TST    $44
-93A8: 26 25       BNE    $93B7
+93A8: 26 25       BNE    force_queue_sound_93b7
 93AA: D6 D9       LDB    $51
 93AC: 58          ASLB
 93AD: 24 92       BCC    $93C9
 93AF: 81 5D       CMPA   #$7F
-93B1: 22 86       BHI    $93B7
+93B1: 22 86       BHI    force_queue_sound_93b7
 93B3: 81 1D       CMPA   #$3F
 93B5: 22 90       BHI    $93C9
+force_queue_sound_93b7:
 93B7: 34 38       PSHS   X
 93B9: 9E B6       LDX    $3E
 93BB: A7 A8       STA    ,X+
@@ -2489,32 +2491,37 @@ draw_title_road_905f:
 93C5: 9F BC       STX    $3E
 93C7: 35 B8       PULS   X,PC
 93C9: 39          RTS
+
 93CA: 86 08       LDA    #$80
-93CC: 20 FA       BRA    $93A0
+93CC: 20 FA       BRA    queue_sound_93a0
 93CE: 86 0D       LDA    #$85
-93D0: 20 EC       BRA    $93A0
+93D0: 20 EC       BRA    queue_sound_93a0
+play_let_the_hostages_go_93d2:
 93D2: 86 06       LDA    #$84
-93D4: 20 E8       BRA    $93A0
+93D4: 20 E8       BRA    queue_sound_93a0
 93D6: 86 04       LDA    #$86
-93D8: 20 EE       BRA    $93A0
+93D8: 20 EE       BRA    queue_sound_93a0
 93DA: 86 0B       LDA    #$83
-93DC: 20 EA       BRA    $93A0
+93DC: 20 EA       BRA    queue_sound_93a0
 93DE: 86 07       LDA    #$8F
-93E0: 20 9C       BRA    $93A0
+93E0: 20 9C       BRA    queue_sound_93a0
 93E2: 86 17       LDA    #$95
-93E4: 20 98       BRA    $93A0
+93E4: 20 98       BRA    queue_sound_93a0
 93E6: 86 02       LDA    #$80
-93E8: 20 9E       BRA    $93A0
+93E8: 20 9E       BRA    queue_sound_93a0
 93EA: 86 86       LDA    #$0E
-93EC: 20 9A       BRA    $93A0
+93EC: 20 9A       BRA    queue_sound_93a0
+play_you_saved_manhattan_93ee:
 93EE: 86 18       LDA    #$90
-93F0: 20 8C       BRA    $93A0
-93F2: B6 92 DD    LDA    $10FF
+93F0: 20 8C       BRA    queue_sound_93a0
+play_oh_no_93f2:
+93F2: B6 92 DD    LDA    $10FF	; not the same "oh no" each time
 93F5: 27 86       BEQ    $93FB
 93F7: 86 AF       LDA    #$87
-93F9: 20 2D       BRA    $93A0
+93F9: 20 2D       BRA    queue_sound_93a0
 93FB: 86 A0       LDA    #$88
-93FD: 20 29       BRA    $93A0
+93FD: 20 29       BRA    queue_sound_93a0
+
 93FF: BD B9 42    JSR    $9B60
 9402: BD 15 99    JSR    $97BB
 9405: BD 1A D2    JSR    $9850
@@ -3077,7 +3084,7 @@ draw_title_road_905f:
 98F4: 84 21       ANDA   #$03
 98F6: 4A          DECA
 98F7: B7 38 D7    STA    $10FF
-98FA: BD 1B DA    JSR    $93F2
+98FA: BD 1B DA    JSR    play_oh_no_93f2
 98FD: 86 89       LDA    #$01
 98FF: 97 BA       STA    weapons_flag_98
 9901: B7 92 44    STA    $10C6
@@ -3723,15 +3730,17 @@ player_killed_9b24:
 9E69: 7F 98 70    CLR    $10F8
 9E6C: 96 B3       LDA    $9B
 9E6E: 81 8C       CMPA   #$04
-9E70: 26 28       BNE    $9E7C
+9E70: 26 28       BNE    level_completed_9e7c
 9E72: B6 92 D9    LDA    $10FB
 9E75: 26 8A       BNE    $9E7F
 9E77: 7C 38 DF    INC    $10F7
 9E7A: 20 8A       BRA    $9E7E
+level_completed_9e7c:
 9E7C: 0C B7       INC    level_completed_flag_9f
 9E7E: 39          RTS
 9E7F: 7C 33 CE    INC    $11EC
 9E82: 39          RTS
+
 9E83: A6 AA 0E    LDA    $2C,X
 9E86: 85 80       BITA   #$02
 9E88: 26 68       BNE    $9ECA
@@ -3774,7 +3783,7 @@ player_killed_9b24:
 9EDC: A6 A0 A3    LDA    $2B,X
 9EDF: 81 A2       CMPA   #$80
 9EE1: 26 81       BNE    $9EE6
-9EE3: BD B1 CC    JSR    $93EE
+9EE3: BD B1 CC    JSR    play_you_saved_manhattan_93ee
 9EE6: 6A 0A 03    DEC    $2B,X
 9EE9: 26 8A       BNE    $9EED
 9EEB: 0C B7       INC    level_completed_flag_9f
@@ -3932,7 +3941,7 @@ A040: 86 04       LDA    #$26
 A042: B7 92 D0    STA    $10F2
 A045: C0 86       SUBB   #$04
 A047: 20 72       BRA    $A0A3
-A049: BD 1B 5A    JSR    $93D2
+A049: BD 1B 5A    JSR    play_let_the_hostages_go_93d2
 A04C: CC 88 77    LDD    #$A0FF
 A04F: A7 26       STA    $4,X
 A051: 4F          CLRA

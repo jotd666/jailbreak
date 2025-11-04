@@ -10,7 +10,8 @@ input_dict = {"system_3300":"read_system_inputs",
 "speech_4000":"set_speech_status",
 "speech_6000":"get_speech_status",
 "scroll_dir_2042":"set_scroll_direction",
-"audio_register_w_1500":"sound_start",
+"dsw2_3100":"",  # so called sound registers... there's no sound CPU it seems
+"dsw3_3200":"",  # so we have to patch at a higher level
 
 }
 
@@ -91,6 +92,7 @@ with open(source_dir / "conv.s") as f:
 
         line = re.sub(tablere,subt,line)
 
+
         address = get_line_address(line)
 
         if address == 0x81e0:
@@ -101,6 +103,9 @@ with open(source_dir / "conv.s") as f:
             line = change_instruction("jbsr\tosd_read_dsw_2",lines,i)
         elif "dsw3_" in line and "lda" in line:
             line = change_instruction("jbsr\tosd_read_dsw_3",lines,i)
+        elif address == 0x93B7:
+            # sound
+            line = change_instruction("jra\tosd_sound_start",lines,i)
 
         elif address in (0x835d,0x8364,0x836b):
             # protect abcd X flag
