@@ -65,7 +65,8 @@ def convert():
 
     dummy_sounds = [0x40, # level completed
     0x44, # level start
-    0x45  # game over
+    0x45,  # game over
+    0x41  # game completed
     ]
 
     with open(os.path.join(src_dir,"..","sounds.inc"),"w") as f:
