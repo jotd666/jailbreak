@@ -6,13 +6,18 @@
 	.equ	sfx_06_SND,  0x6
 	.equ	ping_08_SND,  0x8
 	.equ	explosion_0A_SND,  0xa
+	.equ	explosion_0B_SND,  0xb
 	.equ	weapon_awarded_0C_SND,  0xc
+	.equ	hostage_freed_0d_SND,  0xd
+	.equ	siren_0E_SND,  0xe
+	.equ	sfx_0F_SND,  0xf
 	.equ	sfx_11_SND,  0x11
 	.equ	megablast_12_SND,  0x12
 	.equ	credit_13_SND,  0x13
 	.equ	sfx_13_SND,  0x13
 	.equ	molotov_20_SND,  0x20
 	.equ	sfx_21_SND,  0x21
+	.equ	sfx_22_SND,  0x22
 	.equ	humming_23_SND,  0x23
 	.equ	sfx_24_SND,  0x24
 	.equ	intro_43_SND,  0x43

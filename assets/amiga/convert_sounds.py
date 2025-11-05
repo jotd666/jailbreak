@@ -63,7 +63,9 @@ def convert():
 ##    sound_dict["SOMMERSAULT_2_SND"] = {"index":0x1C,"same_as":"SOMMERSAULT_SND"}
 ##    sound_dict["PING_66_SND"] = {"index":0x66,"same_as":"PING_65_SND"}
 
-    dummy_sounds = [0x22
+    dummy_sounds = [0x40, # level completed
+    0x44, # level start
+    0x45  # game over
     ]
 
     with open(os.path.join(src_dir,"..","sounds.inc"),"w") as f:

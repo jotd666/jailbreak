@@ -89,10 +89,12 @@ queue_event_pointer_3c = $3C
 weapons_flag_98 = $98
 nb_lives_player_1_ce = $ce
 nb_lives_player_2_fe = $fe
+current_player_43 = $43
 nb_lives_current_player_9e = $9e
 game_state_25 = $25
 game_sub_state_26 = $26
 level_completed_flag_9f = $9f
+current_player_variables_1590 = $1590
 
 start_8000:
 8000: 8E 32 82    LDX    #$1000
@@ -511,7 +513,7 @@ resume_boot_81ad:
 8349: 8E 49 F8    LDX    #$C170
 834C: 10 AE 0D    LDY    B,X
 834F: 8E 37 57    LDX    #$1575
-8352: 96 C1       LDA    $43
+8352: 96 C1       LDA    current_player_43
 8354: 27 20       BEQ    $8358
 8356: 30 81       LEAX   $3,X
 8358: A6 AA       LDA    ,-X
@@ -570,7 +572,7 @@ resume_boot_81ad:
 83C5: 8D 92       BSR    $83D7
 83C7: 8E 20 AC    LDX    #$0884
 83CA: CE 9D 5A    LDU    #$1572
-83CD: 96 CB       LDA    $43
+83CD: 96 CB       LDA    current_player_43
 83CF: 27 24       BEQ    $83D7
 83D1: 8E 8A 46    LDX    #$08C4
 83D4: CE 37 F7    LDU    #$1575
@@ -893,7 +895,7 @@ resume_boot_81ad:
 8680: 96 73       LDA    $51
 8682: 84 86       ANDA   #$04
 8684: 26 2A       BNE    $868E
-8686: 96 C1       LDA    $43
+8686: 96 C1       LDA    current_player_43
 8688: 27 2C       BEQ    $868E
 868A: 96 CA       LDA    $42
 868C: 26 22       BNE    $8698
@@ -1758,7 +1760,7 @@ irq_8a57:
 8D97: DD 5C       STD    $74
 8D99: DD FE       STD    $76
 8D9B: 97 00       STA    $28
-8D9D: 97 CB       STA    $43
+8D9D: 97 CB       STA    current_player_43
 8D9F: 97 A1       STA    $83
 8DA1: 97 06       STA    $84
 8DA3: BD A3 43    JSR    $8161
@@ -1799,7 +1801,7 @@ irq_8a57:
 8DE9: 39          RTS
 
 clear_player_data_8dea:
-8DEA: 8E 9D B8    LDX    #$1590		; pointer on nb lives
+8DEA: 8E 9D B8    LDX    #current_player_variables_1590		; pointer on nb lives
 8DED: CC 88 88    LDD    #$0000
 8DF0: ED A3       STD    ,X++
 8DF2: 8C 94 3F    CMPX   #$161D
@@ -1818,11 +1820,11 @@ clear_player_data_8dea:
 8E0D: BD 09 9F    JSR    $8117
 8E10: 0C 0A       INC    $28
 8E12: 39          RTS
-8E13: CE 37 B2    LDU    #$1590
+8E13: CE 37 B2    LDU    #current_player_variables_1590
 8E16: 8E 97 E8    LDX    #$15C0
 8E19: 0D CA       TST    $42
 8E1B: 27 2F       BEQ    $8E24
-8E1D: 0D CB       TST    $43
+8E1D: 0D CB       TST    current_player_43
 8E1F: 27 21       BEQ    $8E24
 8E21: 8E 97 72    LDX    #$15F0
 8E24: EC A3       LDD    ,X++
@@ -1854,7 +1856,7 @@ clear_player_data_8dea:
 8E59: 96 CA       LDA    $42
 8E5B: 27 22       BEQ    $8E67
 8E5D: C6 8C       LDB    #$04
-8E5F: 96 61       LDA    $43
+8E5F: 96 61       LDA    current_player_43
 8E61: 26 83       BNE    $8E64
 8E63: 5A          DECB
 8E64: BD A2 23    JSR    $80A1
@@ -1957,7 +1959,7 @@ clear_player_data_8dea:
 8F38: 26 38       BNE    $8F4A
 8F3A: 96 CA       LDA    $42
 8F3C: 27 24       BEQ    $8F4A
-8F3E: 96 CB       LDA    $43
+8F3E: 96 CB       LDA    current_player_43
 8F40: 27 2A       BEQ    $8F4A
 8F42: 96 D7       LDA    $55
 8F44: 97 76       STA    $54
@@ -1975,14 +1977,14 @@ clear_player_data_8dea:
 8F61: 96 C0       LDA    $42
 8F63: 27 28       BEQ    $8F6F
 8F65: C6 8A       LDB    #$08
-8F67: 96 6B       LDA    $43
+8F67: 96 6B       LDA    current_player_43
 8F69: 26 89       BNE    $8F6C
 8F6B: 5A          DECB
 8F6C: BD A8 29    JSR    $80A1
 8F6F: C6 2B       LDB    #$09
 8F71: BD 02 23    JSR    $80A1
 8F74: 7E B1 08    JMP    $938A
-8F77: BD A7 FA    JSR    $8FD2
+8F77: BD A7 FA    JSR    copy_current_vars_to_player_vars_8fd2
 8F7A: CC 88 2A    LDD    #$0002
 8F7D: DD D7       STD    $5F
 8F7F: D6 BC       LDB    nb_lives_current_player_9e
@@ -2001,10 +2003,10 @@ clear_player_data_8dea:
 8F96: CC 82 D2    LDD    #$00FA
 8F99: DD D7       STD    $5F
 8F9B: 5F          CLRB
-8F9C: 96 6B       LDA    $43
+8F9C: 96 6B       LDA    current_player_43
 8F9E: 26 89       BNE    $8FA1
 8FA0: 5C          INCB
-8FA1: D7 C1       STB    $43
+8FA1: D7 C1       STB    current_player_43
 8FA3: BD A3 43    JSR    $8161
 8FA6: 0C AA       INC    $28
 8FA8: 39          RTS
@@ -2028,9 +2030,11 @@ clear_player_data_8dea:
 8FCD: 86 8C       LDA    #$04
 8FCF: 97 04       STA    game_sub_state_26
 8FD1: 39          RTS
-8FD2: CE 97 B2    LDU    #$1590
+
+copy_current_vars_to_player_vars_8fd2:
+8FD2: CE 97 B2    LDU    #current_player_variables_1590
 8FD5: 8E 97 42    LDX    #$15C0
-8FD8: 0D 6B       TST    $43
+8FD8: 0D 6B       TST    current_player_43
 8FDA: 27 8B       BEQ    $8FDF
 8FDC: 8E 3D 78    LDX    #$15F0
 8FDF: EC E3       LDD    ,U++
@@ -2038,6 +2042,7 @@ clear_player_data_8dea:
 8FE3: 11 83 37 42 CMPU   #$15C0
 8FE7: 25 DE       BCS    $8FDF
 8FE9: 39          RTS
+
 8FEA: DC D7       LDD    $5F
 8FEC: 83 28 89    SUBD   #$0001
 8FEF: DD 7D       STD    $5F
@@ -2116,7 +2121,7 @@ draw_title_road_905f:
 908F: 39          RTS
 9090: BD A3 E3    JSR    $8161
 9093: 8E 37 B4    LDX    #$1596
-9096: 6C 06       INC    ,X
+9096: 6C 06       INC    ,X		; next level
 9098: A6 AC       LDA    ,X
 909A: 81 8D       CMPA   #$05
 909C: 26 2B       BNE    $90A1
@@ -2137,7 +2142,7 @@ draw_title_road_905f:
 90B6: 5F          CLRB
 90B7: DD 0F       STD    $27
 90B9: DD 34       STD    $BC
-90BB: 7E A7 FA    JMP    $8FD2
+90BB: 7E A7 FA    JMP    copy_current_vars_to_player_vars_8fd2
 90BE: 30 00 62    LEAX   $40,X
 90C1: 8C 92 82    CMPX   #$1000
 90C4: 25 21       BCS    $90C9
@@ -2216,7 +2221,7 @@ draw_title_road_905f:
 916E: 26 9E       BNE    $9186
 9170: C6 A9       LDB    #$8B
 9172: 34 86       PSHS   B
-9174: 96 61       LDA    $43
+9174: 96 61       LDA    current_player_43
 9176: 27 83       BEQ    $9179
 9178: 5A          DECB
 9179: BD 08 29    JSR    $80A1
@@ -2821,7 +2826,7 @@ play_oh_no_93f2:
 96B6: D6 D0       LDB    $52
 96B8: C5 2A       BITB   #$02
 96BA: 27 8E       BEQ    $96C2
-96BC: D6 6B       LDB    $43
+96BC: D6 6B       LDB    current_player_43
 96BE: 27 8A       BEQ    $96C2
 96C0: 96 77       LDA    $55
 96C2: B7 92 E2    STA    $10C0
@@ -3078,6 +3083,7 @@ play_oh_no_93f2:
 98E6: BD 19 C2    JSR    $9BEA
 98E9: 81 8F       CMPA   #$07
 98EB: 26 36       BNE    $990B
+; hostage shot
 98ED: A6 40 AF    LDA    $27,U
 98F0: 26 EE       BNE    $98BE
 98F2: A6 46       LDA    ,U
@@ -4787,6 +4793,7 @@ A7A2: A7 A5       STA    $7,Y
 A7A4: A7 07       STA    $5,Y
 A7A6: ED A0       STD    $2,Y
 A7A8: 39          RTS
+
 A7A9: A6 A3       LDA    $B,Y
 A7AB: 27 3B       BEQ    $A7C0
 A7AD: B6 98 7A    LDA    $10F2
@@ -4797,6 +4804,7 @@ A7B7: 31 80 38    LEAY   $10,Y
 A7BA: 7A 98 D8    DEC    $10F0
 A7BD: 26 7C       BNE    $A7B3
 A7BF: 39          RTS
+
 A7C0: BD 84 70    JSR    $A6F2
 A7C3: B6 32 D2    LDA    $10F0
 A7C6: F6 92 D8    LDB    $10F0
@@ -4815,6 +4823,7 @@ A7DE: 26 79       BNE    $A7D1
 A7E0: 7A 32 73    DEC    $10F1
 A7E3: 26 FC       BNE    $A7C3
 A7E5: 39          RTS
+
 A7E6: E6 AB       LDB    $9,Y
 A7E8: 26 22       BNE    $A7F4
 A7EA: A7 A1       STA    $9,Y

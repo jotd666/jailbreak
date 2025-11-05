@@ -1,22 +1,17 @@
-- rip sound 0x22
-- garbage truck sometimes wrong display: log cpu & compare
-- skip intro? complete level check value of state 1525 1526 when doing so
+- garbage truck sometimes wrong display: wrapping of sprites to remove! negative X
 - vertical scrolling to support for end sequence
 - highscore entry: missing joystick read? missing time elapsing  
 - sprites should be displayed even if more on the left
   (disappear too fast)
-- command line for lives number is wrong: if user enters 4 ???
 - optimize: remove some sprites from mirror to save memory
   (vehicles)
+- use multiplexed sprites for enemy bullets
+
 - create an excluding config to remove some parasite sprite combinations 
 - cheat start level (identify level number)
-
-invincible:
-bpset 9a7e,,{PC=$9a84;g}
-bpset 9aee,,{PC=$9afc;g}
-bpset 9b59,,{PC=$9afc;g}
-
-propose levelskip cheat
+- sounds not playing, intro music when ends should play level description (siren, "hostage" message, hack to make them play)
+- some sounds seem not used ("Broadway" as music doesn't play in level 1)
+- command line for lives number is wrong: if user enters 4 ???
 
 log sounds: bpset 93b7,,{print A;g}
 only play this C sound: bpset 93b7,A!=$C,{PC=93c9;g}
