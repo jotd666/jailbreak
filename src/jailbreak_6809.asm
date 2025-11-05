@@ -95,6 +95,8 @@ game_state_25 = $25
 game_sub_state_26 = $26
 level_completed_flag_9f = $9f
 current_player_variables_1590 = $1590
+; stage number 97 is the real stage number (can go beyond 5 when game wraps)
+stage_number_97 = $97
 
 start_8000:
 8000: 8E 32 82    LDX    #$1000
@@ -1834,10 +1836,10 @@ clear_player_data_8dea:
 8E2E: 0C A0       INC    $28
 8E30: 0F 4A       CLR    $68
 8E32: 0F AB       CLR    $29
-8E34: 96 B5       LDA    $97
+8E34: 96 B5       LDA    stage_number_97
 8E36: 26 86       BNE    $8E3C
 8E38: 0F AE       CLR    $86
-8E3A: 0C 1F       INC    $97
+8E3A: 0C 1F       INC    stage_number_97
 8E3C: 39          RTS
 8E3D: 96 A1       LDA    $29
 8E3F: 48          ASLA
@@ -4117,7 +4119,7 @@ A1C4: 10 B3 90 F0 CMPD   $1272
 A1C8: 26 3C       BNE    $A1DE
 A1CA: 7C 9A 58    INC    $1270
 A1CD: B6 9A F8    LDA    $1270
-A1D0: D6 B5       LDB    $97
+A1D0: D6 B5       LDB    stage_number_97
 A1D2: C1 84       CMPB   #$06
 A1D4: 24 74       BCC    $A22C
 A1D6: 81 B2       CMPA   #$30
@@ -5684,7 +5686,7 @@ AF62: 27 AE       BEQ    $AF90
 AF64: D6 B9       LDB    $9B
 AF66: C1 87       CMPB   #$05
 AF68: 27 0C       BEQ    $AF8E
-AF6A: 96 1F       LDA    $97
+AF6A: 96 1F       LDA    stage_number_97
 AF6C: 81 2E       CMPA   #$06
 AF6E: 24 96       BCC    $AF8E
 AF70: F7 32 7E    STB    $10FC

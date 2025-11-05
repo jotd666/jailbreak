@@ -81,7 +81,7 @@ def process(the_dump,name_filter=None,hide_named_sprite=None):
         sx = m_spriteram[i + 2] - ((attr & 0x80) << 1)
         sy = m_spriteram[i + 3]
 
-        if True: #sy:
+        if sy:
             im = tile_set[color][code]
 
             if flipy:
