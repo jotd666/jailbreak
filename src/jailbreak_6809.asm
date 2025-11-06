@@ -310,7 +310,7 @@ resume_boot_81ad:
 81B3: 4F          CLRA
 81B4: FD 02 C2    STD    nop_2040
 81B7: 86 2A       LDA    #$02
-81B9: B7 A8 CA    STA    scroll_dir_2042
+81B9: B7 A8 CA    STA    scroll_dir_2042	; horizontal scroll
 ; reset row scroll registers
 81BC: 8E 08 88    LDX    #scroll_x_2000
 81BF: C6 62       LDB    #$40
@@ -2093,7 +2093,7 @@ copy_current_vars_to_player_vars_8fd2:
 904B: C6 0D       LDB    #$25
 904D: BD 08 29    JSR    $80A1
 9050: 86 24       LDA    #$06
-9052: B7 A2 60    STA    scroll_dir_2042
+9052: B7 A2 60    STA    scroll_dir_2042	; vertical scroll
 9055: BD 11 10    JSR    $9392
 9058: 8E 27 08    LDX    #$0F80
 905B: BF 28 19    STX    >$0031
@@ -2156,7 +2156,7 @@ draw_title_road_905f:
 90D1: 26 89       BNE    $90DE
 90D3: BD A3 35    JSR    $8117
 90D6: 86 80       LDA    #$02
-90D8: B7 08 CA    STA    scroll_dir_2042
+90D8: B7 08 CA    STA    scroll_dir_2042	; horizontal scroll
 90DB: 0C 40       INC    $68
 90DD: 39          RTS
 90DE: 10 83 24 22 CMPD   #$0600
@@ -6972,6 +6972,7 @@ BAE5: A7 A3       STA    $1,Y
 BAE7: 81 78       CMPA   #$50
 BAE9: 10 23 7F 71 LBLS   $B246
 BAED: 39          RTS
+
 BAEE: CE 33 23    LDU    #$BB01
 BAF1: CC 83 02    LDD    #$0180
 BAF4: BD 93 F0    JSR    $B172

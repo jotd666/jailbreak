@@ -1,3 +1,5 @@
+- use sprites for player bullets / enemy bullets when possible
+  with fallback to bobs
 - cheat key (F2) to enable/disable invincibility, check killing the warden
   with no cheats on
 - cheat key add 10000 points
@@ -8,15 +10,16 @@
   * test it on level 1 see if it makes sense first!
   
 - highscore entry: missing joystick read? missing time elapsing  
-- optimize: remove some sprites from mirror to save memory
-  (vehicles)
-- use multiplexed sprites for enemy bullets (maybe)
 
 - create an excluding config to remove some parasite sprite combinations 
-- cheat start level (identify level number)
 - sounds not playing, intro music when ends should play level description (siren, "hostage" message, hack to make them play)
 - some sounds seem not used ("Broadway" as music doesn't play in level 1)
 - command line for lives number is wrong: if user enters 4 ???
+
+- optimize: remove some sprites from mirror to save memory
+  (vehicles)
+- cheat start level (identify level number)
+- use multiplexed sprites for enemy bullets (maybe)
 
 log sounds: bpset 93b7,,{print A;g}
 only play this C sound: bpset 93b7,A!=$C,{PC=93c9;g}

@@ -42,3 +42,4 @@
 	.equ	lets_go_roger_92_SND,  0x92
 	.equ	the_warden_has_been_taken_93_SND,  0x93
 	.equ	sfx_94_SND,  0x94
+	.equ	please_continue_95_SND,  0x95
