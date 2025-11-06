@@ -413,6 +413,7 @@ next\@:
 	.endm
 	.endif
 
+	.ifndef	RELEASE
 * dev mode, more checks about the address
 get_address:
 
@@ -437,7 +438,7 @@ get_address:
 	lea		(a6,a0.l),a0
 	rts
 
-
+	.endif
 
 multiply_ab:
 	and.w	#0xFF,d0
