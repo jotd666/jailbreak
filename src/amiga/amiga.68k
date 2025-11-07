@@ -83,10 +83,15 @@ OPT_ENABLE_MULTIPLEXED_SPRITES = 0
 NB_TILE_PLANES = 4
 NB_BOB_PLANES = 4
 TOTAL_NB_COLORS = 1<<NB_TILE_PLANES
+
+* when switching from horizontal to vertical scrolling
+* we reuse the same buffer. The sizes are compatible
+* (vertical scroll buffer needs less space)
 FG_NB_BYTES_PER_ROW = 40
 FG_NB_BYTES_PER_COL = 32
 BG_HORIZ_NB_BYTES_PER_ROW = FG_NB_BYTES_PER_ROW*3
 BG_VERT_NB_BYTES_PER_ROW = FG_NB_BYTES_PER_ROW
+BG_VERT_NB_BYTES_PER_COL = FG_NB_BYTES_PER_COL*2
 
 * add 16 so sprites can be drawn at the bottom
 * without corrupting the screen
@@ -2485,7 +2490,7 @@ update_bg_tile_vert:
 	jbsr		standard_tile_vert
 	movem.l	(a7)+,a1/a2
 	* draw the same thing more to the bottom
-	add.w	#FG_NB_BYTES_PER_COL*BG_VERT_NB_BYTES_PER_ROW*8,a1
+	add.w	#BG_VERT_NB_BYTES_PER_COL*BG_VERT_NB_BYTES_PER_ROW*8,a1
 	move.w	#NB_TILE_PLANES-1,d4
 20:
 	jra	standard_tile_vert
