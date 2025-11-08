@@ -14,7 +14,6 @@
 	.equ	sfx_11_SND,  0x11
 	.equ	megablast_12_SND,  0x12
 	.equ	credit_13_SND,  0x13
-	.equ	sfx_13_SND,  0x13
 	.equ	molotov_20_SND,  0x20
 	.equ	sfx_21_SND,  0x21
 	.equ	sfx_22_SND,  0x22

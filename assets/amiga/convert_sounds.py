@@ -8,13 +8,22 @@ sox = "sox"
 
 sound_dir = this_dir / ".." / "sounds"
 
+sound_settings_dict = { 1 : {"channel":3,"priority":1},
+ 3 : {"channel":1,"priority":20},
+  0x13 : {"channel":3,"priority":10},
+  0x20 : {"channel":2,"priority":10},
+  0x21 : {"channel":2,"priority":10},
+  0x22 : {"channel":2,"priority":10},
+  0x82 : {"channel":1,"priority":10},
+  0x83 : {"channel":1,"priority":10},
+
+}
 def convert():
     if not shutil.which("sox"):
         raise Exception("sox command not in path, please install it")
     # BTW convert wav to mp3: ffmpeg -i input.wav -codec:a libmp3lame -b:a 330k output.mp3
 
-    sfx_sample_rate_dict = {}
-    channel_dict = {}
+
 
     outfile = os.path.join(src_dir,"sounds.68k")
     sndfile = os.path.join(src_dir,"sound_entries.68k")
@@ -38,11 +47,14 @@ def convert():
             try:
                 index = int(parts[1],16)
                 sfx_list.add(index)
-                # speech: auto-declare
+                # auto-declare according to name suffix
                 entry = f"{sound_name}_SND"
                 # fix channel to avoid overlap
-                sfx_sample_rate = sfx_sample_rate_dict.get(index,lq_sample_rate)
-                sound_dict[entry] = {"channel":channel_dict.get(index,-1),"index":index,"sample_rate":sfx_sample_rate}
+                extra_info = sound_settings_dict.get(index) or dict()
+
+                sfx_sample_rate = extra_info.get("sample_rate",lq_sample_rate)
+                sound_dict[entry] = {"channel":extra_info.get("channel",-1),
+                "priority":extra_info.get("priority",40),"index":index,"sample_rate":sfx_sample_rate}
             except ValueError:
                 pass
 

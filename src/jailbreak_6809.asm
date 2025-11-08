@@ -97,6 +97,7 @@ level_completed_flag_9f = $9f
 current_player_variables_1590 = $1590
 ; stage number 97 is the real stage number (can go beyond 5 when game wraps)
 stage_number_97 = $97
+player_score_1572 = $1572
 
 start_8000:
 8000: 8E 32 82    LDX    #$1000
@@ -573,7 +574,7 @@ resume_boot_81ad:
 83C2: 8E 8A B2    LDX    #$0890
 83C5: 8D 92       BSR    $83D7
 83C7: 8E 20 AC    LDX    #$0884
-83CA: CE 9D 5A    LDU    #$1572
+83CA: CE 9D 5A    LDU    #player_score_1572
 83CD: 96 CB       LDA    current_player_43
 83CF: 27 24       BEQ    $83D7
 83D1: 8E 8A 46    LDX    #$08C4
@@ -581,8 +582,8 @@ resume_boot_81ad:
 83D7: A6 EC       LDA    ,U
 83D9: 26 80       BNE    $83E3
 83DB: 86 38       LDA    #$10
-83DD: 8D DA       BSR    $8431
-83DF: 8D 72       BSR    $8431
+83DD: 8D DA       BSR    write_and_advance_8431
+83DF: 8D 72       BSR    write_and_advance_8431
 83E1: 20 8C       BRA    $83F1
 83E3: 44          LSRA
 83E4: 44          LSRA
@@ -590,15 +591,15 @@ resume_boot_81ad:
 83E6: 44          LSRA
 83E7: 26 2A       BNE    $83EB
 83E9: 86 98       LDA    #$10
-83EB: 8D 6C       BSR    $8431
+83EB: 8D 6C       BSR    write_and_advance_8431
 83ED: A6 4C       LDA    ,U
-83EF: 8D 1C       BSR    $842F
+83EF: 8D 1C       BSR    write_digit_842f
 83F1: A6 46       LDA    ,U
 83F3: AA 63       ORA    $1,U
 83F5: 26 8A       BNE    $83FF
 83F7: 86 38       LDA    #$10
-83F9: 8D BE       BSR    $8431
-83FB: 8D 1C       BSR    $8431
+83F9: 8D BE       BSR    write_and_advance_8431
+83FB: 8D 1C       BSR    write_and_advance_8431
 83FD: 20 9C       BRA    $8413
 83FF: A6 63       LDA    $1,U
 8401: 44          LSRA
@@ -609,30 +610,36 @@ resume_boot_81ad:
 8407: 6D EC       TST    ,U
 8409: 26 8A       BNE    $840D
 840B: 86 38       LDA    #$10
-840D: 8D AA       BSR    $8431
+840D: 8D AA       BSR    write_and_advance_8431
 840F: A6 63       LDA    $1,U
-8411: 8D 9E       BSR    $842F
+8411: 8D 9E       BSR    write_digit_842f
 8413: A6 E6       LDA    ,U
 8415: AA C3       ORA    $1,U
-8417: 27 20       BEQ    $8421
+8417: 27 20       BEQ    write_2_digits_8421
 8419: A6 CA       LDA    $2,U
 841B: 44          LSRA
 841C: 44          LSRA
 841D: 44          LSRA
 841E: 44          LSRA
-841F: 20 28       BRA    $842B
+841F: 20 28       BRA    write_2_digits_842b
+
+write_2_digits_8421:
 8421: A6 C0       LDA    $2,U
 8423: 44          LSRA
 8424: 44          LSRA
 8425: 44          LSRA
 8426: 44          LSRA
-8427: 26 2A       BNE    $842B
+8427: 26 2A       BNE    write_2_digits_842b
 8429: 86 98       LDA    #$10
-842B: 8D 2C       BSR    $8431
+write_2_digits_842b:
+842B: 8D 2C       BSR    write_and_advance_8431
 842D: A6 CA       LDA    $2,U
+write_digit_842f:
 842F: 84 2D       ANDA   #$0F
+write_and_advance_8431:
 8431: A7 02       STA    ,X+		; [video_address]
 8433: 39          RTS
+
 8434: A6 3C       LDA    -$2,X		; [video_address]
 8436: 81 92       CMPA   #$10
 8438: 26 2A       BNE    $843C
@@ -934,11 +941,11 @@ resume_boot_81ad:
 86CA: 86 8E       LDA    #$06
 86CC: 97 4C       STA    $64
 86CE: CC 88 D8    LDD    #$00FA
-86D1: DD DD       STD    $5F
+86D1: DD DD       STD    timer_fraction_of_second_5f
 86D3: 39          RTS
-86D4: DC 7D       LDD    $5F
+86D4: DC 7D       LDD    timer_fraction_of_second_5f
 86D6: 83 82 29    SUBD   #$0001
-86D9: DD D7       STD    $5F
+86D9: DD D7       STD    timer_fraction_of_second_5f
 86DB: 26 2D       BNE    $86E2
 86DD: 0C A1       INC    $29
 86DF: 7F 32 E2    CLR    $10C0
@@ -953,7 +960,7 @@ resume_boot_81ad:
 86F2: 8D 26       BSR    $8698
 86F4: 96 48       LDA    $6A
 86F6: 26 87       BNE    $86FD
-86F8: 8E 3D FA    LDX    #$1572
+86F8: 8E 3D FA    LDX    #player_score_1572
 86FB: 8D B9       BSR    $868E
 86FD: CE 9E A8    LDU    #$1620
 8700: 86 28       LDA    #$0A
@@ -973,7 +980,7 @@ resume_boot_81ad:
 871E: CE 9E 42    LDU    #$1660
 8721: 96 E3       LDA    $61
 8723: 4A          DECA
-8724: 97 7D       STA    $5F
+8724: 97 7D       STA    timer_fraction_of_second_5f
 8726: 27 94       BEQ    $873E
 8728: EC EC       LDD    ,U
 872A: ED C0       STD    $8,U
@@ -984,7 +991,7 @@ resume_boot_81ad:
 8734: EC 64       LDD    $6,U
 8736: ED CC       STD    $E,U
 8738: 33 70       LEAU   -$8,U
-873A: 0A D7       DEC    $5F
+873A: 0A D7       DEC    timer_fraction_of_second_5f
 873C: 26 C2       BNE    $8728
 873E: 0C A1       INC    $29
 8740: 39          RTS
@@ -998,7 +1005,7 @@ resume_boot_81ad:
 874E: 8E 9D 57    LDX    #$1575
 8751: 96 E8       LDA    $6A
 8753: 26 21       BNE    $8758
-8755: 8E 97 F0    LDX    #$1572
+8755: 8E 97 F0    LDX    #player_score_1572
 8758: EC AC       LDD    ,X
 875A: ED 4C       STD    ,U
 875C: E6 2A       LDB    $2,X
@@ -1026,7 +1033,7 @@ resume_boot_81ad:
 878C: 20 3B       BRA    $87A1
 878E: BD 00 BD    JSR    $889F
 8791: CC BE A3    LDD    #$3C21
-8794: DD 7D       STD    $5F
+8794: DD 7D       STD    timer_fraction_of_second_5f
 8796: 86 81       LDA    #$03
 8798: 97 49       STA    $61
 879A: 9E E0       LDX    $68
@@ -1034,29 +1041,34 @@ resume_boot_81ad:
 879F: 9F 40       STX    $62
 87A1: 0C AB       INC    $29
 87A3: 39          RTS
-87A4: 96 7D       LDA    $5F
+
+highscore_name_entry_87a4:
+87A4: 96 7D       LDA    timer_fraction_of_second_5f
 87A6: 47          ASRA
 87A7: 24 3B       BCC    $87BC
 87A9: 47          ASRA
 87AA: 24 83       BCC    $87B7
 87AC: 9E 4A       LDX    $62
+; blank
 87AE: CC 98 32    LDD    #$1010
 87B1: ED 80       STD    $2,X	; [video_address_word]
 87B3: ED 26       STD    $4,X	; [video_address_word]
 87B5: 20 87       BRA    $87BC
+
 87B7: C6 37       LDB    #$1F
 87B9: BD 0A 52    JSR    $82DA
-87BC: 0A 77       DEC    $5F
+87BC: 0A 77       DEC    timer_fraction_of_second_5f
 87BE: 26 CB       BNE    $8803
-87C0: 86 1E       LDA    #$3C
-87C2: 97 DD       STA    $5F
+87C0: 86 1E       LDA    #$3C		; aka 60
+87C2: 97 DD       STA    timer_fraction_of_second_5f
 87C4: 96 42       LDA    $60
 87C6: 8B 1B       ADDA   #$99
 87C8: 19          DAA
 87C9: 97 E8       STA    $60
-87CB: 8E 26 F5    LDX    #$0EDD
+; write highscore timer
+87CB: 8E 26 F5    LDX    #$0EDD		; location of the time
 87CE: CE 9D 7C    LDU    #$155E
-87D1: BD 06 A3    JSR    $8421
+87D1: BD 06 A3    JSR    write_2_digits_8421
 87D4: 96 42       LDA    $60
 87D6: 26 A9       BNE    $8803
 87D8: BD BB EA    JSR    $9362
@@ -1092,7 +1104,7 @@ resume_boot_81ad:
 8816: 84 86       ANDA   #$04
 8818: 26 2B       BNE    $881D
 881A: CE 9D 7D    LDU    #$1555
-881D: 96 D7       LDA    $5F
+881D: 96 D7       LDA    timer_fraction_of_second_5f
 881F: 47          ASRA
 8820: 24 0E       BCC    $884E
 8822: 47          ASRA
@@ -1149,7 +1161,7 @@ resume_boot_81ad:
 887B: 30 29       LEAX   $1,X
 887D: 9F E0       STX    $68
 887F: CC 1E 03    LDD    #$3C21
-8882: DD DD       STD    $5F
+8882: DD DD       STD    timer_fraction_of_second_5f
 8884: 0A 43       DEC    $61
 8886: 26 87       BNE    $888D
 8888: BD BB EA    JSR    $9362
@@ -1180,21 +1192,21 @@ resume_boot_81ad:
 88B6: C6 9D       LDB    #$1F
 88B8: BD A8 29    JSR    $80A1
 88BB: 8E 21 E0    LDX    #$09C8
-88BE: 9F D7       STX    $5F
+88BE: 9F D7       STX    timer_fraction_of_second_5f
 88C0: CE 34 A2    LDU    #$1620
 88C3: DF 40       STU    $62
 88C5: 86 88       LDA    #$0A
 88C7: 97 49       STA    $61
-88C9: 9E D7       LDX    $5F
+88C9: 9E D7       LDX    timer_fraction_of_second_5f
 88CB: DE 4A       LDU    $62
 88CD: BD 0B 5F    JSR    $83D7
 88D0: BD A6 B6    JSR    $8434
-88D3: 9E 7D       LDX    $5F
+88D3: 9E 7D       LDX    timer_fraction_of_second_5f
 88D5: DE E0       LDU    $62
 88D7: 33 69       LEAU   $1,U
 88D9: 30 81       LEAX   $9,X
-88DB: BD AC 09    JSR    $8421
-88DE: 9E D7       LDX    $5F
+88DB: BD AC 09    JSR    write_2_digits_8421
+88DE: 9E D7       LDX    timer_fraction_of_second_5f
 88E0: DE 40       LDU    $62
 88E2: 30 0A 32    LEAX   $10,X
 88E5: 33 C7       LEAU   $5,U
@@ -1202,9 +1214,9 @@ resume_boot_81ad:
 88E9: ED 09       STD    ,X++	; [video_address_word]
 88EB: A6 EC       LDA    ,U
 88ED: A7 0C       STA    ,X		; [video_address]
-88EF: 9E 7D       LDX    $5F
+88EF: 9E 7D       LDX    timer_fraction_of_second_5f
 88F1: 30 0B 82 A2 LEAX   $0080,X
-88F5: 9F DD       STX    $5F
+88F5: 9F DD       STX    timer_fraction_of_second_5f
 88F7: DE 4A       LDU    $62
 88F9: 33 C0       LEAU   $8,U
 88FB: DF 4A       STU    $62
@@ -1234,9 +1246,9 @@ resume_boot_81ad:
 8934: BD A2 23    JSR    $80A1
 8937: 8E 20 FD    LDX    #$08D5
 893A: CE 9D BD    LDU    #$1595
-893D: BD 0C A9    JSR    $8421
+893D: BD 0C A9    JSR    write_2_digits_8421
 8940: 8E 2A 06    LDX    #$0884
-8943: CE 37 50    LDU    #$1572
+8943: CE 37 50    LDU    #player_score_1572
 8946: BD 01 FF    JSR    $83D7
 8949: BD 0C BC    JSR    $8434
 894C: CE 3D F6    LDU    #$157E
@@ -1287,7 +1299,7 @@ resume_boot_81ad:
 89AF: 5A          DECB
 89B0: 26 DB       BNE    $89AB
 89B2: 86 73       LDA    #$F1
-89B4: 97 7D       STA    $5F
+89B4: 97 7D       STA    timer_fraction_of_second_5f
 89B6: 0C EA       INC    $68
 89B8: 39          RTS
 89B9: 96 E0       LDA    $68
@@ -1298,7 +1310,7 @@ resume_boot_81ad:
 89C4: 39          RTS
 89C5: D6 23       LDB    $A1
 89C7: 26 2E       BNE    $89CF
-89C9: 0A D7       DEC    $5F
+89C9: 0A D7       DEC    timer_fraction_of_second_5f
 89CB: 26 50       BNE    $8A45
 89CD: 20 91       BRA    $89E8
 89CF: 96 80       LDA    $A2
@@ -1313,7 +1325,7 @@ resume_boot_81ad:
 89E4: 86 DD       LDA    #$FF
 89E6: 97 20       STA    $A2
 89E8: 86 08       LDA    #$20
-89EA: 97 D7       STA    $5F
+89EA: 97 D7       STA    timer_fraction_of_second_5f
 89EC: 0C 00       INC    $28
 89EE: 0F A1       CLR    $29
 89F0: 0F A7       CLR    $85
@@ -1351,7 +1363,7 @@ resume_boot_81ad:
 8A41: 5A          DECB
 8A42: 26 79       BNE    $8A3F
 8A44: 39          RTS
-8A45: 96 DD       LDA    $5F
+8A45: 96 DD       LDA    timer_fraction_of_second_5f
 8A47: 81 D8       CMPA   #$F0
 8A49: 26 8B       BNE    $8A4E
 8A4B: BD A1 D4    JSR    $89FC
@@ -1570,7 +1582,7 @@ irq_8a57:
 
 8C08: BD A9 9D    JSR    clear_screen_8115
 8C0B: C6 D7       LDB    #$FF
-8C0D: D7 D7       STB    $5F
+8C0D: D7 D7       STB    timer_fraction_of_second_5f
 8C0F: 96 04       LDA    game_sub_state_26
 8C11: 27 80       BEQ    $8C15
 8C13: C6 82       LDB    #$A0
@@ -1578,11 +1590,11 @@ irq_8a57:
 8C17: 0C 0E       INC    game_sub_state_26
 8C19: 7E 0E 06    JMP    $868E
 8C1C: BD 87 92    JSR    $AF1A
-8C1F: 0A 7D       DEC    $5F
+8C1F: 0A 7D       DEC    timer_fraction_of_second_5f
 8C21: 26 81       BNE    $8C26
 8C23: 0C 04       INC    game_sub_state_26
 8C25: 39          RTS
-8C26: 96 DD       LDA    $5F
+8C26: 96 DD       LDA    timer_fraction_of_second_5f
 8C28: 81 D6       CMPA   #$FE
 8C2A: 26 71       BNE    $8C25
 8C2C: CE EA 14    LDU    #$C29C
@@ -1727,16 +1739,16 @@ irq_8a57:
 8D4F: C6 2D       LDB    #$0F
 8D51: BD 02 23    JSR    $80A1
 8D54: 86 02       LDA    #$20
-8D56: 97 DD       STA    $5F
+8D56: 97 DD       STA    timer_fraction_of_second_5f
 8D58: 0C 0E       INC    game_sub_state_26
 8D5A: 39          RTS
-8D5B: 0A 77       DEC    $5F
+8D5B: 0A 77       DEC    timer_fraction_of_second_5f
 8D5D: 26 8F       BNE    $8D66
 8D5F: 86 02       LDA    #$20
-8D61: 97 DD       STA    $5F
+8D61: 97 DD       STA    timer_fraction_of_second_5f
 8D63: 5F          CLRB
 8D64: 20 2A       BRA    $8D6E
-8D66: 96 DD       LDA    $5F
+8D66: 96 DD       LDA    timer_fraction_of_second_5f
 8D68: 81 38       CMPA   #$10
 8D6A: 26 8D       BNE    $8D71
 8D6C: C6 A8       LDB    #$80
@@ -1865,10 +1877,10 @@ clear_player_data_8dea:
 8E67: C6 25       LDB    #$0D
 8E69: BD 08 29    JSR    $80A1
 8E6C: 86 10       LDA    #$38
-8E6E: 97 D7       STA    $5F
+8E6E: 97 D7       STA    timer_fraction_of_second_5f
 8E70: 0C 0B       INC    $29
 8E72: 39          RTS
-8E73: 0A 7D       DEC    $5F
+8E73: 0A 7D       DEC    timer_fraction_of_second_5f
 8E75: 26 90       BNE    $8E89
 8E77: BD A9 3F    JSR    $8117
 8E7A: 0C A1       INC    $29
@@ -1888,9 +1900,9 @@ clear_player_data_8dea:
 8E97: 86 2C       LDA    #$04
 8E99: 97 A1       STA    $29
 8E9B: 86 D7       LDA    #$FF
-8E9D: 97 D7       STA    $5F
+8E9D: 97 D7       STA    timer_fraction_of_second_5f
 8E9F: 39          RTS
-8EA0: 96 7D       LDA    $5F
+8EA0: 96 7D       LDA    timer_fraction_of_second_5f
 8EA2: 81 32       CMPA   #$B0
 8EA4: 27 0A       BEQ    $8ECE
 8EA6: 81 2A       CMPA   #$A8
@@ -1903,7 +1915,7 @@ clear_player_data_8dea:
 8EB4: 27 19       BEQ    $8EF1
 8EB6: BD 13 76    JSR    $915E
 8EB9: BD 26 68    JSR    $AEE0
-8EBC: 0A 77       DEC    $5F
+8EBC: 0A 77       DEC    timer_fraction_of_second_5f
 8EBE: 26 85       BNE    $8ECD
 8EC0: BD A3 97    JSR    clear_screen_8115
 8EC3: 0F B9       CLR    $9B
@@ -1988,7 +2000,7 @@ clear_player_data_8dea:
 8F74: 7E B1 08    JMP    $938A
 8F77: BD A7 FA    JSR    copy_current_vars_to_player_vars_8fd2
 8F7A: CC 88 2A    LDD    #$0002
-8F7D: DD D7       STD    $5F
+8F7D: DD D7       STD    timer_fraction_of_second_5f
 8F7F: D6 BC       LDB    nb_lives_current_player_9e
 8F81: 96 C0       LDA    $42
 8F83: 26 27       BNE    $8F8A
@@ -2003,7 +2015,7 @@ clear_player_data_8dea:
 8F92: 0C 01       INC    $83
 8F94: 8D E9       BSR    $8F61
 8F96: CC 82 D2    LDD    #$00FA
-8F99: DD D7       STD    $5F
+8F99: DD D7       STD    timer_fraction_of_second_5f
 8F9B: 5F          CLRB
 8F9C: 96 6B       LDA    current_player_43
 8F9E: 26 89       BNE    $8FA1
@@ -2045,9 +2057,9 @@ copy_current_vars_to_player_vars_8fd2:
 8FE7: 25 DE       BCS    $8FDF
 8FE9: 39          RTS
 
-8FEA: DC D7       LDD    $5F
+8FEA: DC D7       LDD    timer_fraction_of_second_5f
 8FEC: 83 28 89    SUBD   #$0001
-8FEF: DD 7D       STD    $5F
+8FEF: DD 7D       STD    timer_fraction_of_second_5f
 8FF1: 26 80       BNE    $8FF5
 8FF3: 0F 0A       CLR    $28
 8FF5: 39          RTS
@@ -2079,7 +2091,7 @@ copy_current_vars_to_player_vars_8fd2:
 902B: 20 C3       BRA    $9018
 902D: BD 09 9D    JSR    clear_screen_8115
 9030: 86 DD       LDA    #$FF
-9032: 97 DD       STA    $5F
+9032: 97 DD       STA    timer_fraction_of_second_5f
 9034: 0C 4A       INC    $68
 9036: 96 19       LDA    $9B
 9038: 81 2C       CMPA   #$04
@@ -2089,7 +2101,7 @@ copy_current_vars_to_player_vars_8fd2:
 9041: C6 A1       LDB    #$23
 9043: 7E A2 83    JMP    $80A1
 9046: CC 85 28    LDD    #$0700
-9049: DD D7       STD    $5F
+9049: DD D7       STD    timer_fraction_of_second_5f
 904B: C6 0D       LDB    #$25
 904D: BD 08 29    JSR    $80A1
 9050: 86 24       LDA    #$06
@@ -2117,7 +2129,7 @@ draw_title_road_905f:
 9081: 96 19       LDA    $9B
 9083: 81 26       CMPA   #$04
 9085: 27 C1       BEQ    $90CA
-9087: 0A 77       DEC    $5F
+9087: 0A 77       DEC    timer_fraction_of_second_5f
 9089: 10 26 96 A5 LBNE   $AF1A
 908D: 0C E0       INC    $68
 908F: 39          RTS
@@ -2136,9 +2148,9 @@ draw_title_road_905f:
 90A8: A7 29       STA    $1,X
 90AA: 0C E0       INC    $68
 90AC: 86 29       LDA    #$01
-90AE: 97 D7       STA    $5F
+90AE: 97 D7       STA    timer_fraction_of_second_5f
 90B0: 39          RTS
-90B1: 0A DD       DEC    $5F
+90B1: 0A DD       DEC    timer_fraction_of_second_5f
 90B3: 26 D9       BNE    $90B0
 90B5: 4F          CLRA
 90B6: 5F          CLRB
@@ -2150,9 +2162,9 @@ draw_title_road_905f:
 90C4: 25 21       BCS    $90C9
 90C6: 8E 8A 28    LDX    #$0800
 90C9: 39          RTS
-90CA: DC D7       LDD    $5F
+90CA: DC D7       LDD    timer_fraction_of_second_5f
 90CC: 83 28 89    SUBD   #$0001
-90CF: DD 7D       STD    $5F
+90CF: DD 7D       STD    timer_fraction_of_second_5f
 90D1: 26 89       BNE    $90DE
 90D3: BD A3 35    JSR    $8117
 90D6: 86 80       LDA    #$02
@@ -3807,7 +3819,7 @@ level_completed_9e7c:
 9F04: 81 36       CMPA   #$14
 9F06: 27 84       BEQ    $9F0E
 9F08: 22 2F       BHI    $9F11
-9F0A: 0C D7       INC    $5F
+9F0A: 0C D7       INC    timer_fraction_of_second_5f
 9F0C: 20 61       BRA    $9F57
 9F0E: BD 1C 00    JSR    $9422
 9F11: 8E 93 42    LDX    #$11C0
@@ -5111,7 +5123,7 @@ AA59: 7E 21 1A    JMP    $A992
 AA5C: E6 01       LDB    $9,Y
 AA5E: 10 26 DD 12 LBNE   $A992
 AA62: A7 AB       STA    $9,Y
-AA64: D6 7D       LDB    $5F
+AA64: D6 7D       LDB    timer_fraction_of_second_5f
 AA66: C1 F2       CMPB   #$70
 AA68: 10 25 77 AE LBCS   $A992
 AA6C: 7E 82 DB    JMP    $AA53
@@ -5631,7 +5643,7 @@ AEDA: 7A 98 D8    DEC    $10F0
 AEDD: 26 6D       BNE    $AEC4
 AEDF: 39          RTS
 AEE0: 10 8E 93 42 LDY    #$11C0
-AEE4: 96 7D       LDA    $5F
+AEE4: 96 7D       LDA    timer_fraction_of_second_5f
 AEE6: 81 7D       CMPA   #$FF
 AEE8: 27 23       BEQ    $AEF5
 AEEA: 81 25       CMPA   #$AD
@@ -5655,7 +5667,7 @@ AF12: 7C 90 35    INC    $1217
 AF15: CE 91 52    LDU    #$13D0
 AF18: 20 C3       BRA    $AF05
 AF1A: 10 8E 39 E8 LDY    #$11C0
-AF1E: 96 D7       LDA    $5F
+AF1E: 96 D7       LDA    timer_fraction_of_second_5f
 AF20: 81 DC       CMPA   #$FE
 AF22: 27 90       BEQ    $AF36
 AF24: C6 37       LDB    #$15
@@ -7210,7 +7222,7 @@ table_c1be:
 	dc.w	$871e	; $c1c6
 	dc.w	$8741	; $c1c8
 	dc.w	$878e	; $c1ca
-	dc.w	$87a4	; $c1cc
+	dc.w	highscore_name_entry_87a4	; $c1cc	highscore
 	dc.w	$87dd	; $c1ce
 table_c244:
 	dc.w	$8c00	; $c244

@@ -29,3 +29,6 @@ game_sub_state_26 = 0x26
 level_completed_flag_9f = 0x9f
 current_player_variables_1590 = 0x1590
 stage_number_97 = 0x97
+player_score_1572 = 0x1572
+timer_seconds_60 = 0x60
+timer_fraction_of_second_5f = 0x5f   | 1/60th of second
