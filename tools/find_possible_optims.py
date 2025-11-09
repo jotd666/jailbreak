@@ -1,5 +1,6 @@
-import re
+import re,os
 src = "../src/jailbreak.68k"
+dest = os.path.basename(src)
 nb = 0
 prev_loaded = None
 with open(src) as f:
@@ -8,27 +9,35 @@ with open(src) as f:
 def remcomments(line):
     return re.sub("[\|\*].*","",line)
 
-for i,line in enumerate(lines):
-    line = remcomments(line)  # remove comments
+breaking_instructions = ["rts","jmp","jra","JSR_B_INDEXED","JSR_A_INDEXED","jbsr","GET_REG_ADDRESS","GET_ADDRESS","GET_UNCHECKED_ADDRESS"]
+
+new_lines = []
+for i,org_line in enumerate(lines):
+    line = remcomments(org_line)  # remove comments
     toks = line.split()
     if "GET_ADDRESS" in toks or "GET_UNCHECKED_ADDRESS" in toks:
         value = toks[1]
         if prev_loaded == value and i-prev_line < 6:
             print(f"Prev loaded: {prev_loaded} line {i+1} loaded at line {prev_line+1}")
+            org_line = re.sub(".*\|","\t|",org_line)
             nb += 1
         prev_line = i
         prev_loaded = value
-    if any(x in toks for x in ["rts","jmp","jra","jbsr","GET_REG_ADDRESS"]):
+    if any(x in toks for x in breaking_instructions):
         prev_loaded = None
     if re.match("\w+:",line):
         prev_loaded = None
+
+
+    new_lines.append(org_line)
 
 #GET_REG_ADDRESS    0x4,d3
 prev_lineno = -1
 prev_toks = []
 
-for i,line in enumerate(lines):
-    line = remcomments(line)  # remove comments
+new_lines2 = []
+for i,org_line in enumerate(new_lines):
+    line = remcomments(org_line)  # remove comments
     toks = line.split()
     if toks and toks[0] == "GET_REG_ADDRESS":
         if prev_toks == toks:
@@ -40,17 +49,25 @@ for i,line in enumerate(lines):
             for j in range(prev_lineno+1,i):
                 if reg_re.search(lines[j]):
                     break
+                toks2 = lines[j].split()
+                if any(x in toks2 for x in breaking_instructions):
+                    label_found = True
                 if re.match("\w+:",lines[j]):
                     label_found = True
             else:
                 if not label_found:
                     nb += 1
                     print(f"Prev loaded: {toks}: line {i+1} ()loaded at line {prev_lineno+1})")
+                    org_line = re.sub(".*\|","\t|",org_line)
         prev_lineno = i
         prev_toks = toks
 
+    new_lines2.append(org_line)
 
 if nb:
     print(f"found {nb} GET_ADDRESS useless occs")
 else:
     print("Nothing found")
+
+with open(dest,"w") as f:
+    f.writelines(new_lines2)
