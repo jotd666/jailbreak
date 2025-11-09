@@ -23,6 +23,32 @@ for i,line in enumerate(lines):
     if re.match("\w+:",line):
         prev_loaded = None
 
+#GET_REG_ADDRESS    0x4,d3
+prev_lineno = -1
+prev_toks = []
+
+for i,line in enumerate(lines):
+    line = remcomments(line)  # remove comments
+    toks = line.split()
+    if toks and toks[0] == "GET_REG_ADDRESS":
+        if prev_toks == toks:
+            # 2 same GET_REG_ADDRESS. Check register
+            reg = toks[1].split(",")[1]
+            # now check if register is referenced between the lines
+            reg_re = re.compile(fr"\b{reg}\b")
+            label_found = False
+            for j in range(prev_lineno+1,i):
+                if reg_re.search(lines[j]):
+                    break
+                if re.match("\w+:",lines[j]):
+                    label_found = True
+            else:
+                if not label_found:
+                    nb += 1
+                    print(f"Prev loaded: {toks}: line {i+1} ()loaded at line {prev_lineno+1})")
+        prev_lineno = i
+        prev_toks = toks
+
 
 if nb:
     print(f"found {nb} GET_ADDRESS useless occs")

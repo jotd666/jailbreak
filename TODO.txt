@@ -5,9 +5,6 @@
   with no cheats on
 
 - vertical scrolling for end sequence: not perfect...
-- highscore entry: missing joystick read? 
-- highscore entry missing time elapsing: blocked here debug at 87bc
-  check write to EDD (time)
 
 - create an excluding config to remove some parasite sprite combinations 
 - sounds not playing, intro music when ends should play level description (siren, "hostage" message, hack to make them play)

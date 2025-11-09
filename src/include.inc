@@ -293,7 +293,7 @@ okay\@:
 	.endm
 	.macro SET_DP_FROM_A
 	lsl.w    #8,d0
-	move.l    d0,a0
+	move.w    d0,a0		| here d0 < 0x8000 so .w is ok
 	GET_ADDRESS_FUNC
 	move.l	a0,a5
 	move.l	a5,m6809_direct_page_pointer
