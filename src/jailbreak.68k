@@ -5171,10 +5171,22 @@ l_9ad3:
 	cmp.b	#0x07,d0                         	| [$9aea: cmpa   #$07]
 	jeq	l_9afd                             	| [$9aec: beq    $9afd] award weapon on hostage release
 	tst.b	invincible_flag
+	jne	1f
+	* new game "mod": shooting enemies don't kill you
+	* on collision with them, which makes the game slightly less hell
+	* walking convict that doesn't shoot still kills you though
+	tst.b	d0
+	jeq		0f
+	tst.b	no_enemy_collision_flag
 	jeq	0f
+	* collision with shooting guys do nothing
+1:
 	rts  | no enemy collision
 0:
-* killed
+* killed. D0 contains the enemy type
+	* 0: walking convict: doesn't shoot
+	* 1: convict that throws molotovs
+	* 2: shooting convict
 	move.b	#0x00,d0                        	| [$9aee: ldd    #$0002]
 	move.w	#0x0002,d1                      	| [$9aee: ldd    #$0002]
 	jmp	player_killed_9b24                 	| [$9af1: jmp    player_killed_9b24]

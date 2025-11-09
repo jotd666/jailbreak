@@ -1,5 +1,6 @@
 	.global infinite_lives_flag
 	.global invincible_flag
+	.global no_enemy_collision_flag
 	.global start_level
 	.global vb_ticks_count
 	.global break_at_startup_flag
@@ -58,6 +59,8 @@ m6809_direct_page_pointer:
 skip_intro_flag:
 	.byte	0
 must_skip_konami_logo_flag:
+	.byte	0
+no_enemy_collision_flag:
 	.byte	0
 invincible_flag:
 	.byte	0
