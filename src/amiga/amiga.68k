@@ -3134,7 +3134,7 @@ handle_keyboard:
 	bne.b	0f
 	st.b	cheat_used
 	move.w	#0x0FF,_custom+color
-	eor.b	#1,invincible_flag
+	eor.b	#0xFF,invincible_flag
 0:
 *	cmp.b	#0x54,d0	| F5 key
 *	bne.b	0f

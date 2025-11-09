@@ -9,7 +9,7 @@ with open(src) as f:
 def remcomments(line):
     return re.sub("[\|\*].*","",line)
 
-breaking_instructions = ["rts","jmp","jra","JSR_B_INDEXED","JSR_A_INDEXED","jbsr","GET_REG_ADDRESS","GET_ADDRESS","GET_UNCHECKED_ADDRESS"]
+breaking_instructions = ["rts","jmp","bra","jra","JSR_B_INDEXED","JSR_A_INDEXED","jbsr"]
 
 new_lines = []
 for i,org_line in enumerate(lines):
@@ -23,7 +23,7 @@ for i,org_line in enumerate(lines):
             nb += 1
         prev_line = i
         prev_loaded = value
-    if any(x in toks for x in breaking_instructions):
+    if any(x in toks for x in breaking_instructions) or any(x.startswith("GET_") for x in toks):
         prev_loaded = None
     if re.match("\w+:",line):
         prev_loaded = None
@@ -50,14 +50,14 @@ for i,org_line in enumerate(new_lines):
                 if reg_re.search(lines[j]):
                     break
                 toks2 = lines[j].split()
-                if any(x in toks2 for x in breaking_instructions):
+                if any(x in toks2 for x in breaking_instructions) or any(x.startswith("GET_") for x in toks2):
                     label_found = True
                 if re.match("\w+:",lines[j]):
                     label_found = True
             else:
                 if not label_found:
                     nb += 1
-                    print(f"Prev loaded: {toks}: line {i+1} ()loaded at line {prev_lineno+1})")
+                    print(f"Prev loaded: {toks}: line {i+1} (loaded at line {prev_lineno+1})")
                     org_line = re.sub(".*\|","\t|",org_line)
         prev_lineno = i
         prev_toks = toks

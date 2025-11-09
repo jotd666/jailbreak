@@ -61,7 +61,8 @@ def get_sprite_names():
     rval[0x32] = "policeman"
     rval[0x3F] = "blank"
     rval[0x155] = "blank"
-    set_names(rval,0x100,0x103,"bullet")
+    rval[0x100] = "bullet"
+    set_names(rval,0x101,0x103,"molotov")
 
     rval[0x10B] = "shell"
     rval[0x10C] = "shell"
@@ -70,8 +71,8 @@ def get_sprite_names():
     rval[0x12C] = "dead_convict"
     rval[0x46] = "bike"
     rval[0x1C6] = "barrel"
-    rval[0x138] = "bullet"
-    rval[0x139] = "bullet"
+    rval[0x138] = "molotov"
+    rval[0x139] = "molotov"
     rval[0x131] = "score"
     rval[0x12E] = "score"
     rval[0x12F] = "score"

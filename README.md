@@ -3,8 +3,6 @@ remake of Jail Break for Amiga (AGA)
 
 Requires a 2-button joystick, or the keyboard
 
-
-
 Credits:
 
 - jotd: reverse-engineering, 68000 transcode, graphics conversion
@@ -24,3 +22,5 @@ blue/alt: change weapon
 Cheat keys:
 
 F1: skip level
+F3: add 10000 points
+F4: toggle invincibility
