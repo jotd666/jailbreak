@@ -1,7 +1,7 @@
 import bitplanelib
 import os,pathlib
 
-
+fkfkfkfkfk this aint the one to use!! use tracknfield one!
 this_dir = pathlib.Path(os.path.abspath(__file__)).parent
 src_dir = this_dir / os.pardir / "src" / "amiga"
 

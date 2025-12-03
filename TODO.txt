@@ -3,7 +3,7 @@
   with fallback to bobs: sprite 0x100
 - cheat key (F4) to enable/disable invincibility, check killing the warden
   with no cheats on
-
+- easy mode: if hit, just decrease weapon level
 - vertical scrolling for end sequence: not perfect...
 
 - sounds not playing, intro music when ends should play level description (siren, "hostage" message, hack to make them play)
