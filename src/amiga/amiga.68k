@@ -2152,7 +2152,11 @@ platform_init:
 	* restrict borders: we don't see bobs on the borders!
 	* try to hide color 0 on the border (except on OCS)
 
+	.ifdef	OCS_VERSION
+	.else
     move.w #(SPRITE_FMODE<<2)+BITPLANE_FMODE,fmode(a5)	| 32 bit bitplane fetch, 64 bit wide sprites
+	move.w	#0,bplcon4(a5)			| use the same colors as bobs playfield
+	.endif
 
 	move.w	#0,bplcon1(a5)
 

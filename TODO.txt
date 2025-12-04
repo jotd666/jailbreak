@@ -21,3 +21,16 @@
 log sounds: bpset 93b7,,{print A;g}
 only play this C sound: bpset 93b7,A!=$C,{PC=93c9;g}
 sim sound on credit: bpset 93b7,,{A=$81;g}
+
+
+    <cheat desc="Select Starting Stage">
+        <comment>Both players share starting stage</comment>
+        <parameter min="01" max="05" step="01" />
+        <script state="run">
+            <action condition="maincpu.pb@1597 == 01">
+                maincpu.pb@1596 = maincpu.pb@159B = param - 1,
+                maincpu.pb@1597 = param,
+                maincpu.pd@15A0 = FFFFFF00 | (maincpu.pd@15A0 band ~FFFFFF00)
+            </action>
+        </script>
+    </cheat>
