@@ -164,9 +164,6 @@ okay\@:
 	.macro PUSH_SR
 	move.w	ccr,-(sp)
 	.endm
-	.macro POP_SR
-	move.w	(sp)+,ccr
-	.endm
 
 
 	.macro	MOVE_W_TO_REG	src,dest
@@ -220,9 +217,6 @@ okay\@:
 	.macro PUSH_SR
 	move.w	sr,-(sp)
 	.endm
-	.macro POP_SR
-	move.w	(sp)+,sr
-	.endm
 
 	.macro	MOVE_W_TO_REG    src,dest
 	ror.w	#8,\dest
@@ -253,6 +247,9 @@ okay\@:
 
 	.endif
 
+	.macro POP_SR
+	move.w	(sp)+,ccr
+	.endm
 
     .macro    JSR_A_INDEXED    reg,nb_cases
     JXX_A_INDEXED	jsr,\reg,\nb_cases
