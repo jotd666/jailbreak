@@ -73,11 +73,11 @@ OPT_ENABLE_PROFILING = 0
 * if no bitplane data: there will be some color artefacts
 * but not noticeable unless 2 sprites cross each other paths
 OPT_IGNORE_ZERO_BITPLANE = 0
-
-	
+	.ifdef	OCS_VERSION
+OPT_ENABLE_DOUBLE_BUFFERING = 0
+	.else
 OPT_ENABLE_DOUBLE_BUFFERING = 1
-
-
+	.endif
 OPT_ENABLE_MULTIPLEXED_SPRITES = 0
 
 NB_TILE_PLANES = 4
@@ -410,10 +410,33 @@ _user:
 	lea		debug_copperlist,a0
 	move.l	a0,cop1lc(a5)
 	
-	lea		background_buffer,a0
+	lea		bg_screen_buffer_1,a0
 	jbsr	align_for_fmode
 	move.l	a0,background_ptr
 	
+	.ifdef	OCS_VERSION
+	* OCS version, double buffering occurs on back buffer if enabled
+	move.l	#mulBG_NB_BYTES_PER_ROW_table,bob_row_multiplication_table
+	move.w	#BG_NB_BYTES_PER_ROW,bob_row_size
+	move.w	#BG_SCREEN_PLANE_SIZE,bob_plane_size
+
+	lea		bg_screen_buffer_1,a0
+	move.l	a0,fg_screen_data_1
+	move.l	a0,playfield_drawn_screen_ptr
+	move.l	a0,playfield_displayed_screen_ptr
+
+	.ifne	OPT_ENABLE_DOUBLE_BUFFERING
+	lea		bg_screen_buffer_2,a0
+	move.l	a0,fg_screen_data_2
+	move.l	a0,playfield_displayed_screen_ptr
+	.endif
+
+	.else
+	* AGA version, dual playfield
+
+	move.l	#mulFG_NB_BYTES_PER_ROW_table,bob_row_multiplication_table
+	move.w	#FG_NB_BYTES_PER_ROW,bob_row_size
+	move.w	#FG_SCREEN_PLANE_SIZE,bob_plane_size
 	
 	lea		fg_screen_buffer_1,a0
 	jbsr	align_for_fmode
@@ -430,16 +453,32 @@ _user:
 	move.l	a0,playfield_displayed_screen_ptr
 	.endif
 		
+	.endif
+	cmp.w	#0x8000,bob_plane_size
+	jcs	0f
+	BREAKPOINT	"plane size too high for word operations"
+0:
 	* set them even if reset by game afterwards
 	* avoiding ugly stripe bitplane effect at startup
 
 	jbsr		really_update_scroll
 	
+	.ifndef	OCS_VERSION
+	* in AGA version, BOB bitplanes are on 2nd playfield
 	bsr		set_bob_bitplanes
+	.endif
 	
-	move.w	#TOTAL_NB_COLORS*2,d0
 	lea		palette,a0
+	.ifdef	OCS_VERSION
+	* ECS: load 16 common colors
+	move.w	#TOTAL_NB_COLORS,d0
+	lea		bobs_colors,a1	
+	.else
+	* AGA: load 32 colors (16+16 DPF)
+	move.w	#TOTAL_NB_COLORS*2,d0
+
 	lea		tiles_colors,a1
+	.endif
 	bsr		load_palette
 	
 
@@ -1957,7 +1996,7 @@ sprite_buffer:
 
 	
 bob_previous_positions_1:
-	ds.b	NB_TARGET_SPRITES*PREVIOUS_SPRITE_SIZEOF
+	.fill NB_TARGET_SPRITES*PREVIOUS_SPRITE_SIZEOF , 1 , -1
 bob_previous_drawn_sprites:
 	.long	bob_previous_positions_1
 bob_previous_displayed_sprites:
@@ -1966,7 +2005,7 @@ bob_previous_displayed_sprites:
 	.else
 	.long	bob_previous_positions_2	
 bob_previous_positions_2:
-	ds.b	NB_TARGET_SPRITES*PREVIOUS_SPRITE_SIZEOF	
+	.fill NB_TARGET_SPRITES*PREVIOUS_SPRITE_SIZEOF , 1 , -1
 	.endif
 
 		
@@ -2249,10 +2288,14 @@ platform_init:
 
 * so memory is quadword-aligned (not trusting .align directives)
 align_for_fmode:
+	.ifdef	OCS_VERSION
+	* do nothing!
+	.else
 	add.w	#0x8,a0
 	move.l	a0,d0
 	and.b	#0xF8,d0
 	move.l	d0,a0
+	.endif
 	rts
 
 
@@ -2436,7 +2479,18 @@ update_bg_tile_vert:
 	* updating bitplanes
 	move.l	#BG_SCREEN_PLANE_SIZE,d5
 	move.w	#NB_TILE_PLANES-1,d4
+	.ifdef	OCS_VERSION
+	.ifeq	OPT_ENABLE_DOUBLE_BUFFERING
 	move.l		background_ptr,a1
+	.else 
+	* OCS with double buffering
+	lea		bg_screen_buffer_1,a1
+	lea		bg_screen_buffer_2,a4
+	.endif
+	.else
+	* AGA: no double buffering on background
+	move.l		background_ptr,a1
+	.endif
 
 	lea		mulBG_VERT_NB_BYTES_PER_ROW_table,A2
 	.ifdef	NO68020
@@ -2447,6 +2501,10 @@ update_bg_tile_vert:
 	.endif
 	add.w	d1,d0
 	add.w	d0,a1
+	.ifdef	OCS_VERSION
+	lea		background_restore_buffer,a3
+	add.w	d0,a3
+	.endif
 	
 
 	.ifdef	NO68020
@@ -2469,7 +2527,7 @@ update_bg_tile_vert:
 	move.l	d0,a2
 	move.b	d3,d1
 	and.w	#0xF,d3
-	.ifdef	N068020
+	.ifdef	NO68020
 	add.w	d3,d3
 	add.w	d3,d3
 	move.l	(a2,d3.w),d0			| pointer on tile bitplanes for that CLUT
@@ -2514,6 +2572,12 @@ update_bg_tile_vert:
 	
 	.macro	COPY_TILE_PLANE_ROW
 	move.b	d0,(offset,a1)  | buffer
+	.ifdef	OCS_VERSION
+	move.b	d0,(offset,a3)  | restore buffer
+	.ifne	OPT_ENABLE_DOUBLE_BUFFERING
+	move.b	d0,(offset,a4)	| second buffer
+	.endif
+	.endif
 	.endm
 	
 	
@@ -2521,6 +2585,12 @@ update_bg_tile_vert:
 	.set	offset,0
 	.rept	8
 	clr.b	(offset,a1)
+	.ifdef	OCS_VERSION
+	clr.b	(offset,a3)  | restore buffer
+	.ifne	OPT_ENABLE_DOUBLE_BUFFERING
+	clr.b	(offset,a4)	| second buffer
+	.endif
+	.endif
 	.set	offset,offset+\nb_bytes_per_row
 	.endr	
 	.endm
@@ -3085,9 +3155,6 @@ osd_read_dsw_3:
 	
 
 level2_interrupt:
-	bsr		handle_keyboard
-	move.w	#8,_custom+intreq
-	rte
 	
 handle_keyboard:
 	movem.l	D0/A0/A5,-(a7)
@@ -3198,7 +3265,8 @@ handle_keyboard:
 
 1:
 	movem.l	(a7)+,d0/a0/a5
-	rts
+	move.w	#8,_custom+intreq
+	rte
 	
 toggle_pause:
 	* pause only within game
@@ -3222,8 +3290,9 @@ beamdelay:
 	dbf	d0,0b
 	rts
 
-	
+	.ifndef	OCS_VERSION	
 	MUL_TABLE	FG_NB_BYTES_PER_ROW,NB_LINES*2
+	.endif
 	MUL_TABLE	BG_HORIZ_NB_BYTES_PER_ROW,NB_LINES*2
 	MUL_TABLE	BG_VERT_NB_BYTES_PER_ROW,NB_LINES*2
 
@@ -3555,9 +3624,11 @@ tiles_bitplanes:
 reset_bplcon1_1:
 	.word 	0
 
+	.ifndef	OCS_VERSION
 
 tiles_colors:
 	DECL_COLORS	16,TOTAL_NB_COLORS
+	.endif
 bobs_colors:
 	DECL_COLORS	0,TOTAL_NB_COLORS
 
@@ -3636,19 +3707,31 @@ intreq_block_game_vertical:
 	
 		.section .bsschip
 		
-	
-background_buffer:
+	* AGA and OCS: one background buffer
+bg_screen_buffer_1:
 	.skip	BG_SCREEN_SIZE
-		
-	.skip	8
+	
+	.ifdef	OCS_VERSION
+	* OCS: background restore buffer
+	* and optional extra background buffer for doublebuffer
+	.skip	4
+background_restore_buffer:
+	.skip	BG_SCREEN_SIZE
+
+	.ifne	OPT_ENABLE_DOUBLE_BUFFERING
+bg_screen_buffer_2:
+	.skip	BG_SCREEN_SIZE
+	.endif
+	.else
+	* AGA 1 or 2 front buffers
 fg_screen_buffer_1:
 	.skip	FG_SCREEN_SIZE
 	.skip	FG_NB_BYTES_PER_ROW*12*3
 	.ifne	OPT_ENABLE_DOUBLE_BUFFERING
-	.skip	8
 fg_screen_buffer_2:
 	.skip	FG_SCREEN_SIZE
 	.skip	FG_NB_BYTES_PER_ROW*12*3
+	.endif
 	.endif
 
 
