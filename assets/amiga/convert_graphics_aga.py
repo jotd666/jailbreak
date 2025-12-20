@@ -8,6 +8,8 @@ sprite_names = get_sprite_names()
 
 mirror_sprites = get_mirror_sprites()
 
+possible_hw_sprites = get_possible_hw_sprites()
+
 magenta = (254,0,254)
 
 NB_SPRITES = 0x200
@@ -22,16 +24,7 @@ if dump_it:
             f.write("*")
 
 
-def dump_asm_bytes(*args,**kwargs):
-    bitplanelib.dump_asm_bytes(*args,**kwargs,mit_format=True)
 
-
-def ensure_empty(d):
-    if os.path.exists(d):
-        for f in os.listdir(d):
-            os.remove(os.path.join(d,f))
-    else:
-        os.makedirs(d)
 
 def load_tileset(image_name,palette_index,width,height,tileset_name,dumpdir,
 dump=False,name_dict=None,cluts=None,tile_number=0,is_bob=False):
@@ -126,21 +119,13 @@ nb_colors = 32
 
 
 
-def add_tile(table,index,cluts=[0]):
-    if isinstance(index,range):
-        pass
-    elif not isinstance(index,(list,tuple)):
-        index = [index]
-    for idx in index:
-        table[idx] = cluts
-
 sprite_cluts = {}
 tile_cluts = {}
 
 try:
     with open(used_graphics_dir / "used_sprites","rb") as f:
         for index in range(NB_SPRITES):
-            d = f.read(16)
+            d = f.read(NB_SPRITE_CLUTS)
             cluts = [i for i,c in enumerate(d) if c]
             if cluts:
                 add_tile(sprite_cluts,index,cluts=cluts)
@@ -162,7 +147,7 @@ else:
     try:
         with open(used_graphics_dir / "used_tiles","rb") as f:
             for index in range(NB_TILES):
-                d = f.read(16)
+                d = f.read(NB_TILE_CLUTS)
                 cluts = [i for i,c in enumerate(d) if c]
                 if cluts:
                     add_tile(tile_cluts,index,cluts=cluts)
@@ -223,7 +208,7 @@ print(f"Used tile colors: {len(tile_palette)}")
 tile_palette += (16-len(tile_palette)) * [(0x10,0x20,0x30)]
 
 sprite_palette = set()
-sprite_set_list = [[] for _ in range(16)]
+sprite_set_list = [[] for _ in range(NB_SPRITE_CLUTS)]
 hw_sprite_set_list = []
 
 sprite_dump_dir = dump_dir / "sprites"
@@ -295,11 +280,9 @@ def read_tileset(img_set_list,palette,plane_orientation_flags,cache,is_bob):
                 for b,(plane_name,plane_func) in zip(plane_orientation_flags,plane_orientations):
                     if b:
 
+                        bitplane_sprite_data = None
                         actual_nb_planes = nb_planes
 
-                        # most sprites aren't mirrored. Save a lot of memory!
-                        if plane_func == ImageOps.mirror and i not in mirror_sprites:
-                            continue
 
                         wtile = plane_func(tile)
 
@@ -308,10 +291,14 @@ def read_tileset(img_set_list,palette,plane_orientation_flags,cache,is_bob):
 
 
                             # only 4 planes + mask => 5 planes
+                            orig_wtile = wtile
                             y_start,wtile = bitplanelib.autocrop_y(wtile,mask_color=magenta)
                             height = wtile.size[1]
                             width = wtile.size[0]//8 + 2
                             bitplane_data = bitplanelib.palette_image2raw(wtile,None,palette,generate_mask=True,mask_color=magenta)
+                            if i in possible_hw_sprites:
+                                # using original, uncropped bitplane data to create 16x16 or 16x32 hw sprite
+                                bitplane_sprite_data = bitplanelib.palette_image2attached_sprites(orig_wtile,None,palette,with_control_words=True)
                         else:
                             # 4 planes, no mask
                             height = 8
@@ -336,12 +323,14 @@ def read_tileset(img_set_list,palette,plane_orientation_flags,cache,is_bob):
                                 else:
                                     bitplane_plane_ids.append(0)  # blank
                         entry[plane_name] = {"width":width,"height":height,"y_start":y_start,"bitplanes":bitplane_plane_ids}
+                        if bitplane_sprite_data:
+                            entry[plane_name]["sprdat"] = bitplane_sprite_data
 
             tile_entry.append(entry)
 
         tile_table.append(tile_entry)
 
-    new_tile_table = [[[] for _ in range(16)] for _ in range(len(tile_table[0]))]
+    new_tile_table = [[[] for _ in range(NB_SPRITE_CLUTS if is_bob else NB_TILE_CLUTS)] for _ in range(len(tile_table[0]))]
 
     # reorder/transpose. We have 16 * 256 we need 256 * 16
     for i,u in enumerate(tile_table):
@@ -376,6 +365,7 @@ with open(os.path.join(src_dir,"sprite_groups.68k"),"w") as f:
 
 with open(os.path.join(src_dir,"graphics.68k"),"w") as f:
     f.write("\t.global\tcharacter_table\n")
+    f.write("\t.global\thws_table\n")
     f.write("\t.global\tbob_table\n")
 
     f.write("character_table:\n")
@@ -494,9 +484,49 @@ with open(os.path.join(src_dir,"graphics.68k"),"w") as f:
                         elif orientation == "mirror":
                             f.write(f"\t.word\t-1  | no mirror declared\n")
 
-    f.write("\t.section\t.datachip\n")
+    if possible_hw_sprites:
+        f.write("hws_table:\n")
+        for i,tile_entry in enumerate(sprite_table):
+            for orientation in ['standard','mirror']:
+                f.write("\t.long\t")
+                if any(t and "sprdat" in t[orientation] for t in tile_entry):
+                    prefix = sprite_names.get(i,"bob")
+                    prefix = f"hws_{prefix}_{i:02x}_{orientation}"
+                    f.write(prefix)
+                else:
+                    f.write("0")
+                f.write("\n")
+
+        # HW sprites clut declaration
+        for i,tile_entry in enumerate(sprite_table):
+            for orientation in ['standard','mirror']:
+                if any(t and "sprdat" in t[orientation] for t in tile_entry):
+                    prefix = sprite_names.get(i,"bob")
+                    f.write(f"hws_{prefix}_{i:02x}_{orientation}:\n")
+                    for j,t in enumerate(tile_entry):
+                        f.write("\t.long\t")
+                        if t:
+                            z = f"hws_{prefix}_{i:02x}_{j:02x}_{orientation}"
+                            f.write(f"{z}_0,{z}_1")
+                        else:
+                            f.write("0,0")
+                        f.write("\n")
+    f.write("\n\t.section\t.datachip\n")
 
     for k,v in bob_plane_cache.items():
         f.write(f"bob_plane_{v:02d}:")
         dump_asm_bytes(k,f)
 
+    if possible_hw_sprites:
+        for i,tile_entry in enumerate(sprite_table):
+            for orientation in ['standard','mirror']:
+                if any(t and "sprdat" in t[orientation] for t in tile_entry):
+                    prefix = sprite_names.get(i,"bob")
+                    for j,t in enumerate(tile_entry):
+
+                        if t:
+                            data = t[orientation]["sprdat"]
+                            for k,d in enumerate(data):
+                                f.write(f"hws_{prefix}_{i:02x}_{j:02x}_{orientation}_{k}:")
+                                bitplanelib.dump_asm_bytes(d,f,mit_format=True)
+                            f.write("\n")

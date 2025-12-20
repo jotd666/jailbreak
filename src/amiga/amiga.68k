@@ -45,6 +45,8 @@ SPRITE_X_CORRECTION = 32
 SPRITE_Y_CORRECTION = 0
 SPRITE_HEIGHT = 16
 SPRITE_WIDTH = 16
+HW_SPRITE_X_CORRECTION = 0
+HW_SPRITE_Y_CORRECTION = 0
 
 Y_MAX = 256
 
@@ -56,7 +58,7 @@ ROM_START = 0x8000
 SCROLL_START = 0x2000
 SPRITE_START = 0x1000
 
-LAST_SPRITE = RAM_START+0x3E
+LAST_SPRITE = RAM_START+(NB_TARGET_SPRITES*TARGET_SPRITE_SIZEOF)-TARGET_SPRITE_SIZEOF
 FIRST_SPRITE = RAM_START
 
 
@@ -395,7 +397,7 @@ _user:
 
 .no_forbid:
 	
-	.ifndef	RELEASE
+	.ifne	OPT_ENABLE_LOGGING
 	move.l	#log_buffer,log_ptr
 	lea	log_buffer_end,a0
 	move.l	#0xCAFECAFE,d0
@@ -465,12 +467,16 @@ _user:
 	
 	.ifndef	OCS_VERSION
 	* in AGA version, BOB bitplanes are on 2nd playfield
-	bsr		set_bob_bitplanes
+	jbsr		set_bob_bitplanes
 	.endif
 	
 	lea		palette,a0
 	.ifdef	OCS_VERSION
-	* ECS: load 16 common colors
+	* ECS: load 16 common colors for tiles/bobs & sprites
+	move.w	#TOTAL_NB_COLORS,d0
+	lea		tiles_colors,a1	
+	bsr		load_palette
+	lea		palette,a0
 	move.w	#TOTAL_NB_COLORS,d0
 	lea		bobs_colors,a1	
 	.else
@@ -559,9 +565,26 @@ _user:
 	
 	jsr	 _detect_controller_types 
 
+	.ifne	OPT_ENABLE_LOGGING
+	* install dump and quit handler
+	* jump 4: dump & illegal
+	* jump A: quit
+	pea		dump_and_quit
+	lea		2.W,a0
+	move.l	#0x4AFC4EF9,(a0)+
+	move.l	(a7)+,(a0)+
+	pea		quit_to_os
+	move.w	#0x4EF9,(a0)+
+	move.l	(a7)+,(a0)+
+	.endif
 
 	jra		demo_game
 
+	.ifne	OPT_ENABLE_LOGGING
+dump_and_quit:	
+	jbsr	osd_dump_logs
+	illegal
+	.endif
 
 	
 * < D0: bcpl string (with leading size byte)
@@ -710,110 +733,6 @@ call_bcpl:
 
 
 
-* < D0: sprite X
-* < D1: sprite Y
-* < D2: sprite code & flags
-* < D3: sprite color (clut index, no flip information)
-* > D6: allocated sprite index
-alloc_sprite:
-	* first pass: find a free sprite next to a sprite with
-	* same clut
-	lea		host_sprites(pc),a2
-	moveq	#0,d6
-0:
-	cmp.b	(SPRITE_CLUT,a2),d3
-	bne.b	10f
-	* allocated (else would be -1/invalid) + same clut
-	* check even/odd index
-	btst	#0,d6
-	beq.b	1f
-	* odd: check if previous entry is free
-	tst.b	(SPRITE_X-SPRITE_SIZEOF,a2)
-	beq.b	8f
-	tst.b	(SPRITE_Y-SPRITE_SIZEOF,a2)
-	bne.b	10f
-8:
-	* previous entry is free, same clut: we can use that
-	* entry, no color conflict
-	lea		(-SPRITE_SIZEOF,a2),a2
-9:
-	move.b	d0,(a2)+		| X
-	move.b	d1,(a2)+		| Y
-	move.b	d2,(a2)+		| code
-	move.b	d3,(a2)+		| clut (no flip information)
-	rts						| done
-1:
-	* even: check if next entry is free
-	tst.b	(SPRITE_X+SPRITE_SIZEOF,a2)
-	beq.b	2f
-	tst.b	(SPRITE_Y+SPRITE_SIZEOF,a2)
-	bne.b	10f
-2:
-	* next entry is free, same clut: we can use that
-	* entry, no color conflict
-	lea		(SPRITE_SIZEOF,a2),a2
-	bra.b	9b
-10:
-	* next entry
-	addq.w	#SPRITE_SIZEOF,a2
-	addq	#1,d6
-	cmp.w	#NB_HOST_SPRITES,d6
-	bne.b	0b
-	* second pass if first pass failed (could not match
-	* a pair with one occupied slot with compatible clut,
-	* which happens when there are very few sprites
-	* displayed): we have to find 2 consecutive free slots
-
-	lea		host_sprites(pc),a2
-	moveq	#0,d6
-11:
-	* we consider that a sprite is not allocated
-	* if one of the coordinates is zero (real game
-	* doesn't care and sets X to 255, and Y to 0 at times
-	tst.b	(SPRITE_Y,a2)
-	beq.b	12f
-	tst.b	(SPRITE_X,a2)
-	bne.b	20f
-12:
-	* not allocated: test odd sprite
-	tst.b	(SPRITE_Y+SPRITE_SIZEOF,a2)
-	jeq	9b
-	tst.b	(SPRITE_X+SPRITE_SIZEOF,a2)
-	jeq	9b		| ok, both slots are free, allocate the first one
-20:
-	* next sprite pair
-	lea		(2*SPRITE_SIZEOF,a2),a2
-	addq	#2,d6
-	cmp.w	#NB_HOST_SPRITES,d6
-	bne.b	11b
-	
-	* third pass: last chance/emergency: there ARE free slots
-	* but maybe too many different cluts so we can't find a suitable slot.
-	* In that case, pick the first free slot
-	*
-	lea		host_sprites(pc),a2
-	moveq	#0,d6
-21:
-	tst.b	(SPRITE_X,a2)
-	beq.b	9b		| ok, a slot is free, allocate it
-	tst.b	(SPRITE_Y,a2)
-	beq.b	9b		| ok, a slot is free, allocate it
-30:
-	* next sprite
-	lea		(SPRITE_SIZEOF,a2),a2
-	addq	#1,d6
-	cmp.w	#NB_HOST_SPRITES,d6
-	bne.b	21b
-	* just cannot happen
-	* if we reach that point there's a big problem, break if dev mode
-	* hopefully if we save buffer in A1 we can reproduce the issue at will!
-	.ifndef	RELEASE
-	lea			sprite_buffer(pc),a1
-	lea			sprite_allocation_error,a0
-	jbsr	osd_break
-	.endif
-	* in release mode, just discard this sprite, maybe we'll get away with it!
-	rts
 	
 * zero all registers but 6809 stack pointer
 cpu_init:
@@ -888,7 +807,7 @@ _nmi:
 	move.w	#0x7FFF,_custom+intreq
 	rts
 	
-_vblank:
+level3_interrupt:
     movem.l d0-d7/a0-a6,-(a7)
 	lea		_custom,a5
 	move.w	(intreqr,a5),d0
@@ -1319,7 +1238,159 @@ really_update_tiles:
 	
 
 
+really_update_hw_sprites:
+	************************************************
+	* draw current sprites from 6809 sprite memory *
+	************************************************
+	GET_MEMORY_START_AND_DP
+	* clear "sprite drawn" table
+	lea		sprite_drawn_table(pc),a0
+	move.w	#NB_TARGET_SPRITES/4-1,d7
+0:
+	clr.l	(a0)+
+	dbf		d7,0b
 
+	* now update in the reverted order // the bobs
+	lea		(LAST_SPRITE,a6),a0		| sprite start
+	lea		hws_table,a4
+	lea		game_sprites+2,a2				| copperlist part
+	lea		game_sprites_end+2,a6			| end
+	move.w	#NB_TARGET_SPRITES,d6
+	moveq	#0,d7
+	lea		HW_SpriteYTable_16,a1		| most sprites have same size 16 high
+	move.l	#sprite_control_words,d5
+1:
+	jbsr	update_one_hw_sprite
+	subq.w	#TARGET_SPRITE_SIZEOF,a0
+	cmp.l	a2,a6
+	jeq		2f			| all sprites are used already: bail out
+	addq	#1,d7
+	cmp.w	d6,d7		| we have to increase d7 (priority inverted vs bobs)
+	jne		1b
+	* blank the rest of the unused sprites
+	* a quick way is to cancel sprite position
+	* leaving the current sprite data
+	move.l	d5,a3		| pointer on sprite positions in copperlist
+	lea		sprite_control_words_end,a2
+1:
+	cmp.l	a2,a3
+	jeq		2f
+	clr.w	(6,a3)
+	clr.w	(2,a3)
+	addq	#8,a3
+	jra		1b
+2:	
+	rts
+
+	.macro	COMPUTE_SPRITE_COORDS
+	moveq	#0,d0
+	moveq	#0,d1
+	move.b	(TARGET_SPRITE_Y,a0),d1  | sprite Y
+	move.b	(TARGET_SPRITE_X,a0),d0
+
+	* filter out if Y=0
+	tst.b	d1
+	jeq		2f
+
+	moveq	#0,d2
+	move.b	(TARGET_SPRITE_ATTR,a0),d2
+	btst	#7,d2
+	jeq		0f
+	sub.w	#0x100,d0		| "wrap"
+0:
+	add.w	#0x40,d0
+	jmi		2f	
+	.endm
+	
+	
+* < A0: target sprite memory
+* < A1: sprite ctrl word table (Y=16)
+* < A2: part copperlist where the sprites are
+* A3: scratch
+* < A4: hardware sprite table (0 if not hw sprite)
+* < D5: pointer on sprite positions in the copperlist
+* < D7: loop counter (used for flag index)
+update_one_hw_sprite:
+
+	* get code immediately. we want to know if it's a
+	* hardware sprite right away
+	moveq	#0,d3
+	move.b	(TARGET_SPRITE_CODE,a0),d3
+
+	lsl.w	#3,d3
+	move.b	(TARGET_SPRITE_ATTR,a0),d2
+*	btst	#MIRROR_X_BIT,d2  | Y but portrait!
+*	jeq		0f
+*	addq	#4,d3
+*0:
+	
+	move.l	(a4,d3.w),d3
+	jeq		2f		| not defined or no HW sprite, pass to BOBs
+
+
+	COMPUTE_SPRITE_COORDS
+
+	move.l	d3,a5	| clut table
+
+	
+
+	
+	lea		sprite_drawn_table(pc),a3
+	st.b	(a3,d7.w)
+	
+
+	.ifne	HW_SPRITE_X_CORRECTION
+	add.w	#HW_SPRITE_X_CORRECTION,d0
+	.endif
+	.ifne	HW_SPRITE_Y_CORRECTION
+	add.w	#HW_SPRITE_Y_CORRECTION,d1
+	.endif
+
+	exg		d0,d1
+	
+	and.b	#0xF,d2		| CLUT
+	
+	* it is a HW sprite all right
+	lsl.w	#3,d2	| 2 pointers for each sprite
+
+	lea		(a5,d2.w),a5	| pointer on first sprite
+
+	* D0 and D1 are already set
+	* so is A1 with sprite Y pos table
+	
+	jbsr		store_sprite_pos
+
+	* first sprite of couple
+	move.l	(a5)+,a3	| pointer on sprite data
+	*move.l	d0,(a3)		| control word of sprite 1, not useful
+	move.l	a3,d1
+	* store sprite pointer in copperlist
+	move.w	d1,(4,a2)
+	swap	d1
+	move.w	d1,(a2)
+	move.l	d5,a3
+	move.w	d0,(6,a3)
+	swap	d0
+	move.w	d0,(2,a3)
+	swap	d0
+	* second sprite of couple
+	BSET	#7,d0		| attach bit set
+	move.w	d0,(6+8,a3)
+	swap	d0
+	move.w	d0,(2+8,a3)
+	move.l	(a5),a3		| pointer on sprite data
+	*move.l	d0,(a3)		| control word of sprite 2, not useful
+	move.l	a3,d1
+	* store sprite pointer in copperlist
+	move.w	d1,(4+8,a2)
+	swap	d1
+	move.w	d1,(8,a2)
+	move.w	#0x10,d1
+	add.w	d1,a2	| advance in sprite copperlist part
+	add.w	d1,d5	| next sprite couple
+2:
+	
+	rts
 really_update_sprites:
 update_bobs_and_hw_sprites:
 	
@@ -1376,7 +1447,78 @@ update_bobs_and_hw_sprites:
 2:
 	rts
 	
+	.ifdef	OCS_VERSION
 
+* what: blits data on bg plane, no horizontal shifting (erase)
+* args:
+* < A0: pristine background
+* < A1: dest buffer
+* < D0: X (rounded to smaller 8-multiple)
+* < D1: Y
+* < D2: width in bytes
+* < D4: height
+
+* trashes: D0-D1
+
+blit_background:
+	movem.l	d2-d6/a0-a5,-(a7)
+	lea		_custom,a5
+	* adjust offset X: X//8
+	lsr.w	#3,d0
+	lea		mulBG_NB_BYTES_PER_ROW_table(pc),a4
+	add.w	d1,d1
+	* add Y offset: Y*BG_NB_BYTES_PER_ROW
+	add.w	(a4,d1.w),d0
+	* same offset for source and destination
+	add.w	d0,a1
+	add.w	d0,a0
+	
+
+    move.l  #0x09f00000,d3    | A->D copy, ascending mode	
+	move.w	#BG_NB_BYTES_PER_ROW,d1		| blit modulo
+
+    sub.w   d2,d1       | blit modulo
+    lsl.w   #6,d4
+    lsr.w   #1,d2		| blit width
+    add.w   d2,d4       | blit height
+	
+    * always the same settings
+
+    * now just wait for blitter ready to write all registers
+	WAIT_BLIT
+    
+    * blitter registers set
+
+	move.l d3,bltcon0(a5)	| sets con0 and con1
+
+    move.w  d1,bltamod(a5)	|A modulo
+    move.w  d1,bltdmod(a5)	|D modulo
+							
+	move.l a0,bltapt(a5)	|source graphic top left corner
+	move.l a1,bltdpt(a5)	|destination top (bottom) left corner
+	move.w  d4,bltsize(a5)	|rectangle size, starts blit
+	
+	.rept	NB_BOB_PLANES-1
+	.if	BG_SCREEN_PLANE_SIZE>0x7FFF
+	add.l	#BG_SCREEN_PLANE_SIZE,a0
+	add.l	#BG_SCREEN_PLANE_SIZE,a1
+	.else
+	add.w	#BG_SCREEN_PLANE_SIZE,a0
+	add.w	#BG_SCREEN_PLANE_SIZE,a1
+	.endif
+	WAIT_BLIT
+	* second bitplane
+	move.l a0,bltapt(a5)	|source graphic top left corner
+	move.l a1,bltdpt(a5)	|destination top (bottom) left corner
+	move.w  d4,bltsize(a5)	|rectangle size, starts blit
+	.endr
+	
+	movem.l	(a7)+,d2-d6/a0-a5
+	rts
+
+	
+	
+	.endif
 *void jailbrek_state::draw_sprites(bitmap_ind16 &bitmap, const rectangle &cliprect)
 *{
 *	for (int i = 0; i < m_spriteram.bytes(); i += 4)
@@ -1414,23 +1556,7 @@ update_one_bob:
 
 	* X = 0 and Y = 0: disabled
 	
-	moveq	#0,d0
-	moveq	#0,d1
-	move.b	(TARGET_SPRITE_Y,a0),d1  | sprite Y
-	move.b	(TARGET_SPRITE_X,a0),d0
-
-	* filter out if Y=0
-	tst.b	d1
-	jeq		2f
-
-	moveq	#0,d2
-	move.b	(TARGET_SPRITE_ATTR,a0),d2
-	btst	#7,d2
-	jeq		0f
-	sub.w	#0x100,d0		| "wrap"
-0:
-	add.w	#0x40,d0
-	jmi		2f
+	COMPUTE_SPRITE_COORDS
 
 	.ifne	SPRITE_Y_CORRECTION
 	add.w	#SPRITE_Y_CORRECTION,d1
@@ -1586,7 +1712,7 @@ sprite_groups:
 	.include	"sprite_groups.68k"
 	
 	.ifdef	HW_SPRITES
-update_one_hw_sprite:
+update_one_hw_sprite_old:
 	* code = 0 and clut = 0 => disabled ?? to check
 	moveq	#0,d2
 	move.b	(TARGET_SPRITE_CODE,a0),d2
@@ -1745,7 +1871,7 @@ blit_planes_any_internal_cookie_cut:
 	tst.w	d1
     beq.b   2f    | optim
 	jmi		8f		| negative: don't display
-    lea		mulFG_NB_BYTES_PER_ROW_table(pc),a4
+	move.l	bob_row_multiplication_table(pc),a4
 	.ifdef	NO68020
 	add.w	d1,d1
     move.w  (a4,d1.w),d1	| y times 40
@@ -1777,7 +1903,8 @@ blit_planes_any_internal_cookie_cut:
     * but a 68000 CPU doesn't and since we RETURN A1...
     *bclr    #0,d1
     add.w   d1,a1       | plane position (D1 < 0x7FFF, 288*40=0x2D00)
-	move.w	#FG_NB_BYTES_PER_ROW,d0
+
+	move.w	bob_row_size,d0
 	tst.w	d4
 	bpl.b	5f
 	neg.w	d0
@@ -1810,7 +1937,7 @@ blit_planes_any_internal_cookie_cut:
 6:
 	jbsr	process_1_plane
 	
-	lea		(FG_SCREEN_PLANE_SIZE,a1),a1
+	add.w	bob_plane_size,a1
 	dbf		d3,6b
 7:
 	jbsr	process_1_plane
@@ -1875,7 +2002,7 @@ process_1_plane:
 * < D3: nb planes to clear
 * < D4: blit height
 * < D5: plane mask
-
+	.ifndef	OCS_VERSION
 * trashes D0-D6/A2
 clear_planes_any_blitter_internal:
     * pre-compute the maximum of shit here
@@ -1988,10 +2115,20 @@ clear_planes_any_blitter_internal:
 	move.l a1,bltdpt(a5)	|destination top left corner
 	move.w  d4,bltsize(a5)	|rectangle size, starts blit
     rts
+	.endif
 
+bob_row_multiplication_table:
+	.long	0
+bob_row_size:
+	.word	0
+bob_plane_size:
+	.word	0
+blitter_modulo:
+	.word	0
 	
-sprite_buffer:
-	.skip	NB_TARGET_SPRITES*SPRITE_SIZEOF
+sprite_drawn_table:
+	.skip	NB_TARGET_SPRITES
+
 
 
 	
@@ -2074,7 +2211,6 @@ store_system:
 	* no whdload, no fastmem/68020: assume slow switch to 25 FPS
 	* if running on PiStorm, well, too bad use whdload
 	*
-	* note: game crawls on vanilla A1200 too if stars are on
 	*
 	st.b	frameskip
 1:
@@ -2256,7 +2392,7 @@ platform_init:
 	move.l	system_vbr(pc),a1
 	pea		level2_interrupt(pc)
 	move.l	(a7)+,(0x68,a1)
-	pea		_vblank(pc)
+	pea		level3_interrupt(pc)
 	move.l	(a7)+,(0x6C,a1)
 	pea		_nmi(pc)
 	move.l	(a7)+,(0x7C,a1)
@@ -2273,14 +2409,6 @@ platform_init:
 	jsr		_mt_install_cia
 
 
-	.ifne	OPT_ENABLE_PROFILING
-	* init profiling if enabled
-	lea		0x180000,a0
-	move.l	#0x20000,d0
-	lea		0x100,a1
-	bsr		init_fixed_address
-	bsr		install_profiler_vbl_hook
-	.endif
 
 	
     rts
@@ -2955,6 +3083,7 @@ set_static_bitplanes:
     dbf d1,1b
     rts
 
+	.ifndef	OCS_VERSION
 set_bob_bitplanes:
 	movem.l	a0-a1/d0-d2,-(a7)
  	lea	bobs_bitplanes+2,a0
@@ -2971,7 +3100,7 @@ set_bob_bitplanes:
     dbf d1,1b
 	movem.l	(a7)+,a0-a1/d0-d2
     rts
-
+	.endif
 	
 osd_debug_hook:
 	rts
@@ -3613,6 +3742,7 @@ bpl2mod_copperlist_entry:
 	
 	* black color background plane
 
+
 	* enable sprite colors now
 
 bobs_bitplanes:
@@ -3638,6 +3768,16 @@ game_sprites:
 	DECL_SPRITES
 game_sprites_end:
 
+	.word	0x01+((25)*256),0xFFFE
+	.set	offset,0
+sprite_control_words:
+	.rept	8
+	.word	spr+offset,0
+	.word	spr+offset+2,0
+	.set	offset,offset+8
+	.endr
+sprite_control_words_end:
+	
 	.word	cop2lc
 copper_jump_high:
 	.word	0

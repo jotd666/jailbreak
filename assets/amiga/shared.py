@@ -13,6 +13,12 @@ used_sprite_cluts_file = this_dir / "used_sprite_cluts.json"
 used_tile_cluts_file = this_dir / "used_tile_cluts.json"
 used_graphics_dir = this_dir / "used_graphics"
 
+NB_SPRITE_CLUTS = 16
+NB_TILE_CLUTS = 16
+
+def get_possible_hw_sprites():
+    return {0x100,0x14D}  # bullets
+
 def palette_pad(palette,pad_nb):
     palette += (pad_nb-len(palette)) * [(0x10,0x20,0x30)]
 
@@ -39,7 +45,7 @@ player_single_sprites = {}
 group_sprite_pairs = (
 sr2(0x1F0,0x200) | sr2(0x1A0,0x1B0) | sr2(0x1BA,0x1C0) | sr2(0x170,0x17A) |
 {0x16C,0x7D,0x14E,0xCE,0X136,0x18D,0x19A,0x26,0x1EC,0x19C,0x1C0,0x11D,0X1C4,0x1EA,0x1B8,0xE8,0xE2,0x1E4,0x1D5,0x1E0,0x1E2,0x164,0x1DD,0x19E,0X41,0x44,0x34,0x30,0X17C,0x75,0x77,
-0x46,0x60,0x62,0X4A,0x4C,0X1D8,0x54,0x56,0x1C8,0x1CA,0X1D0,0x1D2,0xD8,0x126,0X183,0x156,0x17A,0x17E,0x122,0x124,0x193} |
+0x46,0x60,0x62,0X4A,0x4C,0X1D8,0x54,0x56,0x1C8,0x1CA,0X1D0,0xD8,0x126,0X183,0x156,0x17A,0x17E,0x122,0x124,0x193} |
 sr2(0x1B0,0x1B8)
 )
 
@@ -62,6 +68,7 @@ def get_sprite_names():
     rval[0x3F] = "blank"
     rval[0x155] = "blank"
     rval[0x100] = "bullet"
+    rval[0x14d] = "bullet"
     set_names(rval,0x101,0x103,"molotov")
 
     rval[0x10B] = "shell"
@@ -71,8 +78,9 @@ def get_sprite_names():
     rval[0x12C] = "dead_convict"
     rval[0x46] = "bike"
     rval[0x1C6] = "barrel"
-    rval[0x138] = "molotov"
-    rval[0x139] = "molotov"
+    rval[0x138] = "grenade"
+    rval[0x139] = "grenade"
+    rval[0x13a] = "grenade"
     rval[0x131] = "score"
     rval[0x12E] = "score"
     rval[0x12F] = "score"
@@ -107,6 +115,26 @@ def get_mirror_sprites():
 """
     rval = set(range(0,0x200))
     return rval
+
+def dump_asm_bytes(*args,**kwargs):
+    bitplanelib.dump_asm_bytes(*args,**kwargs,mit_format=True)
+
+
+def add_tile(table,index,cluts=[0]):
+    if isinstance(index,range):
+        pass
+    elif not isinstance(index,(list,tuple)):
+        index = [index]
+    for idx in index:
+        table[idx] = cluts
+
+
+def ensure_empty(d):
+    if os.path.exists(d):
+        for f in os.listdir(d):
+            os.remove(os.path.join(d,f))
+    else:
+        os.makedirs(d)
 
 alphanum_tile_codes = set(range(0,10)) | set(range(65-48,65+27-48))   # wrong
 
