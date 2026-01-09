@@ -834,17 +834,8 @@ level3_interrupt:
 	bne.b	0f
 	bsr		toggle_pause
 0:
-	* here music doesn't loop. We have to stop it when it ends
-	move.w	music_tick,d1
-	beq.b	13f
-	bmi.b	13f		| negative: infinite, not interruptible
 	
-	subq	#1,d1
 
-	move.w	d1,music_tick
-	bne.b	13f
-	jbsr		osd_music_stop
-13:
 	
 	* ack vbl twice (040/pistorm bug)
 	move.w	#0x20,(intreq,a5)
@@ -1418,7 +1409,7 @@ update_bobs_and_hw_sprites:
 	move.w	#NB_TILE_PLANES,d3
 	move.l		playfield_drawn_screen_ptr(pc),a1
 	subq	#8,a1
-	jbsr		clear_planes_any_blitter_internal
+	**jbsr		clear_planes_any_blitter_internal
 
 	dbf		d7,1b	
 	bra.b	12f
