@@ -1,4 +1,4 @@
-- broken: erase size at -1? plus tile bitplane not displayed
+- broken: tile bitplane not displayed anymore
 - remove 25Hz mode, just skip frames if cannot cope
 - use sprites for player bullets / enemy bullets when possible
   with fallback to bobs: sprite 0x100

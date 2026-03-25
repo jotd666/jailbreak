@@ -126,8 +126,7 @@ MIRROR_X_BIT = 4
 	UWORD	PREV_Y
 	UWORD	PREV_HEIGHT			
 	UWORD	PREV_WIDTH			
-	UBYTE	PREV_STAR		| not used	
-	UBYTE	PREV_ACTIVE_PLANES	
+	
 	LABEL		PREVIOUS_SPRITE_SIZEOF
 
 * hardware sprite (not used)
@@ -1402,14 +1401,12 @@ update_bobs_and_hw_sprites:
 	clr.l	(a4)+			| ack deletion
 	move.w	(a4)+,d4		| height
 	move.w	(a4)+,d2		| width/clut index (if star)
-	move.b	(a4)+,d3		| ignored
-	move.b	(a4)+,d5		| ignored
 
 	and.w	#0x1F0,d0		| align on 16 lower bound
 	move.w	#NB_TILE_PLANES,d3
 	move.l		playfield_drawn_screen_ptr(pc),a1
 	subq	#8,a1
-	**jbsr		clear_planes_any_blitter_internal
+	jbsr		clear_planes_any_blitter_internal
 
 	dbf		d7,1b	
 	bra.b	12f
@@ -1670,8 +1667,6 @@ update_one_bob:
 	move.w	d1,(a6)+			| store current sprite attributes to previous ones
 	move.w	d4,(a6)+			| store height
 	move.w	d5,(a6)+			| store width in bytes
-	clr.b	(a6)+				| 
-	move.b	d6,(a6)+		    | active planes (helps for erase)
 	move.w	d5,d2			    | width in bytes
 	moveq	#0,d5			    | Y-offset
 
@@ -2124,7 +2119,7 @@ sprite_drawn_table:
 
 	
 bob_previous_positions_1:
-	.fill NB_TARGET_SPRITES*PREVIOUS_SPRITE_SIZEOF , 1 , -1
+	.skip NB_TARGET_SPRITES*PREVIOUS_SPRITE_SIZEOF
 bob_previous_drawn_sprites:
 	.long	bob_previous_positions_1
 bob_previous_displayed_sprites:
@@ -2133,7 +2128,7 @@ bob_previous_displayed_sprites:
 	.else
 	.long	bob_previous_positions_2	
 bob_previous_positions_2:
-	.fill NB_TARGET_SPRITES*PREVIOUS_SPRITE_SIZEOF , 1 , -1
+	.skip NB_TARGET_SPRITES*PREVIOUS_SPRITE_SIZEOF
 	.endif
 
 		
