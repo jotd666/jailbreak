@@ -2671,18 +2671,20 @@ update_bg_tile_vert:
 	*move.l	(a4,d1.w*4),a4
 	*.endif
 
+	move.w	#NB_TILE_PLANES-1,d4
 	* should we print the tile once or twice?
 	tst.b	d6
 	jeq		20f		| just once
 	* do it twice. Preserve useful registers
 	movem.l	a1/a2,-(a7)
-	jbsr		standard_tile_vert
+	jbsr		standard_tile
 	movem.l	(a7)+,a1/a2
 	* draw the same thing more to the bottom
-	add.w	#BG_VERT_NB_BYTES_PER_COL*BG_VERT_NB_BYTES_PER_ROW*8,a1
+	add.w	#BG_HORIZ_NB_BYTES_PER_ROW*NB_PLAYFIELD_LINES,A1
+	*add.w	#BG_VERT_NB_BYTES_PER_COL*BG_VERT_NB_BYTES_PER_ROW*8,a1
 	move.w	#NB_TILE_PLANES-1,d4
 20:
-	jra	standard_tile_vert
+	jra	standard_tile
 	
 	.macro	COPY_TILE_PLANE_ROW
 	move.b	d0,(offset,a1)  | buffer
@@ -2881,7 +2883,6 @@ update_bg_tile_horiz:
 standard_tile:
 
 	* just copy
-
 4:
 	move.l	(a2)+,d0		| next plane
 	jeq		5f
