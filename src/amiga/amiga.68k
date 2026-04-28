@@ -3257,7 +3257,9 @@ osd_read_dsw_2:
 	* actual dipswitches
 	move.b	dip_switches_2(pc),d0
 	not.b	d0		| active low
-	*BREAKPOINT	"read dsw2"
+	* $78: easy difficulty
+	* $48: very hard 5 lives, $4B very hard 1 life
+	move.b	#$78,d0		| right now hardcoded
 	rts
 osd_read_dsw_3:
 	* actual dipswitches
