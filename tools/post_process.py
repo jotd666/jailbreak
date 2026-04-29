@@ -92,6 +92,10 @@ with open(source_dir / "conv.s") as f:
 
         line = re.sub(tablere,subt,line)
 
+        if "check explicit" in line:
+            line = remove_error(line)
+        if "abcd/sbcd/subx/addx" in line:
+            line = remove_error(line)
 
         address = get_line_address(line)
 
@@ -128,9 +132,9 @@ with open(source_dir / "conv.s") as f:
             line = change_instruction("INDIRECT_JMP_U",lines,i)
         elif address == 0xb116:
             line = remove_instruction(lines,i)
-        elif address in {0x951f,0x9538,0x954b,0x955e,0x9571}:
-            # functions return condition code (C) set
-            lines[i+1] = remove_error(lines[i+1])
+##        elif address in {0x951f,0x9538,0x954b,0x955e,0x9571}:
+##            # functions return condition code (C) set
+##            lines[i+1] = remove_error(lines[i+1])
         elif address in {0xa62e,0xa669}:
             # swap instructions so sub+jcc are contiguous
             # else addq #1,d0 (INC) changes carry on 68000 (not on 6809)

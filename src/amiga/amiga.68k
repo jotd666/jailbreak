@@ -1130,6 +1130,7 @@ really_update_scroll:
 	lea		scroll_table,a2
 	lea		scroll_row_copper_address_table,a1
 	lea	current_scroll_values,a3
+	move.l		background_ptr,a4
 0:
     * m_bg_tilemap->set_scrollx(i, ((m_scroll_x[i + 32] << 8) + m_scroll_x[i]));
 	* get LSB+MSB scroll value
@@ -1141,18 +1142,18 @@ really_update_scroll:
 	move.w	(a3)+,d6
 	cmp.w	d5,d6
 	jeq		1f
-	move.l		background_ptr,a4
 	move.w	d5,(-2,a3)	| update current value & update scroll
 	add.w	d5,d5
 	add.w	d5,d5
 	move.l	(a1),a0	| get address of bpl1con value
 	move.w	(a2,d5.w),(a0)	| set bplcon value
-	add.w	(2,a2,d5.w),a4	| bytes offset
-	move.l	a4,d0				| base address
+	moveq	#0,d0
+	move.w	(2,a2,d5.w),d0	| bytes offset
+	add.l	a4,d0				| base address
 	addq	#4,a0				| pointer on first bitplane
-	movem.l	a0-a1/d0-d2,-(a7)
+	movem.l	a0-a1/d1-d2,-(a7)
 	jbsr	set_static_bitplanes
-	movem.l	(a7)+,a0-a1/d0-d2
+	movem.l	(a7)+,a0-a1/d1-d2
 	
 1:
 	addq	#4,a1
@@ -1191,8 +1192,11 @@ really_update_tiles:
 	*lea		_custom,a5
 	*WAIT_BLIT  | no need in AGA: dual playfield
 	GET_MEMORY_START_AND_DP
-	lea		(VIDEO_ADDRESS,a6),a6
-	lea		(0x800,a6),a5
+	.ifne	VIDEO_ADDRESS
+	lea		(VIDEO_ADDRESS,a6),a6  | attributes
+	.endif
+	lea		(0x800,a6),a5   | codes
+	
 	lea		tiles_row_flags(pc),a1
 	moveq	#0,d3
 3:
@@ -2403,6 +2407,7 @@ platform_init:
 * so memory is quadword-aligned (not trusting .align directives)
 align_for_fmode:
 	.ifdef	OCS_VERSION
+	fuuu
 	* do nothing!
 	.else
 	add.w	#0x8,a0
@@ -2727,6 +2732,12 @@ update_bg_tile_vert:
 	
 	.macro	TILE_NEXT_PLANE
 	add.w	d5,a1
+	.ifdef	OCS_VERSION
+	add.w	d5,a3  | restore buffer
+	.ifne	OPT_ENABLE_DOUBLE_BUFFERING
+	add.w	d5,a4	| second buffer
+	.endif
+	.endif
 	.endm
 
 	
@@ -2734,7 +2745,6 @@ update_bg_tile_vert:
 * tile bitplane should not be copied into the backbuffer as sprites
 * only use 4 planes
 standard_tile_vert:
-
 	* just copy
 
 4:
@@ -2881,7 +2891,7 @@ update_bg_tile_horiz:
 * tile bitplane should not be copied into the backbuffer as sprites
 * only use 4 planes
 standard_tile:
-
+	
 	* just copy
 4:
 	move.l	(a2)+,d0		| next plane
@@ -3259,7 +3269,7 @@ osd_read_dsw_2:
 	not.b	d0		| active low
 	* $78: easy difficulty
 	* $48: very hard 5 lives, $4B very hard 1 life
-	move.b	#$78,d0		| right now hardcoded
+	move.b	#0x78,d0		| right now hardcoded
 	rts
 osd_read_dsw_3:
 	* actual dipswitches

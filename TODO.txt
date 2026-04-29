@@ -1,5 +1,5 @@
 - check for hardest difficulty dip switch is in effect here!
-- broken: tile bitplane not displayed anymore: put 555 AAA pattern t detect it
+- lots of red flashes, trash trucks display broken
 - remove 25Hz mode, just skip frames if cannot cope
 - use sprites for player bullets / enemy bullets when possible
   with fallback to bobs: sprite 0x100

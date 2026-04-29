@@ -98,6 +98,7 @@ current_player_variables_1590 = $1590
 ; stage number 97 is the real stage number (can go beyond 5 when game wraps)
 stage_number_97 = $97
 player_score_1572 = $1572
+timer_fraction_of_second_5f = $5f
 
 start_8000:
 8000: 8E 32 82    LDX    #$1000
