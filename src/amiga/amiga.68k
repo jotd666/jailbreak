@@ -8,6 +8,7 @@
 	jra		start
 
 	.include "../src/include.inc"
+	.include "../src/sounds.inc"
 
 	.include "hardware/custom.i"
 	.include "exec/types2.i"
@@ -806,6 +807,47 @@ _nmi:
 	move.w	#0x7FFF,_custom+intreq
 	rts
 	
+handle_music_termination:
+	moveq	#0,d0
+	move.b	_mt_E8Trigger,d0
+	jeq		0f
+	* problem is that the trigger is set multiple times by
+	* the module player even if we clear it
+	* so we set a countdown when starting a module
+	tst.b	trigger_lock
+	jeq		1f
+	rts
+1:
+	st.b	trigger_lock
+	clr.b	_mt_E8Trigger
+	* E8 command just issued from module, handle it
+
+	move.l	a5,d1		| save a5
+	GET_MEMORY_START_AND_DP
+	moveq	#0,d0
+	move.b		(stage_number_97,a5),d0
+	subq	#1,d0		| starts at 1 now 0
+	divu	#6,d0
+	clr.w	d0
+	swap	d0		| remainder of divide by 6
+	tst.w	d0
+	jeq		1f
+	* level 2 and above
+	add.b	#BATTERY_PARK_8B_SND-1,d0
+2:
+	jbsr	osd_sound_start
+	move.l	d1,a5
+0:
+	rts
+
+1:
+	* prisoners escape intro music ended
+	move.l	#THE_WARDEN_HAS_BEEN_TAKEN_93_SND,d0
+	jbsr	osd_sound_start
+	move.l	#SIREN_02_SND,d0
+	jra		2b
+	rts
+	
 level3_interrupt:
     movem.l d0-d7/a0-a6,-(a7)
 	lea		_custom,a5
@@ -824,6 +866,7 @@ level3_interrupt:
 	jsr	_read_joystick
 	move.l	d0,_joypad_1_state
 
+	jbsr	handle_music_termination
 	
 	* CD32 "play" is disabled but it's free to read
 	* 3rd button on a Sega 3-button so 3rd button is pause
@@ -1692,8 +1735,10 @@ update_one_bob:
 
 22:
 	.ifndef	RELEASE
+	.ifdef	NO68020
 	lsr.w	#2,d2		| clut
 	lsr.w	#2,d3		| code
+	.endif
 	move.w	#0xF00,_custom+color
 	.endif
 	jra		2b
@@ -1781,6 +1826,7 @@ osd_dump_logs:
 	move.w	sr,-(a7)
 	move.w	#0x2700,SR
 	movem.l	d0-a6,-(a7)
+	GET_MEMORY_START_AND_DP
 	move.l	_resload(pc),a2
 	lea		sprite_log_table,a1
 	lea		sprite_log_name(pc),a0

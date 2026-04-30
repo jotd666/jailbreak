@@ -10,12 +10,20 @@ sound_dir = this_dir / ".." / "sounds"
 
 sound_settings_dict = { 1 : {"channel":3,"priority":1},
  3 : {"channel":1,"priority":20},
+ 2 : {"channel":2,"priority":100},
   0x13 : {"channel":3,"priority":10},
   0x20 : {"channel":2,"priority":10},
   0x21 : {"channel":2,"priority":10},
   0x22 : {"channel":2,"priority":10},
   0x82 : {"channel":1,"priority":10},
   0x83 : {"channel":1,"priority":10},
+  0x89 : {"channel":3,"priority":100}, # thank you you saved me
+  0x8B : {"channel":3,"priority":100}, # level name
+  0x8C : {"channel":3,"priority":100}, # level name
+  0x8D : {"channel":3,"priority":100}, # level name
+  0x8E : {"channel":3,"priority":100}, # level name
+  0x8F : {"channel":3,"priority":100}, # level name
+  0x93 : {"channel":3,"priority":100}, # level name
 
 }
 def convert():
@@ -30,7 +38,7 @@ def convert():
 
 
     hq_sample_rate = 12000  #{"aga":18004,"ecs":12000,"ocs":11025}[mode]
-    lq_sample_rate = hq_sample_rate//2 # if aga_mode else 8000
+    lq_sample_rate = 5000 # if aga_mode else 8000
 
 
     loop_channel = 2
@@ -64,28 +72,28 @@ def convert():
         if "channel" not in v:
             v["channel"] = -1 # auto
 
-##    sound_dict.update({
-##    "RECORD_BROKEN_TUNE_SND"      :{"index":0x3C,"pattern":0x8,"volume":32},
-##    "CHARIOTS_TUNE_SND"      :{"index":0x2D,"pattern":0x3,"volume":32,"loops":True},
-##    "BEST_PLAYER_TUNE_SND"      :{"index":0x3E,"pattern":0xA,"volume":32},
-##    "GAME_OVER_TUNE_SND"      :{"index":0x3B,"pattern":0xC,"volume":32},
-##    "START_EVENT_TUNE_SND"      :{"index":0x3D,"pattern":0xE,"volume":32},
-##    "NAME_ENTRY_SND"      :{"index":0x40,"pattern":0x0,"volume":32,"loops":True},
-##})
+    music_volume = 24
+
+    sound_dict.update({
+    "LEVEL_COMPLETED_SND"      :{"index":0x40,"pattern":0x3,"volume":music_volume},
+    "LEVEL_START_SND"      :{"index":0x44,"pattern":0x0,"volume":music_volume},
+    "GAME_OVER_SND"      :{"index":0x45,"pattern":0x2,"volume":music_volume},
+    "INTRO_SND"      :{"index":0x43,"pattern":0x6,"volume":music_volume},
+    "GAME_COMPLETED_SND"      :{"index":0x41,"pattern":0x4,"volume":music_volume},  # not complete
+    #"HIGH_SCORE_SND"      :{"index":0x42,"pattern":0xxxxx,"volume":40},  # not done
+
+})
 ##    sound_dict["SOMMERSAULT_2_SND"] = {"index":0x1C,"same_as":"SOMMERSAULT_SND"}
 ##    sound_dict["PING_66_SND"] = {"index":0x66,"same_as":"PING_65_SND"}
 
     dummy_sounds = [0,
-    0x40, # level completed
-    0x44, # level start
-    0x45,  # game over
-    0x41,  # game
+
     0x42   # highscore
     ]
 
     with open(os.path.join(src_dir,"..","sounds.inc"),"w") as f:
         for k,v in sorted(sound_dict.items(),key = lambda x:x[1]["index"]):
-            f.write(f"\t.equ\t{k},  0x{v['index']:x}\n")
+            f.write(f"\t.equ\t{k.upper()},  0x{v['index']:x}\n")
 
     max_sound = 0x100  # max(x["index"] for x in sound_dict.values())+1
     sound_table = [""]*max_sound
@@ -169,7 +177,7 @@ def convert():
                 wav_file = os.path.join(sound_dir,wav_name+".wav")
 
                 def get_sox_cmd(sr,output):
-                    return [sox,"--volume","3.0",wav_file,"--channels","1","-D","--bits","8","-r",str(sr),"--encoding","signed-integer",output]
+                    return [sox,"--volume","4.0",wav_file,"--channels","1","-D","--bits","8","-r",str(sr),"--encoding","signed-integer",output]
 
                 used_sampling_rate = details["sample_rate"]
                 used_priority = details.get("priority",1)
@@ -233,11 +241,11 @@ def convert():
 
 
         # make sure next section will be aligned
-##        with open(os.path.join(sound_dir,f"{gamename}_conv.mod"),"rb") as f:
-##            contents = f.read()
+        with open(os.path.join(sound_dir,f"{gamename}_conv.mod"),"rb") as f:
+            contents = f.read()
 
         fw.write("{}:".format(music_module_label))
-        #write_asm(contents,fw)
+        write_asm(contents,fw)
         fw.write("\t.align\t8\n")
 
 

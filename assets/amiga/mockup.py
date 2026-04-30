@@ -98,5 +98,5 @@ def process(the_dump,name_filter=None,hide_named_sprite=None):
     print(f"nb active: {nb_active}")
 
 
-process(r"sprites")
+process(r"C:\Users\Public\Documents\Amiga Files\WinUAE\sprite_ram_1000")
 

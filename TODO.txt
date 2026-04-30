@@ -1,6 +1,7 @@
+- savestate
 - check for hardest difficulty dip switch is in effect here!
-- lots of red flashes, trash trucks display broken
-- remove 25Hz mode, just skip frames if cannot cope
+- remove 25Hz mode, just skip frames if cannot cope, compute the number
+  of active sprites for auto mode
 - use sprites for player bullets / enemy bullets when possible
   with fallback to bobs: sprite 0x100
 - cheat key (F4) to enable/disable invincibility, check killing the warden
@@ -8,15 +9,14 @@
 - easy mode: if hit, just decrease weapon level
 - vertical scrolling for end sequence: not perfect...
 
-- sounds not playing, intro music when ends should play level description (siren, "hostage" message, hack to make them play)
-  there's a lot of code in high frequency interrupt that is now not reached
+- warden/siren sounds not playing strange, it's cut, automatic channel bug?
+- level descriptions should play after level start music on levels 2-6 auto channel bug?
 - some sounds seem not used ("Broadway" as music doesn't play in level 1)
 - command line for lives number is wrong: if user enters 4 ???
 - double buffering but still a lot of blinking on chip only
 
 - optimize: remove some sprites from mirror to save memory
   (vehicles)
-- cheat start level (identify level number)
 - use multiplexed sprites for enemy bullets (maybe)
 - ECS version!
 

@@ -17,7 +17,7 @@ NB_SPRITE_CLUTS = 16
 NB_TILE_CLUTS = 16
 
 def get_possible_hw_sprites():
-    return {0x100,0x14D}  # bullets
+    return set() #{0x100,0x14D}  # bullets
 
 def palette_pad(palette,pad_nb):
     palette += (pad_nb-len(palette)) * [(0x10,0x20,0x30)]

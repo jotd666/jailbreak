@@ -484,33 +484,33 @@ with open(os.path.join(src_dir,"graphics.68k"),"w") as f:
                         elif orientation == "mirror":
                             f.write(f"\t.word\t-1  | no mirror declared\n")
 
-    if possible_hw_sprites:
-        f.write("hws_table:\n")
-        for i,tile_entry in enumerate(sprite_table):
-            for orientation in ['standard','mirror']:
-                f.write("\t.long\t")
-                if any(t and "sprdat" in t[orientation] for t in tile_entry):
-                    prefix = sprite_names.get(i,"bob")
-                    prefix = f"hws_{prefix}_{i:02x}_{orientation}"
-                    f.write(prefix)
-                else:
-                    f.write("0")
-                f.write("\n")
 
-        # HW sprites clut declaration
-        for i,tile_entry in enumerate(sprite_table):
-            for orientation in ['standard','mirror']:
-                if any(t and "sprdat" in t[orientation] for t in tile_entry):
-                    prefix = sprite_names.get(i,"bob")
-                    f.write(f"hws_{prefix}_{i:02x}_{orientation}:\n")
-                    for j,t in enumerate(tile_entry):
-                        f.write("\t.long\t")
-                        if t:
-                            z = f"hws_{prefix}_{i:02x}_{j:02x}_{orientation}"
-                            f.write(f"{z}_0,{z}_1")
-                        else:
-                            f.write("0,0")
-                        f.write("\n")
+    f.write("hws_table:\n")
+    for i,tile_entry in enumerate(sprite_table):
+        for orientation in ['standard','mirror']:
+            f.write("\t.long\t")
+            if any(t and "sprdat" in t[orientation] for t in tile_entry):
+                prefix = sprite_names.get(i,"bob")
+                prefix = f"hws_{prefix}_{i:02x}_{orientation}"
+                f.write(prefix)
+            else:
+                f.write("0")
+            f.write("\n")
+
+    # HW sprites clut declaration
+    for i,tile_entry in enumerate(sprite_table):
+        for orientation in ['standard','mirror']:
+            if any(t and "sprdat" in t[orientation] for t in tile_entry):
+                prefix = sprite_names.get(i,"bob")
+                f.write(f"hws_{prefix}_{i:02x}_{orientation}:\n")
+                for j,t in enumerate(tile_entry):
+                    f.write("\t.long\t")
+                    if t:
+                        z = f"hws_{prefix}_{i:02x}_{j:02x}_{orientation}"
+                        f.write(f"{z}_0,{z}_1")
+                    else:
+                        f.write("0,0")
+                    f.write("\n")
     f.write("\n\t.section\t.datachip\n")
 
     for k,v in bob_plane_cache.items():

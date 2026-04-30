@@ -32,12 +32,14 @@ def merge(used_name,nb_items,forced_cluts=None):
                 contents[clut+base_idx] = 1
 
     if used_name == "used_sprites":
-        # remove fake clut/tile combination
-        for tile in range(0,0x200):
-            contents[tile*16+0xA] = 0
-            contents[tile*16+0x9] = 0
-            if tile not in {0x1C3,0x1D2,0x186,0x187}:
-                contents[tile*16+0xF] = 0
+##        # remove fake clut/tile combination
+##        for tile in range(0,0x200):
+##
+##            contents[tile*16+0xA] = 0
+####            if tile not in {0x113,0x117}:
+####                contents[tile*16+0x9] = 0
+        for tile in {0x1C9,0x1D1,0x1D0}:
+                contents[tile*16+0xF] = 1
         for tile in {0x1c6
 ,0x80
 ,0x81
