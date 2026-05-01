@@ -1,10 +1,12 @@
 - end of game music is incomplete
 - highscore music is missing
 - highscore save
+- insert coin with push fire
 - check for hardest difficulty dip switch is in effect here!
 - use sprites for player bullets / enemy bullets when possible
   with fallback to bobs: sprite 0x100
-- vertical scrolling for end sequence:ok, still parasite char
+- vertical scrolling for end sequence:ok, still parasite char near address 0x848 get write address
+  and watch it
 - also "machinegan" to fix: set start level + skip level!
 
 - command line for lives number is wrong: if user enters 4 ???
