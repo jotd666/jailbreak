@@ -831,13 +831,12 @@ handle_music_termination:
 	moveq	#0,d0
 	move.b		(stage_number_97,a5),d0
 	subq	#1,d0		| starts at 1 now 0
-	divu	#6,d0
+	jeq		1f			| first level: different sequence
+	divu	#5,d0
 	clr.w	d0
-	swap	d0		| remainder of divide by 6
-	tst.w	d0
-	jeq		1f
-	* level 2 and above
-	add.b	#BATTERY_PARK_8B_SND-1,d0
+	swap	d0		| remainder of divide by 5
+	* level 2 and above or level 1 after completing the game
+	add.b	#BROADWAY_8A_SND,d0
 2:
 	jbsr	osd_sound_start
 	move.l	d1,a5
@@ -1219,10 +1218,9 @@ update_vertical_scroll:
 	lea		mulBG_VERT_NB_BYTES_PER_ROW_table,a1
 	.ifdef	NO68020
 	add.w	d5,d5
-	add.w	d5,d5
 	add.w	(a1,d5.w),d0
 	.else
-	add.w	(a1,d5.w*4),d0
+	add.w	(a1,d5.w*2),d0
 	.endif
 	jbsr	set_static_bitplanes
 	rts
@@ -2573,34 +2571,6 @@ compute_tile_xy:
 	lsl.w	#3,d1		| times 8
 	rts
 
-compute_tile_xy_vertical:
-	moveq	#0,d0
-	move.b	d7,d0
-	
-	and.b	#0x1F,d0	| x
-	move.w	d7,d1
-	and.w	#0x7FF,d1
-	lsr.w	#5,d1		| Y
-	lsl.w	#3,d1		| times 8
-	rts
-
-	.ifdef	XXX
-compute_tile_xy_portrait:
-	moveq	#0,d0
-	moveq	#0,d1
-	move.w	d7,d1
-	lsr.w	#5,d7		| this is X
-	neg.w	d7
-	add.w	#32,d7
-	and.w	#0x1F,d1	| this is Y
-	*addq.w	#2,d1
-
-	move.b	d7,d0		| this is X
-	lsl.b	#3,d1		| Y times 8
-	rts
-	.endif
-
-
 
 
 *	int const attr = m_colorram[tile_index];
@@ -2636,9 +2606,9 @@ update_bg_tile_vert:
 	.endif
 
 
-	bsr		compute_tile_xy
-	cmp.w	#FG_NB_BYTES_PER_COL,d0
-	* 0 <= Y < FG_NB_BYTES_PER_COL: we must double the tiles
+	jbsr		compute_tile_xy
+	cmp.w	#Y_MAX,d1
+	* 0 <= Y < Y_MAX: we must double the tiles
 	* to simulate tile wrap
 	scs		d6
 	
@@ -2672,6 +2642,7 @@ update_bg_tile_vert:
 	.ifdef	OCS_VERSION
 	lea		background_restore_buffer,a3
 	add.w	d0,a3
+	add.w	d0,a4
 	.endif
 	
 
@@ -2731,14 +2702,13 @@ update_bg_tile_vert:
 	jeq		20f		| just once
 	* do it twice. Preserve useful registers
 	movem.l	a1/a2,-(a7)
-	jbsr		standard_tile
+	jbsr		standard_tile_vert
 	movem.l	(a7)+,a1/a2
 	* draw the same thing more to the bottom
-	add.w	#BG_HORIZ_NB_BYTES_PER_ROW*NB_PLAYFIELD_LINES,A1
-	*add.w	#BG_VERT_NB_BYTES_PER_COL*BG_VERT_NB_BYTES_PER_ROW*8,a1
+	add.w	#BG_VERT_NB_BYTES_PER_ROW*Y_MAX,A1
 	move.w	#NB_TILE_PLANES-1,d4
 20:
-	jra	standard_tile
+	jra	standard_tile_vert
 	
 	.macro	COPY_TILE_PLANE_ROW
 	move.b	d0,(offset,a1)  | buffer
@@ -2857,7 +2827,18 @@ update_bg_tile_horiz:
 	* updating bitplanes
 	move.l	#BG_SCREEN_PLANE_SIZE,d5
 	move.w	#NB_TILE_PLANES-1,d4
+	.ifdef	OCS_VERSION
+	.ifeq	OPT_ENABLE_DOUBLE_BUFFERING
 	move.l		background_ptr,a1
+	.else 
+	* OCS with double buffering
+	lea		bg_screen_buffer_1,a1
+	lea		bg_screen_buffer_2,a4
+	.endif
+	.else
+	* AGA: no double buffering on background
+	move.l		background_ptr,a1
+	.endif
 
 	lea		mulBG_HORIZ_NB_BYTES_PER_ROW_table,A2
 	.ifdef	NO68020
@@ -2868,6 +2849,11 @@ update_bg_tile_horiz:
 	.endif
 	add.w	d1,d0
 	add.w	d0,a1
+	.ifdef	OCS_VERSION
+	lea		background_restore_buffer,a3
+	add.w	d0,a3
+	add.w	d0,a4
+	.endif
 	
 
 	.ifdef	NO68020
@@ -2934,6 +2920,7 @@ update_bg_tile_horiz:
 	jmp		(a4)
 	
 	
+
 
 	
 * made more complex by 4 tile orientations + the fact that the last

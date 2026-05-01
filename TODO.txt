@@ -1,11 +1,12 @@
 - end of game music is incomplete
 - highscore music is missing
+- highscore save
 - check for hardest difficulty dip switch is in effect here!
 - use sprites for player bullets / enemy bullets when possible
   with fallback to bobs: sprite 0x100
-- vertical scrolling for end sequence: modulo wrong: set start level + skip level!
+- vertical scrolling for end sequence:ok, still parasite char
+- also "machinegan" to fix: set start level + skip level!
 
-- some sounds seem not used ("Broadway" as music doesn't play in level 1): remove it!
 - command line for lives number is wrong: if user enters 4 ???
 - double buffering but still a lot of blinking on chip only, remove fixed 25Hz
   mode, just skip frames if cannot cope, compute the number of active sprites for auto mode
