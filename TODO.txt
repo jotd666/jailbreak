@@ -1,25 +1,19 @@
-- savestate
 - end of game music is incomplete
 - highscore music is missing
-- cheat add 10000 points to test highscore, record highscore music
 - check for hardest difficulty dip switch is in effect here!
-- remove 25Hz mode, just skip frames if cannot cope, compute the number
-  of active sprites for auto mode
 - use sprites for player bullets / enemy bullets when possible
   with fallback to bobs: sprite 0x100
-- cheat key (F4) to enable/disable invincibility, check killing the warden
-  with no cheats on
-- easy mode: if hit, just decrease weapon level
-- vertical scrolling for end sequence: not perfect...
+- vertical scrolling for end sequence: modulo wrong: set start level + skip level!
 
-- warden/siren sounds not playing strange, it's cut, automatic channel bug?
-- level descriptions should play after level start music on levels 2-6 auto channel bug?
-- some sounds seem not used ("Broadway" as music doesn't play in level 1)
+- some sounds seem not used ("Broadway" as music doesn't play in level 1): remove it!
 - command line for lives number is wrong: if user enters 4 ???
-- double buffering but still a lot of blinking on chip only
+- double buffering but still a lot of blinking on chip only, remove fixed 25Hz
+  mode, just skip frames if cannot cope, compute the number of active sprites for auto mode
+  
 
 - optimize: remove some sprites from mirror to save memory
   (vehicles)
+- profile game, try to optimize
 - use multiplexed sprites for enemy bullets (maybe)
 - ECS version!
 
@@ -27,15 +21,3 @@ log sounds: bpset 93b7,,{print A;g}
 only play this C sound: bpset 93b7,A!=$C,{PC=93c9;g}
 sim sound on credit: bpset 93b7,,{A=$81;g}
 
-
-    <cheat desc="Select Starting Stage">
-        <comment>Both players share starting stage</comment>
-        <parameter min="01" max="05" step="01" />
-        <script state="run">
-            <action condition="maincpu.pb@1597 == 01">
-                maincpu.pb@1596 = maincpu.pb@159B = param - 1,
-                maincpu.pb@1597 = param,
-                maincpu.pd@15A0 = FFFFFF00 | (maincpu.pd@15A0 band ~FFFFFF00)
-            </action>
-        </script>
-    </cheat>

@@ -10,7 +10,7 @@ CHIPSIZE = $100000
 
 _base	SLAVE_HEADER					; ws_security + ws_id
 	dc.w	17					; ws_version (was 10)
-	dc.w	WHDLF_NoError
+	dc.w	WHDLF_NoError|WHDLF_ReqAGA
     IFD CHIP_ONLY
 	dc.l	CHIPSIZE+EXPMEM					; ws_basememsize
 	ELSE
@@ -45,6 +45,7 @@ _config
 	dc.b	"C1:X:cheat keys:4;"
 	dc.b	"C2:X:25 Hz update:0;"
 
+	dc.b	"C3:L:start level:Broadway,Battery Park,The Navy Yard,Manhattan's Bridge,Manhattan Prison;"
 	dc.b	"C4:L:number of lives:5,3,2;"
 	dc.b	"C5:L:difficulty level:easy,normal,difficult,very difficult;"
 	dc.b	0
@@ -54,7 +55,7 @@ _config
 	ENDC
 
 DECL_VERSION:MACRO
-	dc.b	"1.0"
+	dc.b	"1.1"
 	IFD BARFLY
 		dc.b	" "
 		INCBIN	"T:date"
@@ -65,10 +66,10 @@ DECL_VERSION:MACRO
 	ENDC
 	ENDM
 _data   dc.b    0
-_name	dc.b	"JailBreak",0
-_copy	dc.b	'2025 JOTD',0
+_name	dc.b	"JailBreak (AGA)",0
+_copy	dc.b	'2026 JOTD',0
 _info
-    ;dc.b    "Music by no9",0
+    dc.b    "Music by no9",0
 	dc.b	0
 _kickname   dc.b    0
 ;--- version id

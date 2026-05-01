@@ -38,7 +38,7 @@ def convert():
 
 
     hq_sample_rate = 12000  #{"aga":18004,"ecs":12000,"ocs":11025}[mode]
-    lq_sample_rate = 5000 # if aga_mode else 8000
+    lq_sample_rate = 6000 # if aga_mode else 8000
 
 
     loop_channel = 2

@@ -2844,7 +2844,24 @@ l_8e24:
 	OP_1_ON_DP_ADDRESS	clr,0x29             | [$8e32: clr    $29]
 	OP_R_ON_DP_ADDRESS	move,stage_number_97,d0| [$8e34: lda    stage_number_97]
 	jne	l_8e3c                             	| [$8e36: bne    $8e3c]
+	* if stage number 0 means first level
 	OP_1_ON_DP_ADDRESS	clr,0x86             | [$8e38: clr    $86]
+	move.b	start_level,d0
+	jeq		0f
+	* doing what they're doing in MAME
+	OP_W_ON_DP_ADDRESS	move,stage_number_97,d0
+	* probably the level number but zero indexed
+	OP_W_ON_DP_ADDRESS	move,0x9b,d0
+	OP_W_ON_DP_ADDRESS	move,0x96,d0
+	* this allows to skip intro and jump to proper stage
+	* right away
+	GET_ADDRESS	0x15a0
+	move.l	#~0xFFFFFF00,d0
+	and.l	(a0),d0
+	or.l	#0xFFFFFF00,d0
+	move.l	d0,(a0)
+	
+0:
 	OP_W_ON_DP_ADDRESS	addq,stage_number_97,#1| [$8e3a: inc    stage_number_97]
 l_8e3c:
 	rts                                    	| [$8e3c: rts]
