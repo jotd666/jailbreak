@@ -1,4 +1,7 @@
 - savestate
+- end of game music is incomplete
+- highscore music is missing
+- cheat add 10000 points to test highscore, record highscore music
 - check for hardest difficulty dip switch is in effect here!
 - remove 25Hz mode, just skip frames if cannot cope, compute the number
   of active sprites for auto mode

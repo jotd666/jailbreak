@@ -23,7 +23,7 @@ sound_settings_dict = { 1 : {"channel":3,"priority":1},
   0x8D : {"channel":3,"priority":100}, # level name
   0x8E : {"channel":3,"priority":100}, # level name
   0x8F : {"channel":3,"priority":100}, # level name
-  0x93 : {"channel":3,"priority":100}, # level name
+  0x93 : {"channel":-1,"priority":100}, # level name
 
 }
 def convert():

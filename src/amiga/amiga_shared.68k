@@ -182,7 +182,6 @@ force_sound_stop:
 osd_sound_start:
 	movem.l	d0/d1/a0/a6,-(a7)
 
-	
 	lea		_custom,a6
 	cmp.b	#0xFE,d0
 	jne		0f

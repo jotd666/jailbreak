@@ -814,6 +814,10 @@ handle_music_termination:
 	* problem is that the trigger is set multiple times by
 	* the module player even if we clear it
 	* so we set a countdown when starting a module
+	*
+	* another yet unseen issue was that the stop command canceled
+	* the sounds that we played right afterwards! I replaced the F00
+	* command by an empty pattern and a loop on that.
 	tst.b	trigger_lock
 	jeq		1f
 	rts
@@ -912,7 +916,6 @@ level3_interrupt:
 	* D5 should be left untouched!
 	jbsr		do_irq
 	clr.b	interrupt_mode	
-	*jbsr	process_speech_queue	| process here too (PAL)
 	clr.b	d0
 1:
 	move.b	d0,mid_screen_interrupt_count
