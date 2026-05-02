@@ -8,7 +8,7 @@ sprite_names = get_sprite_names()
 
 mirror_sprites = get_mirror_sprites()
 
-possible_hw_sprites = get_possible_hw_sprites()
+possible_hw_sprites = set() #get_possible_hw_sprites()
 
 magenta = (254,0,254)
 
@@ -340,8 +340,12 @@ def doit(aga_mode):
 
     bob_plane_cache = {}
 
+    if aga_mode:
+        sprite_table = read_tileset(sprite_set_list,full_palette[16:],[True,False,True,False],cache=bob_plane_cache, is_bob=True, nb_planes=4)
+    else:
+        # ECS needs 5 planes
+        sprite_table = read_tileset(sprite_set_list,full_palette,[True,False,True,False],cache=bob_plane_cache, is_bob=True, nb_planes=5)
 
-    sprite_table = read_tileset(sprite_set_list,full_palette[16:],[True,False,True,False],cache=bob_plane_cache, is_bob=True, nb_planes=4)
 
     # now that the sprites were decoded, put black as first color too (else for some priority reason
     # the background is magenta or whatever the color is)

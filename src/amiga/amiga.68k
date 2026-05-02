@@ -42,7 +42,11 @@ COPPER_Y_START = 0x18
 BASE_BPLCON3_VALUE = (1<<12)+(BORDERBLANK<<5)  | dpf second playfield palette starts at color 16!
 BASE_BPLCON2_VALUE = 0x0024		| sprites above all playfields
 
+	.ifdef	OCS_VERSION
+SPRITE_X_CORRECTION = 0
+	.else
 SPRITE_X_CORRECTION = 32
+	.endif
 SPRITE_Y_CORRECTION = 0
 SPRITE_HEIGHT = 16
 SPRITE_WIDTH = 16
@@ -84,8 +88,13 @@ OPT_ENABLE_DOUBLE_BUFFERING = 1
 	.endif
 OPT_ENABLE_MULTIPLEXED_SPRITES = 0
 
+	.ifdef	OCS_VERSION
+NB_TILE_PLANES = 4
+NB_BOB_PLANES = 5
+	.else
 NB_TILE_PLANES = 4
 NB_BOB_PLANES = 4
+	.endif
 TOTAL_NB_COLORS = 1<<NB_TILE_PLANES
 
 * when switching from horizontal to vertical scrolling
@@ -472,20 +481,11 @@ _user:
 	.endif
 	
 	lea		palette,a0
-	.ifdef	OCS_VERSION
-	* ECS: load 16 common colors for tiles/bobs & sprites
-	move.w	#TOTAL_NB_COLORS,d0
-	lea		tiles_colors,a1	
-	bsr		load_palette
-	lea		palette,a0
-	move.w	#TOTAL_NB_COLORS,d0
-	lea		bobs_colors,a1	
-	.else
-	* AGA: load 32 colors (16+16 DPF)
 	move.w	#TOTAL_NB_COLORS*2,d0
-
-	lea		tiles_colors,a1
-	.endif
+	* ECS: load 32 colors for tiles/bobs & sprites
+	* AGA: load 32 colors (16+16 DPF)
+	* in the end the colors are the same
+	lea		tiles_colors,a1	
 	bsr		load_palette
 	
 
@@ -964,19 +964,22 @@ osd_set_speech_status:
 osd_set_scroll_direction:
 	movem.l	d0/d1/a0,-(a7)
 	lea		update_bg_tile_horiz,a0
-	move.w	#-8+BG_HORIZ_NB_BYTES_PER_ROW-40,d1
+	move.w	#BG_HORIZ_NB_BYTES_PER_ROW-40,d1
 	move.w	#0X1FE,copper_jump_2		| no jump, horizontal scroll
 	clr.b	vertical_scroll
 	
 	cmp.b	#6,d0
 	jne		0f
 	st.b	vertical_scroll
-	move.w	#-8+BG_VERT_NB_BYTES_PER_ROW-40,d1
+	move.w	#BG_VERT_NB_BYTES_PER_ROW-40,d1
 	move.w	#copjmp2,copper_jump_2		| jump, vertical scroll
 	lea		update_bg_tile_vert,a0
 	clr.w	reset_bplcon1_1
 0:
 	move.l	a0,update_tile_function
+	.ifndef	OCS_VERSION
+	subq	#8,d1		| adjust for fmode=3
+	.endif
     move.w d1,bpl2mod_copperlist_entry
 	movem.l	(a7)+,d0/d1/a0
 	rts
@@ -1198,6 +1201,7 @@ really_update_scroll:
 	add.l	a4,d0				| base address
 	addq	#4,a0				| pointer on first bitplane
 	movem.l	a0-a1/d1-d2,-(a7)
+	move.b	#0,0x110
 	jbsr	set_static_bitplanes
 	movem.l	(a7)+,a0-a1/d1-d2
 	
@@ -2358,12 +2362,19 @@ platform_init:
 	move.w	#0x1FE,intreq_block_game
 	move.w	#0x1FE,intreq_block_game_vertical
 0:
-     move.w #0x0610+BORDERBLANK,bplcon0(a5) | 8 bitplanes, dual playfield, borderblank
-	move.w	#BASE_BPLCON2_VALUE,bplcon2(a5)
+	.ifdef	OCS_VERSION
+    move.w #0x5200,bplcon0(a5) | 4 bitplanes
+    move.w #0x99-0X18+(COPPER_Y_START<<8),diwstrt(a5)
+    move.w #0x79+0x3F-0x48+(COPPER_Y_START<<8)-0x1000,diwstop(a5)
+	.else
+    move.w #0x0610+BORDERBLANK,bplcon0(a5) | 8 bitplanes, dual playfield, borderblank
 	move.w	#BASE_BPLCON3_VALUE,bplcon3(a5)
  	*         VVHH
     move.w #0x99-0X18+0x48+(COPPER_Y_START<<8),diwstrt(a5)
     move.w #0x79+0x3F+(COPPER_Y_START<<8)-0x1000,diwstop(a5)
+	.endif
+	move.w	#BASE_BPLCON2_VALUE,bplcon2(a5)
+	
     move.w #0x0038,ddfstrt(a5)
     move.w #0x00D0,ddfstop(a5)
 
@@ -2371,18 +2382,19 @@ platform_init:
 	* try to hide color 0 on the border (except on OCS)
 
 	.ifdef	OCS_VERSION
+	move.w	#BG_HORIZ_NB_BYTES_PER_ROW-40,d0
 	.else
+	move.w	#-8+FG_NB_BYTES_PER_ROW-40,d0
     move.w #(SPRITE_FMODE<<2)+BITPLANE_FMODE,fmode(a5)	| 32 bit bitplane fetch, 64 bit wide sprites
 	move.w	#0,bplcon4(a5)			| use the same colors as bobs playfield
 	.endif
+    move.w d0,bpl1mod(a5)
 
 	move.w	#0,bplcon1(a5)
 
 	moveq	#2,d0
 	jbsr	osd_set_scroll_direction
 	
-	move.w	#-8+FG_NB_BYTES_PER_ROW-40,d0
-    move.w d0,bpl1mod(a5)
 
 	lea		vertical_scroll_copperlist,a0
 	move.l	a0,d0
@@ -3117,7 +3129,11 @@ HW_SpriteYTable_\height:
 * < A0: copperlist address for bitplane pointers
 * < D0: first bitplane address
 set_static_bitplanes:
+	.ifdef	OCS_VERSION
+    moveq #NB_BOB_PLANES-1,d1
+	.else
     moveq #NB_TILE_PLANES-1,d1
+	.endif
  	move.l	#BG_SCREEN_PLANE_SIZE,d2
 1:
     swap d0
@@ -3613,20 +3629,26 @@ fg_screen_data_2:
 	.endif
 	
 	.set	offset,0
+	.ifdef	OCS_VERSION
+	.set	increment,48
+	.else
+	.set	increment,40
+	.endif
+	
 scroll_row_copper_address_table:
 	.rept	NB_SCROLL_ROWS_PART_1
 	.long	scroll_rows_first_half+6+offset
-	.set	offset,offset+40
+	.set	offset,offset+increment
 	.endr
 	.set	offset,0
 	.rept	NB_SCROLL_ROWS_PART_2
 	.long	scroll_rows_second_half+6+offset
-	.set	offset,offset+40
+	.set	offset,offset+increment
 	.endr
 	.set	offset,0
 	.rept	NB_SCROLL_ROWS_PART_3
 	.long	scroll_rows_bottom+6+offset
-	.set	offset,offset+40
+	.set	offset,offset+increment
 	.endr
 
 background_ptr:
@@ -3762,7 +3784,11 @@ cpu_log_enable:
 	.word	0x01+(y_start*256),0xFFFE
 	.word	bplcon1
 	.word	0
+	.ifdef	OCS_VERSION
+	DECL_BITPLANES	0,NB_BOB_PLANES
+	.else
 	DECL_EVEN_BITPLANES	4,4
+	.endif
 	.set	y_start,y_start+8
 	.endr
 	.endm 
@@ -3796,11 +3822,18 @@ bpl2mod_copperlist_entry:
 
 	* enable sprite colors now
 
+	.word	0x01+((COPPER_Y_START)*256),0xFFFE
+	.ifdef	OCS_VERSION
+bobs_bitplanes:
+tiles_bitplanes:
+	DECL_BITPLANES	0,NB_BOB_PLANES
+	.else
 bobs_bitplanes:
 	DECL_EVEN_BITPLANES	0,4
 tiles_bitplanes:
 	DECL_EVEN_BITPLANES	4,4
 	* set 0-scroll value for both plane sets
+	.endif
 	.word	bplcon1
 reset_bplcon1_1:
 	.word 	0
@@ -3819,7 +3852,6 @@ bobs_colors:
 	DECL_COLORS	0,TOTAL_NB_COLORS
 	.endif
 
-	.word	0x01+((COPPER_Y_START-4)*256),0xFFFE
 
 game_sprites:
 	DECL_SPRITES

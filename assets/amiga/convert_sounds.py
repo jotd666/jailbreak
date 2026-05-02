@@ -72,7 +72,7 @@ def convert():
         if "channel" not in v:
             v["channel"] = -1 # auto
 
-    music_volume = 24
+    music_volume = 20
 
     sound_dict.update({
     "LEVEL_COMPLETED_SND"      :{"index":0x40,"pattern":0x4,"volume":music_volume},
@@ -175,7 +175,7 @@ def convert():
                 wav_file = os.path.join(sound_dir,wav_name+".wav")
 
                 def get_sox_cmd(sr,output):
-                    return [sox,"--volume","4.0",wav_file,"--channels","1","-D","--bits","8","-r",str(sr),"--encoding","signed-integer",output]
+                    return [sox,"--volume","3.0",wav_file,"--channels","1","-D","--bits","8","-r",str(sr),"--encoding","signed-integer",output]
 
                 used_sampling_rate = details["sample_rate"]
                 used_priority = details.get("priority",1)
