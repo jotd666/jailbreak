@@ -7,7 +7,7 @@
 	* first instruction (includes contain code)
 	jra		start
 
-	.include "../src/include.inc"
+	.include "../src/jail_break.inc"
 	.include "../src/sounds.inc"
 
 	.include "hardware/custom.i"
@@ -77,6 +77,7 @@ OPT_ENABLE_PROFILING = 0
 * but not noticeable unless 2 sprites cross each other paths
 OPT_IGNORE_ZERO_BITPLANE = 0
 	.ifdef	OCS_VERSION
+NO68020 = 1
 OPT_ENABLE_DOUBLE_BUFFERING = 0
 	.else
 OPT_ENABLE_DOUBLE_BUFFERING = 1
@@ -2454,7 +2455,6 @@ platform_init:
 * so memory is quadword-aligned (not trusting .align directives)
 align_for_fmode:
 	.ifdef	OCS_VERSION
-	fuuu
 	* do nothing!
 	.else
 	add.w	#0x8,a0
@@ -2884,7 +2884,7 @@ update_bg_tile_horiz:
 	move.l	d0,a2
 	move.b	d3,d1
 	and.w	#0xF,d3
-	.ifdef	N068020
+	.ifdef	NO68020
 	add.w	d3,d3
 	add.w	d3,d3
 	move.l	(a2,d3.w),d0			| pointer on tile bitplanes for that CLUT

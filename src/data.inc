@@ -32,3 +32,6 @@ stage_number_97 = 0x97
 player_score_1572 = 0x1572
 timer_fraction_of_second_5f = 0x5f
 timer_seconds_60 = 0x60
+high_scores_1620 = 0x1620
+high_score_157e = 0x157e
+mid_score_1572 = 0x1572

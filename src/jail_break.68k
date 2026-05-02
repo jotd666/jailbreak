@@ -1,9 +1,8 @@
-	*.include "jailbreak.inc"
+	.include "jail_break.inc"
 	.include "data.inc"
 	.global	irq_8a57
 	.global	irq_b05d
 	.global	reset_81a6
-	.include "include.inc"
 
 *	map(0x0000, 0x07ff).ram().w(FUNC(jailbrek_state::colorram_w)).share(m_colorram);
 *	map(0x0800, 0x0fff).ram().w(FUNC(jailbrek_state::videoram_w)).share(m_videoram);
@@ -166,15 +165,17 @@ l_8029:
 l_8050:
 	GET_ADDRESS	0x16c0                     	| [$8050: lda    $16c0]
 	move.b	(a0),d0                         	| [...]
-	jbsr	l_8902                            	| [$8053: jsr    $8902]
+	jbsr	install_default_highscores_8902                            	| [$8053: jsr    $8902]
 	 |  [$8056: sta    watchdog_3300]
+	* now is a good time to load highscores
+	jbsr	osd_read_high_scores
 	jbsr	l_b148                            	| [$8059: jsr    $b148]
 	 |  [$805c: sta    watchdog_3300]
 	move.b	#0x42,d0                        	| [$805f: lda    #$42]
 	eor.b	#0x80,d0                         	| [$8061: eora   #$80]
 	OP_W_ON_DP_ADDRESS	move,0x22,d0         | [$8063: sta    $22]
-	GET_ADDRESS	nop_2043                   	| [$8065: sta    nop_2043]
-	move.b	d0,(a0)                         	| [...]
+												| [$8065: sta    nop_2043]
+												| [...]
 	move.b	#0x03,d1                        	| [$8068: ldb    #$03]
 	GET_DP_ADDRESS	0x21                    	| [$806a: eorb   $21]
 	move.b	(a0),d6	| [...]
@@ -502,8 +503,8 @@ l_81a6:
 
 resume_boot_81ad:
 	move.b	#0x02,d0                        	| [$81ad: lda    #$02]
-	GET_ADDRESS	nop_2043                   	| [$81af: sta    nop_2043] does nothing?
-	move.b	d0,(a0)                         	| [...]
+	                   	| [$81af: sta    nop_2043] does nothing?
+	                    	| [...]
 	moveq	#0,d1                            	| [$81b2: clrb]
 	moveq	#0,d0                            	| [$81b3: clra]
 	MAKE_D                                 	| [...]
@@ -690,9 +691,9 @@ l_82b0:
 	jcs	l_82b0                             	| [$82bc: bcs    $82b0]
 	rts                                    	| [$82be: rts]
 l_82bf:
-	move.b	#0x02,d0                        	| [$82bf: lda    #$02]
-	GET_ADDRESS	nop_2043                   	| [$82c1: sta    nop_2043]
-	move.b	d0,(a0)                         	| [...]
+	                        	| [$82bf: lda    #$02]
+	                  	| [$82c1: sta    nop_2043]
+	                   	| [...]
 	moveq	#0,d1                            	| [$82c4: clrb]
 	moveq	#0,d0                            	| [$82c5: clra]
 	MAKE_D                                 	| [...]
@@ -915,7 +916,7 @@ l_83a5:
 	OP_R_ON_DP_ADDRESS	cmp,0x80,d1          | [$83b0: cmpb   $80]
 	jls	l_83c7                             	| [$83b2: bls    $83c7]
 l_83b4:
-	move.w	#0x157e,d4                      	| [$83b4: ldu    #$157e]
+	move.w	#high_score_157e,d4                      	| [$83b4: ldu    #$157e]
 	GET_REG_ADDRESS	0,d2                   	| [$83b7: ldd    ,x]
 	LOAD_D                                 	| [$83b7: ldd    ,x]
 	GET_REG_ADDRESS	0,d4                   	| [$83b9: std    ,u]
@@ -924,7 +925,7 @@ l_83b4:
 	move.b	(a0),d1                         	| [...]
 	GET_REG_ADDRESS	0x2,d4                 	| [$83bd: stb    $2,u]
 	move.b	d1,(a0)                         	| [...]
-	move.w	#0x157e,d4                      	| [$83bf: ldu    #$157e]
+	move.w	#high_score_157e,d4                      	| [$83bf: ldu    #$157e]
 	move.w	#0x0890,d2                      	| [$83c2: ldx    #$0890]
 	jbsr	l_83d7                            	| [$83c5: bsr    $83d7]
 l_83c7:
@@ -1570,7 +1571,7 @@ l_86f4:
 	move.w	#player_score_1572,d2                      	| [$86f8: ldx    #player_score_1572]
 	jbsr	l_868e                            	| [$86fb: bsr    $868e]
 l_86fd:
-	move.w	#0x1620,d4                      	| [$86fd: ldu    #$1620]
+	move.w	#high_scores_1620,d4                      	| [$86fd: ldu    #$1620]
 	move.b	#0x0a,d0                        	| [$8700: lda    #$0a]
 	OP_W_ON_DP_ADDRESS	move,0x61,d0         | [$8702: sta    $61]
 l_8704:
@@ -1588,7 +1589,7 @@ l_8704:
 	jra	l_873e                             	| [$8713: bra    $873e]
 l_8715:
 	add.w	#0x8,d4                          	| [$8715: leau   $8,u]
-	OP_W_ON_DP_ADDRESS	subq,0x61,#1         | [$8717: dec    $61]
+	OP_W_ON_DP_ADDRESS	subq,0x61,#2         | [$8717: dec    $61]
 	jne	l_8704                             	| [$8719: bne    $8704]
 	jmp	l_87dd                             	| [$871b: jmp    $87dd]
 l_871e:
@@ -1731,7 +1732,9 @@ l_87bc:
 	jbsr	write_2_digits_8421                            	| [$87d1: jsr    $8421]
 	OP_R_ON_DP_ADDRESS	move,timer_seconds_60,d0         | [$87d4: lda    $60]
 	jne	l_8803                             	| [$87d6: bne    $8803]
-	jbsr	l_9362                            	| [$87d8: jsr    $9362]
+	* time out while entering highscore: stop
+	jbsr	osd_write_highscores	
+	jbsr	stop_music_9362                            	| [$87d8: jsr    $9362]
 	jra	l_87a1                             	| [$87db: bra    $87a1]
 l_87dd:
 	OP_R_ON_DP_ADDRESS	move,0x83,d1         | [$87dd: ldb    $83]
@@ -1848,7 +1851,7 @@ l_8869:
 	add.b	#0x0b,d0                         	| [$8873: adda   #$0b]
 	GET_REG_ADDRESS	0,d2                   	| [$8875: sta    ,x+]
 	addq.w	#1,d2                           	| [...]
-	move.b	d0,(a0)                         	| [...]
+	move.b	d0,(a0)                         	| [...] store letter in highscore table
 	GET_DP_ADDRESS	0x66                    	| [$8877: stx    $66]
 	MOVE_W_FROM_REG	d2,a0                         	| [...]
 	GET_DP_ADDRESS	0x68                    	| [$8879: ldx    $68]
@@ -1856,14 +1859,14 @@ l_8869:
 	addq.w	#0x1,d2                         	| [$887b: leax   $1,x]
 	GET_DP_ADDRESS	0x68                    	| [$887d: stx    $68]
 	MOVE_W_FROM_REG	d2,a0                         	| [...]
-	move.b	#0x3c,d0                        	| [$887f: ldd    #$3c21]
 	move.w	#0x3c21,d1                      	| [$887f: ldd    #$3c21]
-	MAKE_D                                 	| [...]
 	GET_DP_ADDRESS	timer_fraction_of_second_5f                    	| [$8882: std    $5f]
 	MOVE_W_FROM_REG	d1,a0                         	| [...]
 	OP_W_ON_DP_ADDRESS	subq,0x61,#1         | [$8884: dec    $61]
 	jne	l_888d                             	| [$8886: bne    $888d]
-	jbsr	l_9362                            	| [$8888: jsr    $9362]
+	* name entered completely: exit
+	jbsr	stop_music_9362                  | [$8888: jsr    $9362]
+	jbsr	osd_write_highscores
 	OP_W_ON_DP_ADDRESS	addq,0x29,#1         | [$888b: inc    $29]
 l_888d:
 	rts                                    	| [$888d: rts]
@@ -1904,7 +1907,7 @@ l_88b6:
 	move.w	#0x09c8,d2                      	| [$88bb: ldx    #$09c8]
 	GET_DP_ADDRESS	timer_fraction_of_second_5f                    	| [$88be: stx    $5f]
 	MOVE_W_FROM_REG	d2,a0                         	| [...]
-	move.w	#0x1620,d4                      	| [$88c0: ldu    #$1620]
+	move.w	#high_scores_1620,d4                      	| [$88c0: ldu    #$1620]
 	GET_DP_ADDRESS	0x62                    	| [$88c3: stu    $62]
 	MOVE_W_FROM_REG	d4,a0                         	| [...]
 	move.b	#0x0a,d0                        	| [$88c5: lda    #$0a]
@@ -1954,9 +1957,9 @@ l_88c9:
 	OP_W_ON_DP_ADDRESS	subq,0x61,#1         | [$88fd: dec    $61]
 	jne	l_88c9                             	| [$88ff: bne    $88c9]
 	rts                                    	| [$8901: rts]
-l_8902:
+install_default_highscores_8902:
 	move.w	#0x0028,d3                      	| [$8902: ldy    #$0028]
-	move.w	#0x1620,d4                      	| [$8906: ldu    #$1620]
+	move.w	#high_scores_1620,d4                      	| [$8906: ldu    #$1620]
 	move.w	#0xc1d0,d2                      	| [$8909: ldx    #$c1d0]
 l_890c:
 	GET_REG_ADDRESS	0,d2                   	| [$890c: ldd    ,x++]
@@ -1967,7 +1970,7 @@ l_890c:
 	MOVE_W_FROM_REG	d1,a0                         	| [...]
 	subq.w	#0x1,d3                         	| [$8910: leay   -$1,y]
 	jne	l_890c                             	| [$8912: bne    $890c]
-	GET_ADDRESS	0x1620                     	| [$8914: lda    $1620]
+	GET_ADDRESS	high_scores_1620                     	| [$8914: lda    $1620]
 	move.b	(a0),d0                         	| [...]
 	OP_W_ON_DP_ADDRESS	move,0x7e,d0         | [$8917: sta    $7e]
 	GET_ADDRESS	0x1621                     	| [$8919: ldd    $1621]
@@ -1995,7 +1998,7 @@ l_8929:
 	move.w	#player_score_1572,d4                      	| [$8943: ldu    #player_score_1572]
 	jbsr	l_83d7                            	| [$8946: jsr    $83d7]
 	jbsr	l_8434                            	| [$8949: jsr    $8434]
-	move.w	#0x157e,d4                      	| [$894c: ldu    #$157e]
+	move.w	#high_score_157e,d4                      	| [$894c: ldu    #$157e]
 	move.w	#0x0890,d2                      	| [$894f: ldx    #$0890]
 	jbsr	l_83d7                            	| [$8952: jsr    $83d7]
 	jbsr	l_8434                            	| [$8955: jsr    $8434]
@@ -2209,9 +2212,9 @@ irq_8a57:
 	GET_ADDRESS	ctrl_2044                  	| [$8a61: sta    ctrl_2044]
 	move.b	d0,(a0)                         	| [...]
 	 |  [$8a64: sta    watchdog_3300]
-	OP_R_ON_DP_ADDRESS	move,0x22,d0         | [$8a67: lda    $22]
-	GET_ADDRESS	nop_2043                   	| [$8a69: sta    nop_2043]
-	move.b	d0,(a0)                         	| [...]
+	       | [$8a67: lda    $22]
+	     	| [$8a69: sta    nop_2043]
+	      	| [...]
 	OP_W_ON_DP_ADDRESS	addq,0x36,#1         | [$8a6c: inc    $36]
 	jbsr	l_8a7d                            	| [$8a6e: bsr    $8a7d]
 	jbsr	l_9209                            	| [$8a70: jsr    $9209]
@@ -3317,7 +3320,7 @@ l_90de:
 	MAKE_D
 	cmp.w	#0x024a,d1                       	| [$90e4: cmpd   #$024a]
 	jne	l_90f5                             	| [$90e8: bne    $90f5]
-	jbsr	l_9362                            	| [$90ea: jsr    $9362]
+	jbsr	stop_music_9362                            	| [$90ea: jsr    $9362]
 	jbsr	l_93e2                            	| [$90ed: jsr    $93e2]
 	move.b	#0x30,d1                        	| [$90f0: ldb    #$30]
 	jbsr	l_80a1                            	| [$90f2: jsr    $80a1]
@@ -3783,7 +3786,7 @@ l_935a:
 l_935e:
 	move.b	#0x05,d0                        	| [$935e: lda    #$05]
 	jra	queue_sound_93a0                   	| [$9360: bra    queue_sound_93a0]
-l_9362:
+stop_music_9362:
 	move.b	#0xfe,d0                        	| [$9362: lda    #$fe]
 	jra	queue_sound_93a0                   	| [$9364: bra    queue_sound_93a0]
 l_9366:

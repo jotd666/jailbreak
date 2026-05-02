@@ -136,7 +136,7 @@ start_8000:
 804C: ED AC       STD    ,X
 804E: ED 8A       STD    $2,X
 8050: B6 34 42    LDA    $16C0
-8053: BD AB 20    JSR    $8902
+8053: BD AB 20    JSR    install_default_highscores_8902
 8056: B7 B1 28    STA    watchdog_3300
 8059: BD 39 C0    JSR    $B148
 805C: B7 1B 88    STA    watchdog_3300
@@ -963,7 +963,7 @@ write_and_advance_8431:
 86F6: 26 87       BNE    $86FD
 86F8: 8E 3D FA    LDX    #player_score_1572
 86FB: 8D B9       BSR    $868E
-86FD: CE 9E A8    LDU    #$1620
+86FD: CE 9E A8    LDU    #high_scores_1620
 8700: 86 28       LDA    #$0A
 8702: 97 E3       STA    $61
 8704: EC A6       LDD    ,X
@@ -1072,7 +1072,7 @@ highscore_name_entry_87a4:
 87D1: BD 06 A3    JSR    write_2_digits_8421
 87D4: 96 42       LDA    $60
 87D6: 26 A9       BNE    $8803
-87D8: BD BB EA    JSR    $9362
+87D8: BD BB EA    JSR    stop_music_9362
 87DB: 20 EC       BRA    $87A1
 87DD: D6 0B       LDB    $83
 87DF: 27 32       BEQ    $87F1
@@ -1165,7 +1165,7 @@ highscore_name_entry_87a4:
 8882: DD DD       STD    timer_fraction_of_second_5f
 8884: 0A 43       DEC    $61
 8886: 26 87       BNE    $888D
-8888: BD BB EA    JSR    $9362
+8888: BD BB EA    JSR    stop_music_9362
 888B: 0C 01       INC    $29
 888D: 39          RTS
 888E: 47          ASRA
@@ -1194,7 +1194,7 @@ highscore_name_entry_87a4:
 88B8: BD A8 29    JSR    $80A1
 88BB: 8E 21 E0    LDX    #$09C8
 88BE: 9F D7       STX    timer_fraction_of_second_5f
-88C0: CE 34 A2    LDU    #$1620
+88C0: CE 34 A2    LDU    #high_scores_1620
 88C3: DF 40       STU    $62
 88C5: 86 88       LDA    #$0A
 88C7: 97 49       STA    $61
@@ -1224,17 +1224,20 @@ highscore_name_entry_87a4:
 88FD: 0A E9       DEC    $61
 88FF: 26 EA       BNE    $88C9
 8901: 39          RTS
+install_default_highscores_8902:
 8902: 10 8E 22 0A LDY    #$0028
-8906: CE 94 08    LDU    #$1620
-8909: 8E 49 58    LDX    #$C1D0
+8906: CE 94 08    LDU    #high_scores_1620
+8909: 8E 49 58    LDX    #$C1D0		; highscores in ROM
 890C: EC A9       LDD    ,X++
 890E: ED 49       STD    ,U++
 8910: 31 1D       LEAY   -$1,Y
 8912: 26 7A       BNE    $890C
-8914: B6 34 A2    LDA    $1620
+; copy highest score to 157E
+8914: B6 34 A2    LDA    high_scores_1620
 8917: 97 56       STA    $7E
 8919: FC 9E A9    LDD    $1621
 891C: DD 57       STD    $7F
+; copy 5th middle score to 1572 wtf???
 891E: B6 49 D2    LDA    $C1F0
 8921: 97 F0       STA    $72
 8923: FC E3 D3    LDD    $C1F1
@@ -2176,7 +2179,7 @@ draw_title_road_905f:
 90E2: 24 DF       BCC    $9141
 90E4: 10 83 80 C8 CMPD   #$024A
 90E8: 26 23       BNE    $90F5
-90EA: BD 1B 4A    JSR    $9362
+90EA: BD 1B 4A    JSR    stop_music_9362
 90ED: BD 1B 6A    JSR    $93E2
 90F0: C6 12       LDB    #$30
 90F2: BD 02 83    JSR    $80A1
