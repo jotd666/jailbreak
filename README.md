@@ -1,5 +1,5 @@
 "# Jail Break" 
-remake of Jail Break for Amiga (AGA)
+remake of Jail Break for Amiga (AGA) beta
 
 Requires a 2-button joystick, or the keyboard
 
@@ -7,9 +7,16 @@ Credits:
 
 - jotd: reverse-engineering, 68000 transcode, graphics conversion
   sound conversion for the Amiga.
-- no9 (soon): music
+- no9: music
 - PascalDe73: icons
 - Konami: original game
+
+Todo:
+
+- insert coin with fire
+- ECS version
+- highscore save
+- more game tunes
 
 Instructions:
 

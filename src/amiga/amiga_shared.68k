@@ -166,8 +166,6 @@ osd_music_stop:
 	rts
 
 force_sound_stop:
-	rts
-	
 	movem.l	d0-d1/a0/a6,-(a7)
 	lea		_custom,a6
 	move.b	#-1,music_track_start_number
@@ -289,7 +287,7 @@ music_loops:
 music_volume:
 	.byte	0
 music_track_start_number:
-	.word	0
+	.word	-1
 music_pattern:
 	.word	0
 music_tick:

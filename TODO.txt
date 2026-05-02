@@ -1,13 +1,11 @@
-- end of game music is incomplete
-- highscore music is missing
 - highscore save
 - insert coin with push fire
-- check for hardest difficulty dip switch is in effect here!
+- better command line options
 - use sprites for player bullets / enemy bullets when possible
   with fallback to bobs: sprite 0x100
-- vertical scrolling for end sequence:ok, still parasite char near address 0x848 get write address
-  and watch it
-- also "machinegan" to fix: set start level + skip level!
+- vertical scrolling for end sequence:ok, still parasite char near address 0x84A get write address
+  and watch it: set start level + skip level! seems to be on other planes
+- ECS version!
 
 - command line for lives number is wrong: if user enters 4 ???
 - double buffering but still a lot of blinking on chip only, remove fixed 25Hz
@@ -18,7 +16,6 @@
   (vehicles)
 - profile game, try to optimize
 - use multiplexed sprites for enemy bullets (maybe)
-- ECS version!
 
 log sounds: bpset 93b7,,{print A;g}
 only play this C sound: bpset 93b7,A!=$C,{PC=93c9;g}

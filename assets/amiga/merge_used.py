@@ -71,5 +71,5 @@ def merge(used_name,nb_items,forced_cluts=None):
         with open(merged_path_file / used_name,"wb") as f:
             f.write(contents)
 
-merge("used_sprites",512)
-#merge("used_tiles",0x400)
+#merge("used_sprites",512)
+merge("used_tiles",0x400)

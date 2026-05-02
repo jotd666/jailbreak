@@ -75,16 +75,14 @@ def convert():
     music_volume = 24
 
     sound_dict.update({
-    "LEVEL_COMPLETED_SND"      :{"index":0x40,"pattern":0x3,"volume":music_volume},
-    "LEVEL_START_SND"      :{"index":0x44,"pattern":0x0,"volume":music_volume},
-    "GAME_OVER_SND"      :{"index":0x45,"pattern":0x2,"volume":music_volume},
-    "INTRO_SND"      :{"index":0x43,"pattern":0x6,"volume":music_volume},
-    "GAME_COMPLETED_SND"      :{"index":0x41,"pattern":0x4,"volume":music_volume},  # not complete
-    #"HIGH_SCORE_SND"      :{"index":0x42,"pattern":0xxxxx,"volume":40},  # not done
+    "LEVEL_COMPLETED_SND"      :{"index":0x40,"pattern":0x4,"volume":music_volume},
+    "LEVEL_START_SND"      :{"index":0x44,"pattern":0x1,"volume":music_volume},
+    "GAME_OVER_SND"      :{"index":0x45,"pattern":0x3,"volume":music_volume},
+    "INTRO_SND"      :{"index":0x43,"pattern":0x0,"volume":music_volume},
+    "GAME_COMPLETED_SND"      :{"index":0x41,"pattern":0x5,"volume":music_volume},
+    "HIGH_SCORE_SND"      :{"index":0x42,"pattern":0x9,"volume":40},
 
 })
-##    sound_dict["SOMMERSAULT_2_SND"] = {"index":0x1C,"same_as":"SOMMERSAULT_SND"}
-##    sound_dict["PING_66_SND"] = {"index":0x66,"same_as":"PING_65_SND"}
 
     dummy_sounds = [0,
 

@@ -29,7 +29,7 @@ shutil.copy(progdir / "assets" / "amiga" / "JailBreak.info",outdir)
 
 
 exename = gamename
-#subprocess.run(["cranker_windows.exe","-f",str(datadir / exename),"-o",str(dataout / exename)],check=True,stdout=subprocess.DEVNULL)
-# we can't really use cranker now, seems to crash at startup. Never mind!!
+subprocess.run(["cranker_windows.exe","-f",str(progdir / exename),"-o",f"{progdir / exename}.rnc"],check=True,stdout=subprocess.DEVNULL)
+
 shutil.copy(progdir / exename,outdir / exename)
 subprocess.run(cmd_prefix+["clean"],cwd=os.path.join(progdir,"src"))

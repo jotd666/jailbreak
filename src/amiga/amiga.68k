@@ -2582,10 +2582,7 @@ compute_tile_xy:
 * < D1: color code
 
 update_bg_tile_vert:
-*	cmp.w	#0x4A,d7
-*	jne		0f
-*	BREAKPOINT	"4A"
-*0:
+
 	cmp.w	#0x28D,d7
 	jne		0f
 	cmp.b	#0x11,d0
