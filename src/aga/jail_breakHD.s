@@ -131,5 +131,5 @@ _resload:
 progstart
     dc.l    0
 exe
-	dc.b	"jailbreak_aga",0
+	dc.b	"jail_break_aga",0
 	

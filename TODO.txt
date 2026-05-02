@@ -1,4 +1,3 @@
-- highscore save
 - insert coin with push fire
 - better command line options
 - use sprites for player bullets / enemy bullets when possible
@@ -7,6 +6,7 @@
   and watch it: set start level + skip level! seems to be on other planes
 - ECS version!
 
+- select nb lives: doesn't work, always selects 5
 - command line for lives number is wrong: if user enters 4 ???
 - double buffering but still a lot of blinking on chip only, remove fixed 25Hz
   mode, just skip frames if cannot cope, compute the number of active sprites for auto mode

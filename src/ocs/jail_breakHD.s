@@ -131,5 +131,5 @@ _resload:
 progstart
     dc.l    0
 exe
-	dc.b	"jailbreak_ocs",0
+	dc.b	"jail_break_ocs",0
 	

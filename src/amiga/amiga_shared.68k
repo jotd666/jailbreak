@@ -13,7 +13,7 @@
 * sound engine and also highscore management, common to all versions
 	
 	.include "lvo/dos_lvos.i"
-	.include "include.inc"
+	.include "jail_break.inc"
 	.include "sounds.inc"
 
 SCORE_FILE_SIZE = 0X50
@@ -25,8 +25,6 @@ SCORE_FILE_SIZE = 0X50
 	.else
 	move.l		ram_start_0000,a6
 	
-	* adjust offset to avoid subbing at run-time
-	sub.w	#0x1000,a6
 	.endif
 	.endm
 		
@@ -61,7 +59,7 @@ osd_read_high_scores:
 	lea	high_scores_1620(a6),a1
 	move.w	#SCORE_FILE_SIZE/2-1,d0
 0:
-	move.b	(a0)+,(a1)+
+	move.w	(a0)+,(a1)+
 	dbf		d0,0b
 
 1:
@@ -81,14 +79,11 @@ osd_write_high_scores:
 	lea	high_scores_1620(a6),a0
 	move.w	#SCORE_FILE_SIZE/2-1,d0
 0:
-
-1:
-	move.b	(a0)+,(a1)+
+	move.w	(a0)+,(a1)+
 	dbf		d0,0b
 
 
 	st.b	highscore_needs_saving
-1:
 	
 	move.l	_resload,d0
 	beq.b	0f
@@ -98,6 +93,7 @@ osd_write_high_scores:
 	bsr		get_hiscore_name
 	jsr		resload_SaveFile(a2)
 0:
+1:
 
 	movem.l	(a7)+,d0-d7/a0-a6
 	rts
@@ -304,6 +300,6 @@ trigger_lock:
 	.byte	0
 	
 normal_hiscorename:
-	.asciz	"jailbreak.high"
+	.asciz	"jail_break.high"
 
 

@@ -1733,7 +1733,7 @@ l_87bc:
 	OP_R_ON_DP_ADDRESS	move,timer_seconds_60,d0         | [$87d4: lda    $60]
 	jne	l_8803                             	| [$87d6: bne    $8803]
 	* time out while entering highscore: stop
-	jbsr	osd_write_highscores	
+	jbsr	osd_write_high_scores	
 	jbsr	stop_music_9362                            	| [$87d8: jsr    $9362]
 	jra	l_87a1                             	| [$87db: bra    $87a1]
 l_87dd:
@@ -1866,7 +1866,7 @@ l_8869:
 	jne	l_888d                             	| [$8886: bne    $888d]
 	* name entered completely: exit
 	jbsr	stop_music_9362                  | [$8888: jsr    $9362]
-	jbsr	osd_write_highscores
+	jbsr	osd_write_high_scores
 	OP_W_ON_DP_ADDRESS	addq,0x29,#1         | [$888b: inc    $29]
 l_888d:
 	rts                                    	| [$888d: rts]
