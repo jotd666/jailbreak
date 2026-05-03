@@ -46,7 +46,7 @@ _config
 	dc.b	"C2:X:25 Hz update:0;"
 
 	dc.b	"C3:L:start level:Broadway,Battery Park,The Navy Yard,Manhattan's Bridge,Manhattan Prison;"
-	dc.b	"C4:L:number of lives:5,3,2;"
+	dc.b	"C4:L:number of lives:3,5,2,1;"
 	dc.b	"C5:L:difficulty level:easy,normal,difficult,very difficult;"
 	dc.b	0
 
