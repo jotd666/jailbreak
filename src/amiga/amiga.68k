@@ -1454,7 +1454,7 @@ update_bobs_and_hw_sprites:
 	*************************
 	lea	background_restore_buffer-8,a0
 	WAIT_BLIT
-	move.l	#-1,bltalwm(a5)		| needed for blit_background
+	move.w	#-1,bltalwm(a5)		| needed for blit_background
 	* loop
 1:
 	move.w	(a4),d0
@@ -1463,6 +1463,7 @@ update_bobs_and_hw_sprites:
 	cmp.w	#NB_LINES,d1
 	jcc		11f				| too low: discard
 	and.w	#0xFFF0,d0		| align on 16 lower bound
+
 	* clear area where the sprite was
 	clr.l	(a4)+			| ack deletion by setting 0 in X & Y
 	move.w	(a4)+,d4		| height
@@ -1506,6 +1507,9 @@ update_bobs_and_hw_sprites:
 	lea	(PREVIOUS_SPRITE_SIZEOF,a4),a4
 	dbf		d7,1b
 12:	
+
+
+
 	
 	*********************************************
 	* draw current BOBs from 6809 sprite memory *
@@ -1581,7 +1585,7 @@ blit_background:
 	move.l a1,bltdpt(a5)	|destination top (bottom) left corner
 	move.w  d4,bltsize(a5)	|rectangle size, starts blit
 	
-	.rept	NB_BOB_PLANES-1
+	.rept	NB_TILE_PLANES-1
 	.if	BG_SCREEN_PLANE_SIZE>0x7FFF
 	add.l	#BG_SCREEN_PLANE_SIZE,a0
 	add.l	#BG_SCREEN_PLANE_SIZE,a1
