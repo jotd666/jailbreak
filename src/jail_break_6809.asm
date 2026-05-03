@@ -2434,6 +2434,7 @@ draw_title_road_905f:
 9325: 20 FB       BRA    queue_sound_93a0
 9327: 86 2C       LDA    #$04
 9329: 20 FD       BRA    queue_sound_93a0
+play_bikers_sound_932B:
 932B: 86 38       LDA    #$10
 932D: 20 F9       BRA    queue_sound_93a0
 932F: 86 06       LDA    #$24
@@ -3940,8 +3941,9 @@ A009: 30 00 98    LEAX   $10,X
 A00C: 31 17       LEAY   -$1,Y
 A00E: 26 67       BNE    $9FFF
 A010: 39          RTS
+
 A011: 6F 0A 91    CLR    $13,X
-A014: BD B1 A9    JSR    $932B
+A014: BD B1 A9    JSR    play_bikers_sound_932B
 A017: F6 39 EE    LDB    $11C6
 A01A: C0 8E       SUBB   #$06
 A01C: 20 26       BRA    $A02C

@@ -145,16 +145,19 @@ okay\@:
 
 * 68020 compliant & optimized
 
+    .macro    JXX_X_INDEXED    inst,reg,nb_cases,ab
+	moveq	#0,d6
+    move.b	\ab,d6  | mask 8 bits
+	CHECK_MAX	d6,\nb_cases
+    \inst    ([\reg,d6.W*2])
+    .endm
+
     .macro    JXX_A_INDEXED    inst,reg,nb_cases
-    and.w    #0xFF,d0  | mask 8 bits
-	CHECK_MAX	d0,\nb_cases
-    \inst    ([\reg,d0.W*2])
+	JXX_X_INDEXED	\inst,\reg,\nb_cases,d0
     .endm
 
     .macro    JXX_B_INDEXED    inst,reg,nb_cases
-    and.w    #0xFF,d1  | mask 8 bits
-	CHECK_MAX	d1,\nb_cases
-    \inst    ([\reg,d1.W*2])
+	JXX_X_INDEXED	\inst,\reg,\nb_cases,d1
     .endm
 
 	.macro DO_EXTB	reg
