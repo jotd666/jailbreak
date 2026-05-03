@@ -152,14 +152,6 @@ okay\@:
     \inst    ([\reg,d6.W*2])
     .endm
 
-    .macro    JXX_A_INDEXED    inst,reg,nb_cases
-	JXX_X_INDEXED	\inst,\reg,\nb_cases,d0
-    .endm
-
-    .macro    JXX_B_INDEXED    inst,reg,nb_cases
-	JXX_X_INDEXED	\inst,\reg,\nb_cases,d1
-    .endm
-
 	.macro DO_EXTB	reg
 	extb.l	\reg
 	.endm
@@ -168,22 +160,27 @@ okay\@:
 	move.w	ccr,-(sp)
 	.endm
 
+   .macro    INST_W_TO_REG    inst,src,dest
+    move.b    (\src),d6
+    ror.w    #8,d6
+    move.b    (1,\src),d6
+    \inst\().w    d6,\dest
+    .endm
 
-	.macro	MOVE_W_TO_REG	src,dest
-	move.w	(\src),\dest
-	.endm
-
-	.macro	CMP_W_TO_REG	src,dest
-	cmp.w	(\src),\dest
-	.endm
-	.macro	ADD_W_TO_REG	src,dest
-	add.w	(\src),\dest
-	.endm
-	.macro	SUB_W_TO_REG	src,dest
-	sub.w	(\src),\dest
-	.endm
-	.macro	MOVE_W_FROM_REG    src,dest
+    .macro    INST_W_TO_REG_020    inst,src,dest
+    \inst\().w    (\src),\dest
+    .endm
+	
+	.macro	MOVE_W_FROM_REG_020    src,dest
 	move.w	\src,(\dest)
+	.endm
+	
+	.macro	MOVE_W_FROM_REG    src,dest
+	ror.w	#8,\src
+	move.b	\src,(\dest)
+	ror.w	#8,\src
+	move.b	\src,(1,\dest)
+	tst.w	\src
 	.endm
 
 
@@ -207,14 +204,6 @@ okay\@:
     \inst    (\reg)
     .endm
 	
-    .macro    JXX_A_INDEXED    inst,reg,nb_cases
-    JXX_X_INDEXED	\inst,\reg,\nb_cases,d0
-    .endm
-	
-    .macro    JXX_B_INDEXED    inst,reg,nb_cases
-    JXX_X_INDEXED	\inst,\reg,\nb_cases,d1
-    .endm
-
 	.macro DO_EXTB	reg
 	ext	\reg
 	ext.l	\reg
@@ -224,12 +213,6 @@ okay\@:
 	move.w	sr,-(sp)
 	.endm
 
-	.macro	MOVE_W_TO_REG    src,dest
-	ror.w	#8,\dest
-	move.b	(\src),\dest
-	ror.w	#8,\dest
-	move.b	(1,\src),\dest
-	.endm
 
 	.macro	MOVE_W_FROM_REG    src,dest
 	ror.w	#8,\src
@@ -245,6 +228,28 @@ okay\@:
     \inst\().w    d6,\dest
     .endm
 
+
+
+	.macro READ_BE_WORD	srcreg
+	moveq	#0,d6
+	move.b	(\srcreg),d6
+	lsl.w	#8,d6
+	move.b	(1,\srcreg),d6
+	move.l	d6,\srcreg
+	.endm
+
+	.endif
+
+
+
+	.macro POP_SR
+	move.w	(sp)+,ccr
+	.endm
+
+	.macro	MOVE_W_TO_REG    src,dest
+    INST_W_TO_REG   move,\src,\dest
+	.endm
+
     .macro    SUB_W_TO_REG    src,dest
     INST_W_TO_REG   sub,\src,\dest
     .endm
@@ -258,19 +263,13 @@ okay\@:
     .endm
 
 
-	.macro READ_BE_WORD	srcreg
-	moveq	#0,d6
-	move.b	(\srcreg),d6
-	lsl.w	#8,d6
-	move.b	(1,\srcreg),d6
-	move.l	d6,\srcreg
-	.endm
+    .macro    JXX_A_INDEXED    inst,reg,nb_cases
+	JXX_X_INDEXED	\inst,\reg,\nb_cases,d0
+    .endm
 
-	.endif
-
-	.macro POP_SR
-	move.w	(sp)+,ccr
-	.endm
+    .macro    JXX_B_INDEXED    inst,reg,nb_cases
+	JXX_X_INDEXED	\inst,\reg,\nb_cases,d1
+    .endm
 
     .macro    JSR_A_INDEXED    reg,nb_cases
     JXX_A_INDEXED	jsr,\reg,\nb_cases
