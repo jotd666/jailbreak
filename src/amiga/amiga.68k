@@ -1201,7 +1201,7 @@ really_update_scroll:
 	add.l	a4,d0				| base address
 	addq	#4,a0				| pointer on first bitplane
 	movem.l	a0-a1/d1-d2,-(a7)
-	move.b	#0,0x110
+
 	jbsr	set_static_bitplanes
 	movem.l	(a7)+,a0-a1/d1-d2
 	
@@ -1445,6 +1445,44 @@ update_bobs_and_hw_sprites:
 	* clear previous positions
 	move.l	playfield_drawn_screen_ptr(pc),a1
 	move.w	#NB_TARGET_SPRITES-1,d7
+	
+	.ifdef	OCS_VERSION
+	*************************
+	* blit background tiles *
+	*************************
+	lea	background_restore_buffer,a0
+	WAIT_BLIT
+	move.l	#-1,bltalwm(a5)		| needed for blit_background
+	* loop
+1:
+	move.w	(a4),d0
+	jeq	11f		| x=0: inactive
+	move.w	(2,a4),d1
+	cmp.w	#NB_LINES,d1
+	jcc		11f				| too low: discard
+	and.w	#0x1F0,d0		| align on 16 lower bound
+	* clear area where the sprite was
+	clr.l	(a4)+			| ack deletion by setting 0 in X & Y
+	move.w	(a4)+,d4		| height
+	move.w	(a4)+,d2		| width
+	move.l		playfield_drawn_screen_ptr(pc),a1
+
+	tst		d7
+	jne		111f
+	* last bitplane: simple erase
+	move.w	#NB_TILE_PLANES,d3
+	subq	#8,a1
+	* blitter is probably still restoring the previous bitplane
+	* just use cpu to clear the last plane, simple & probably faster
+	jbsr		clear_planes_any_cpu
+	
+	jra		10f
+111:
+	* normal sprite, restore background
+	jbsr	blit_background
+	
+	.else
+
 1:
 	move.l	(a4),d1	| read X and Y
 	jeq		11f		| x=y=0: inactive, skip
@@ -1453,26 +1491,23 @@ update_bobs_and_hw_sprites:
 	* clear area where the sprite was
 	clr.l	(a4)+			| ack deletion
 	move.w	(a4)+,d4		| height
-	move.w	(a4)+,d2		| width/clut index (if star)
+	move.w	(a4)+,d2		| width
 
 	and.w	#0x1F0,d0		| align on 16 lower bound
-	.ifdef	OCS_VERSION
-	
-	.else
 	* AGA: dual playfield, just erase
 	move.w	#NB_TILE_PLANES,d3
 	move.l		playfield_drawn_screen_ptr(pc),a1
 	subq	#8,a1
 	jbsr		clear_planes_any_blitter_internal
 	.endif
-	
+
+10:	
 	dbf		d7,1b	
 	bra.b	12f
 11:
 	lea	(PREVIOUS_SPRITE_SIZEOF,a4),a4
 	dbf		d7,1b
 12:	
-
 	
 	*********************************************
 	* draw current BOBs from 6809 sprite memory *
@@ -1604,6 +1639,9 @@ update_one_bob:
 	
 	COMPUTE_SPRITE_COORDS
 
+	.ifdef	OCS_VERSION
+	add.w	current_scroll_values+16,D0
+	.endif
 	.ifne	SPRITE_Y_CORRECTION
 	add.w	#SPRITE_Y_CORRECTION,d1
 	.endif
@@ -2042,7 +2080,9 @@ process_1_plane:
 	GEN_MINTERM_TABLE	cookie_cut_blit,0x0FCA
 	GEN_MINTERM_TABLE_2	cookie_cut_mask_blit,0x0BCA
 
-
+clear_planes_any_cpu:
+	rts
+	
 * < D0,D1: x,y
 * < A1: foreground plane pointer (often first plane!)
 * < D2: width in bytes (inc. 2 extra for shifting)
@@ -2363,7 +2403,7 @@ platform_init:
 	move.w	#0x1FE,intreq_block_game_vertical
 0:
 	.ifdef	OCS_VERSION
-    move.w #0x5200,bplcon0(a5) | 4 bitplanes
+    move.w #0x200+(NB_BOB_PLANES<<12),bplcon0(a5) | 4 bitplanes
     move.w #0x99-0X18+(COPPER_Y_START<<8),diwstrt(a5)
     move.w #0x79+0x3F-0x48+(COPPER_Y_START<<8)-0x1000,diwstop(a5)
 	.else

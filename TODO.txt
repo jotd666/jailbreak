@@ -1,4 +1,5 @@
 - insert coin with push fire
+- ECS extra 5th bitplane shifted with same bitmap data
 - better command line options
 - use sprites for player bullets / enemy bullets when possible
   with fallback to bobs: sprite 0x100
