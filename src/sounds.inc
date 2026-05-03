@@ -11,6 +11,7 @@
 	.equ	HOSTAGE_FREED_0D_SND,  0xd
 	.equ	SIREN_0E_SND,  0xe
 	.equ	SFX_0F_SND,  0xf
+	.equ	BIKE_10_SND,  0x10
 	.equ	SFX_11_SND,  0x11
 	.equ	MEGABLAST_12_SND,  0x12
 	.equ	CREDIT_13_SND,  0x13

@@ -115,8 +115,10 @@ NB_PLAYFIELD_LINES = NB_LINES
 BG_SCREEN_PLANE_SIZE = BG_HORIZ_NB_BYTES_PER_ROW*NB_PLAYFIELD_LINES
 FG_SCREEN_PLANE_SIZE = FG_NB_BYTES_PER_ROW*NB_PLAYFIELD_LINES
 	.ifdef	OCS_VERSION
+* less memory used but 1 playfield
 BG_SCREEN_SIZE = BG_SCREEN_PLANE_SIZE*NB_BOB_PLANES
 	.else
+* 2 playfields
 BG_SCREEN_SIZE = BG_SCREEN_PLANE_SIZE*NB_TILE_PLANES
 FG_SCREEN_SIZE = FG_SCREEN_PLANE_SIZE*NB_BOB_PLANES
 	.endif
@@ -431,13 +433,13 @@ _user:
 	move.w	#BG_SCREEN_PLANE_SIZE,bob_plane_size
 
 	lea		bg_screen_buffer_1,a0
-	move.l	a0,fg_screen_data_1
+	move.l	a0,screen_data_ptr_1
 	move.l	a0,playfield_drawn_screen_ptr
 	move.l	a0,playfield_displayed_screen_ptr
 
 	.ifne	OPT_ENABLE_DOUBLE_BUFFERING
 	lea		bg_screen_buffer_2,a0
-	move.l	a0,fg_screen_data_2
+	move.l	a0,screen_data_ptr_2
 	move.l	a0,playfield_displayed_screen_ptr
 	.endif
 
@@ -450,7 +452,7 @@ _user:
 	
 	lea		fg_screen_buffer_1,a0
 	jbsr	align_for_fmode
-	move.l	a0,fg_screen_data_1
+	move.l	a0,screen_data_ptr_1
 	move.l	a0,playfield_drawn_screen_ptr
 	move.l	a0,playfield_displayed_screen_ptr
 
@@ -459,7 +461,7 @@ _user:
 	.ifne	OPT_ENABLE_DOUBLE_BUFFERING
 	lea		fg_screen_buffer_2,a0
 	jbsr	align_for_fmode
-	move.l	a0,fg_screen_data_2
+	move.l	a0,screen_data_ptr_2
 	move.l	a0,playfield_displayed_screen_ptr
 	.endif
 		
@@ -940,7 +942,7 @@ level3_interrupt:
 	
 	
 	.ifne	OPT_ENABLE_DOUBLE_BUFFERING
-	bsr		switch_screen_buffers
+	jbsr		switch_screen_buffers
 	.endif
 
 	jbsr		really_update_tiles
@@ -1115,20 +1117,17 @@ osd_is_vblank_interrupt_enabled:
 	rts
 	
 	
-* 2 conditions I can think of:
 
 * Z: set if not playing
 is_game_playing:
 
-	move.l	a5,-(a7)
+	movem.l	d0/a5,-(a7)
 	move.l	m6809_direct_page_pointer,a5
-*	*GET_MEMORY_START_AND_DP
-*	cmp.b	#1,global_state_00(a5)
-*	jeq		0f
-*	cmp.b	#4,global_state_00(a5)
-*0:
-	cmp.l	#0,a5
-	move.l	(a7)+,a5
+	move.b	game_state_25(a5),d0
+	jeq		0f
+	cmp.b	#1,d0
+0:
+	movem.l	(a7)+,d0/a5
 	rts
 	
 skip_level:
@@ -1184,8 +1183,7 @@ really_update_scroll:
 	move.b	(0x20,a6),d5
 	and.b	#1,d5		| consider only bit 0 for MSB
 	rol.w	#8,d5
-	move.b	(a6),d5
-	addq	#1,a6
+	move.b	(a6)+,d5
 	move.w	(a3)+,d6
 	cmp.w	d5,d6
 	jeq		1f
@@ -1207,6 +1205,7 @@ really_update_scroll:
 	addq	#4,a1
 	add.w	#BG_HORIZ_NB_BYTES_PER_ROW*8,a4	| next row address
 	dbf		d7,0b
+
 	rts
 	
 update_vertical_scroll:
@@ -1448,7 +1447,7 @@ update_bobs_and_hw_sprites:
 	*************************
 	* blit background tiles *
 	*************************
-	lea	background_restore_buffer,a0
+	lea	background_restore_buffer-8,a0
 	WAIT_BLIT
 	move.l	#-1,bltalwm(a5)		| needed for blit_background
 	* loop
@@ -1464,20 +1463,16 @@ update_bobs_and_hw_sprites:
 	move.w	(a4)+,d4		| height
 	move.w	(a4)+,d2		| width
 	move.l		playfield_drawn_screen_ptr(pc),a1
-
-	tst		d7
-	jne		111f
-	* last bitplane: simple erase
-	move.w	#NB_TILE_PLANES,d3
 	subq	#8,a1
-	* blitter is probably still restoring the previous bitplane
-	* just use cpu to clear the last plane, simple & probably faster
-	jbsr		clear_planes_any_cpu
+
+	* restore background
+	jbsr	blit_background
+	* clear the last bitplane while blitter is still working
+	move.w	d4,d3		| height
+	add.l	#NB_TILE_PLANES*BG_SCREEN_PLANE_SIZE,a1
+	jbsr		clear_plane_using_cpu
 	
 	jra		10f
-111:
-	* normal sprite, restore background
-	jbsr	blit_background
 	
 	.else
 
@@ -1537,10 +1532,10 @@ update_bobs_and_hw_sprites:
 * < D2: width in bytes
 * < D4: height
 
-* trashes: D0-D1
+* trashes: nothing
 
 blit_background:
-	movem.l	d2-d6/a0-a5,-(a7)
+	movem.l	d0-d6/a0-a5,-(a7)
 	lea		_custom,a5
 	* adjust offset X: X//8
 	lsr.w	#3,d0
@@ -1596,7 +1591,7 @@ blit_background:
 	move.w  d4,bltsize(a5)	|rectangle size, starts blit
 	.endr
 	
-	movem.l	(a7)+,d2-d6/a0-a5
+	movem.l	(a7)+,d0-d6/a0-a5
 	rts
 
 	
@@ -2082,8 +2077,82 @@ process_1_plane:
 	GEN_MINTERM_TABLE	cookie_cut_blit,0x0FCA
 	GEN_MINTERM_TABLE_2	cookie_cut_mask_blit,0x0BCA
 
-clear_planes_any_cpu:
-	rts
+* what: clears a plane of any width (not using blitter, no shifting, start is multiple of 8), 16 height
+* args:
+* < A1: dest (must be even)
+* < D0: X (multiple of 8)
+* < D1: Y
+* < D2: blit width in bytes (even, 2 must be added same interface as blitter)
+* < D3: height
+* trashes: none
+
+clear_plane_using_cpu:
+    movem.l d0-D3/a0-a2,-(a7)
+    subq.w  #1,d3
+    bmi.b   5f
+    add.w   d1,d1
+    beq.b   1f		| optim
+	bmi.b	5f
+	.ifdef	OCS_VERSION
+    lea mulBG_HORIZ_NB_BYTES_PER_ROW_table(pc),a2
+	.else
+    lea mulFG_NB_BYTES_PER_ROW_table(pc),a2
+	.endif
+    move.w  (a2,d1.w),d1
+    add.w   d1,a1
+1:
+
+    lsr.w   #3,d0
+    add.w   d0,a1
+	move.l	a1,d1
+    btst    #0,d1
+    bne.b   2f
+    cmp.w   #4,d2
+    bcs.b   2f
+	btst	#0,d2
+	bne.b	2f
+	btst	#1,d2
+	beq.b	6f
+2:  
+    * odd address
+    move.w  d3,d0
+    subq.w  #1,d2
+3:
+    move.l  a1,a0
+    move.w  d2,d1   | reload d1
+4:
+    clr.b   (a0)+
+    dbf d1,4b
+    * next line
+	.ifdef	OCS_VERSION
+    add.w   #BG_HORIZ_NB_BYTES_PER_ROW,a1
+	.else
+    add.w   #FG_NB_BYTES_PER_ROW,a1
+	.endif
+    dbf d0,3b
+5:
+    movem.l (a7)+,d0-D3/a0-a2
+    rts
+
+6:
+    * even address, big width: can use longword erase
+    move.w  d3,d0
+    lsr.w   #2,d2
+    subq.w  #1,d2
+7:
+    move.l  a1,a0
+    move.w  d2,d1
+8:
+    clr.l   (a0)+
+    dbf d1,8b
+    * next line
+ 	.ifdef	OCS_VERSION
+    add.w   #BG_HORIZ_NB_BYTES_PER_ROW,a1
+	.else
+    add.w   #FG_NB_BYTES_PER_ROW,a1
+	.endif
+    dbf d0,7b
+    bra.b   5b
 	
 * < D0,D1: x,y
 * < A1: foreground plane pointer (often first plane!)
@@ -2244,8 +2313,8 @@ switch_screen_buffers:
 	lea		playfield_drawn_screen_ptr(pc),a0
 	lea		bob_previous_positions_1(pc),a2
 	lea		bob_previous_positions_2(pc),a3
-	move.l	fg_screen_data_1,a1
-	move.l	fg_screen_data_2,a5
+	move.l	screen_data_ptr_1,a1
+	move.l	screen_data_ptr_2,a5
 	* also switch previous state memory
 	cmp.l	(a0),a1
 	bne.b	2f
@@ -2709,7 +2778,9 @@ update_bg_tile_vert:
 	.ifdef	OCS_VERSION
 	lea		background_restore_buffer,a3
 	add.w	d0,a3
+	.ifne	OPT_ENABLE_DOUBLE_BUFFERING
 	add.w	d0,a4		| for the other buffer
+	.endif
 	.endif
 	
 
@@ -2907,7 +2978,9 @@ update_bg_tile_horiz:
 	.ifdef	OCS_VERSION
 	lea		background_restore_buffer,a3
 	add.w	d0,a3
+	.ifne	OPT_ENABLE_DOUBLE_BUFFERING
 	add.w	d0,a4
+	.endif
 	.endif
 	
 
@@ -2950,29 +3023,44 @@ update_bg_tile_horiz:
 	.endif
 12:
 	move.l	d0,a2					| pointer on bitplanes
-	lea		mirror_jump_table(pc),a4
+	lea		mirror_jump_table(pc),a5
 	ror.b	#4,d1			        | modifiers on first bits
 	and.w	#3,d1
 	.ifdef	NO68020
 	add.w	d1,d1
 	add.w	d1,d1	
-	move.l	(a4,d1.w),a4
+	move.l	(a5,d1.w),a5
 	.else
-	move.l	(a4,d1.w*4),a4
+	move.l	(a5,d1.w*4),a5
 	.endif
 
 	* should we print the tile once or twice?
 	tst.b	d6
 	jeq		20f		| just once
 	* do it twice. Preserve useful registers
+	.ifdef	OCS_VERSION
+	movem.l	a1-a4,-(a7)
+	.else
 	movem.l	a1/a2,-(a7)
-	jsr		(a4)
+	.endif
+	jsr		(a5)
+	.ifdef	OCS_VERSION
+	movem.l	(a7)+,a1-a4
+	.else
 	movem.l	(a7)+,a1/a2
+	.endif
 	* draw the same thing more to the right
-	add.w	#64,a1
+	move.w	#64,d6
+	add.w	d6,a1
+	.ifdef	OCS_VERSION
+	add.w	d6,a3
+	.ifne	OPT_ENABLE_DOUBLE_BUFFERING
+	add.w	d6,a4
+	.endif
+	.endif
 	move.w	#NB_TILE_PLANES-1,d4
 20:
-	jmp		(a4)
+	jmp		(a5)
 	
 	
 
@@ -3651,10 +3739,10 @@ one_out_of_five:
 	.word	0
 
 
-fg_screen_data_1:
+screen_data_ptr_1:
 	.long	0
 	.ifne	OPT_ENABLE_DOUBLE_BUFFERING
-fg_screen_data_2:
+screen_data_ptr_2:
 	.long	0
 	.endif
 	

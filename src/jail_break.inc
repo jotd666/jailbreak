@@ -194,19 +194,22 @@ okay\@:
 	.else
 
 * 68000 compliant
-    .macro    JXX_A_INDEXED    inst,reg,nb_cases
-    and.w    #0xFF,d0  | mask 8 bits
-	CHECK_MAX	d0,\nb_cases
-    add.w    d0,d0    | *2 (16 -> 32 bits)
-    move.l    (\reg,d0.w),\reg
+    .macro    JXX_X_INDEXED    inst,reg,nb_cases,ab
+	moveq	#0,d6   | scratch register
+    move.b  \ab,d6  | mask 8 bits
+	CHECK_MAX	d6,\nb_cases
+	* original register is not changed (could cause issues)
+    add.w    d6,d6    | *2 (16 -> 32 bits)
+    move.l    (\reg,d6.w),\reg
     \inst    (\reg)
     .endm
+	
+    .macro    JXX_A_INDEXED    inst,reg,nb_cases
+    JXX_X_INDEXED	\inst,\reg,\nb_cases,d0
+    .endm
+	
     .macro    JXX_B_INDEXED    inst,reg,nb_cases
-    and.w    #0xFF,d1  | mask 8 bits
- 	CHECK_MAX	d1,\nb_cases
-    add.w    d1,d1    | *2 (16 -> 32 bits)
-    move.l    (\reg,d1.w),\reg
-    \inst    (\reg)
+    JXX_X_INDEXED	\inst,\reg,\nb_cases,d1
     .endm
 
 	.macro DO_EXTB	reg

@@ -1768,9 +1768,9 @@ irq_8a57:
 8D82: 26 8A       BNE    $8D8C
 8D84: 9B 06       ADDA   $24
 8D86: 19          DAA
-8D87: 97 0C       STA    $24
+8D87: 97 0C       STA    $24	; consume credit
 8D89: BD 08 10    JSR    $8098
-8D8C: 0C 0D       INC    game_state_25
+8D8C: 0C 0D       INC    game_state_25	; game is now running
 8D8E: 96 CC       LDA    $44
 8D90: 27 2B       BEQ    $8D9B
 8D92: CC 82 22    LDD    #$0000

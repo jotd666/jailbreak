@@ -1,5 +1,6 @@
-- insert coin with push fire
-- ECS extra 5th bitplane shifted with same bitmap data
+- OCS version with cut down audio and 16 colors?
+- bug in OCS: bikers triggered all the time: see why it happens
+- OCS double buffering doesn't work properly
 - better command line options
 - use sprites for player bullets / enemy bullets when possible
   with fallback to bobs: sprite 0x100
