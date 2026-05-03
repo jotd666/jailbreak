@@ -27,9 +27,9 @@ for file in ["readme.md",f"{gamename}_aga.slave"]:
 shutil.copy(progdir / "assets" / "amiga" / "JailBreak.info",outdir)
 
 
+for suffix in ["ecs","aga"]:
+    exename = f"{gamename}_{suffix}"
+    subprocess.run(["cranker_windows.exe","-f",str(progdir / exename),"-o",f"{progdir / exename}.rnc"],check=True,stdout=subprocess.DEVNULL)
 
-exename = gamename+"_aga"
-subprocess.run(["cranker_windows.exe","-f",str(progdir / exename),"-o",f"{progdir / exename}.rnc"],check=True,stdout=subprocess.DEVNULL)
-
-shutil.copy(progdir / exename,outdir / exename)
+    shutil.copy(progdir / exename,outdir / exename)
 subprocess.run(cmd_prefix+["clean"],cwd=os.path.join(progdir,"src"))

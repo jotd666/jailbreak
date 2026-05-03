@@ -1,6 +1,7 @@
 PROGNAME = jail_break
 MAIN_AGA = ..\$(PROGNAME)_aga
 MAIN_OCS = ..\$(PROGNAME)_ocs
+MAIN_ECS = ..\$(PROGNAME)_ecs
 AMIGA_SHELL = ..\$(PROGNAME)
 
 ifdef RELEASE_BUILD
@@ -85,10 +86,12 @@ rom.o: rom.68k
 $(PROGNAME)_020.o: $(PROGNAME).68k $(PROGNAME).inc sounds.inc data.inc
 	$(ASM_020) $(PROGNAME).68k -o $(PROGNAME)_020.o
 $(PROGNAME)_000.o: $(PROGNAME).68k $(PROGNAME).inc sounds.inc data.inc
-	$(ASM_020) $(PROGNAME).68k -o $(PROGNAME)_000.o
+	$(ASM_000) $(PROGNAME).68k -o $(PROGNAME)_000.o
 amiga_aga.o: $(AMIGASRC)/amiga.68k $(PROGNAME).inc data.inc $(AMIGASRC)/ReadJoyPad.i $(AGASRC)/palette.68k $(AMIGASRC)/sound_entries.68k
 	$(ASM_020) -I$(AGASRC) -I$(AMIGASRC) -I$(AMIGASRC)/mit_includes $(AMIGASRC)/amiga.68k -o amiga_aga.o 
 amiga_ocs.o: $(AMIGASRC)/amiga.68k $(PROGNAME).inc data.inc $(AMIGASRC)/ReadJoyPad.i $(OCSSRC)/palette.68k $(AMIGASRC)/sound_entries.68k
+	$(ASM_000) -I$(OCSSRC) -I$(AMIGASRC) -I$(AMIGASRC)/mit_includes $(AMIGASRC)/amiga.68k -o amiga_ocs.o 
+amiga_ecs.o: $(AMIGASRC)/amiga.68k $(PROGNAME).inc data.inc $(AMIGASRC)/ReadJoyPad.i $(ECSSRC)/palette.68k $(AMIGASRC)/sound_entries.68k
 	$(ASM_000) -I$(OCSSRC) -I$(AMIGASRC) -I$(AMIGASRC)/mit_includes $(AMIGASRC)/amiga.68k -o amiga_ocs.o 
 amiga_shared.o: $(AMIGASRC)/amiga_shared.68k data.inc $(PROGNAME).inc $(AMIGASRC)/ReadJoyPad.i
 	$(ASM_000) -I$(AMIGASRC) -I$(AMIGASRC)/mit_includes $(AMIGASRC)/amiga_shared.68k -o amiga_shared.o
@@ -98,8 +101,6 @@ ptplayer.o: $(AMIGASRC)/ptplayer.68k
 	$(ASM_000) -I$(AMIGASRC) -I$(AMIGASRC)/mit_includes $(AMIGASRC)/ptplayer.68k -o ptplayer.o
 sounds_ocs.o: $(OCSSRC)/sounds.68k
 	$(ASM_000) -I$(OCSSRC) $(OCSSRC)/sounds.68k -o sounds_ocs.o
-sounds_ecs.o: $(ECSSRC)/sounds.68k
-	$(ASM_000) -I$(ECSSRC) $(ECSSRC)/sounds.68k -o sounds_ecs.o
 sounds.o: $(AMIGASRC)/sounds.68k
 	$(ASM_000) -I$(AMIGASRC) $(AMIGASRC)/sounds.68k -o sounds.o
 ReadJoyPad.o: $(AMIGASRC)/ReadJoyPad.68k amiga/ReadJoyPad.i
@@ -108,6 +109,8 @@ graphics_aga.o: $(AGASRC)/graphics.68k $(PROGNAME).inc
 	$(ASM_020) $(AGASRC)/graphics.68k -o graphics_aga.o
 graphics_ocs.o: $(OCSSRC)/graphics.68k $(PROGNAME).inc
 	$(ASM_000) $(OCSSRC)/graphics.68k -o graphics_ocs.o
+graphics_ecs.o: $(ECSSRC)/graphics.68k $(PROGNAME).inc
+	$(ASM_000) $(OCSSRC)/graphics.68k -o graphics_ecs.o
 
 
 $(WHDLOADER) : $(AGA_WHD_SOURCE)
@@ -125,3 +128,11 @@ $(WHDLOADER_OCS) : $(OCS_WHD_SOURCE)
 $(WHDLOADER_OCS_CHIP) : $(OCS_WHD_SOURCE)
 	wdate.py> datetime
 	$(WHDASM) -DCHIP_ONLY -o $(WHDLOADER_OCS_CHIP) $(OCS_WHD_SOURCE)
+	
+$(WHDLOADER_ECS) : $(OCS_WHD_SOURCE)
+	wdate.py> datetime
+	$(WHDASM) -o $(WHDLOADER_ECS) $(ECS_WHD_SOURCE)
+	
+$(WHDLOADER_ECS_CHIP) : $(ECS_WHD_SOURCE)
+	wdate.py> datetime
+	$(WHDASM) -DCHIP_ONLY -o $(WHDLOADER_ECS_CHIP) $(ECS_WHD_SOURCE)

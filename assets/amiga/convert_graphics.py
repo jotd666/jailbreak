@@ -3,6 +3,11 @@ import os,sys,bitplanelib
 
 from shared import *
 
+AGA_MODE = 0
+ECS_MODE = 1
+OCS_MODE = 2
+
+dirs = ["aga","ecs","ocs"]
 
 sprite_names = get_sprite_names()
 
@@ -193,11 +198,10 @@ def read_tileset(img_set_list,palette,plane_orientation_flags,cache,is_bob,nb_pl
     return new_tile_table
 
 
-def doit(aga_mode):
-    nb_colors = 32
+def doit(mode):
+    nb_colors = 32 if mode != OCS_MODE else 16
 
-
-    xxx_src_dir = aga_src_dir if aga_mode else ocs_src_dir
+    xxx_src_dir = src_dir / ".."/ dirs[mode]
 
 
     sprite_cluts = {}
@@ -321,8 +325,12 @@ def doit(aga_mode):
 
     full_palette = tile_palette+sprite_palette
 
-
-
+    if mode != AGA_MODE:
+        # merge
+        full_palette = sorted(set(full_palette))
+        nb_raw_colors = len(full_palette)
+        if nb_raw_colors > nb_colors:
+            raise Exception(f"too many colors {nb_raw_colors} for {nb_colors}, quantizing")
     #full_palette_rgb4 = {(x>>4,y>>4,z>>4) for x,y,z in full_palette}
     #actually_used_colors_rgb4 = {(x>>4,y>>4,z>>4) for x,y,z in actually_used_colors}
     #unused_colors = full_palette_rgb4 - actually_used_colors_rgb4
@@ -340,10 +348,10 @@ def doit(aga_mode):
 
     bob_plane_cache = {}
 
-    if aga_mode:
+    if mode == AGA_MODE:
         sprite_table = read_tileset(sprite_set_list,full_palette[16:],[True,False,True,False],cache=bob_plane_cache, is_bob=True, nb_planes=4)
     else:
-        # ECS needs 5 planes
+        # ECS/OCS have only 1 palette
         sprite_table = read_tileset(sprite_set_list,full_palette,[True,False,True,False],cache=bob_plane_cache, is_bob=True, nb_planes=5)
 
 
@@ -531,5 +539,6 @@ def doit(aga_mode):
                                     bitplanelib.dump_asm_bytes(d,f,mit_format=True)
                                 f.write("\n")
 
-doit(True)
-doit(False)
+#doit(mode=AGA_MODE)
+#doit(mode=ECS_MODE)
+doit(mode=OCS_MODE)
