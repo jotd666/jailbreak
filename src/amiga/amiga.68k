@@ -82,7 +82,7 @@ OPT_ENABLE_PROFILING = 0
 OPT_IGNORE_ZERO_BITPLANE = 0
 	.ifdef	OCS_VERSION
 NO68020 = 1
-OPT_ENABLE_DOUBLE_BUFFERING = 0
+OPT_ENABLE_DOUBLE_BUFFERING = 0   | TEMP
 	.else
 OPT_ENABLE_DOUBLE_BUFFERING = 1
 	.endif
@@ -114,8 +114,12 @@ NB_PLAYFIELD_LINES = NB_LINES
 
 BG_SCREEN_PLANE_SIZE = BG_HORIZ_NB_BYTES_PER_ROW*NB_PLAYFIELD_LINES
 FG_SCREEN_PLANE_SIZE = FG_NB_BYTES_PER_ROW*NB_PLAYFIELD_LINES
+	.ifdef	OCS_VERSION
+BG_SCREEN_SIZE = BG_SCREEN_PLANE_SIZE*NB_BOB_PLANES
+	.else
 BG_SCREEN_SIZE = BG_SCREEN_PLANE_SIZE*NB_TILE_PLANES
 FG_SCREEN_SIZE = FG_SCREEN_PLANE_SIZE*NB_BOB_PLANES
+	.endif
 
 VIDEO_ADDRESS = 0
 
@@ -275,12 +279,6 @@ start:
 	.include	"ReadJoypad.i"
 	.include	"whdload_funcs.i"
 		.text
-
-
-	.ifne	OPT_ENABLE_PROFILING
-	* init profiling if enabled
-	.include	"profiler.68k"
-	.endif
 
 	    
 _user:
@@ -1460,7 +1458,7 @@ update_bobs_and_hw_sprites:
 	move.w	(2,a4),d1
 	cmp.w	#NB_LINES,d1
 	jcc		11f				| too low: discard
-	and.w	#0x1F0,d0		| align on 16 lower bound
+	and.w	#0xFFF0,d0		| align on 16 lower bound
 	* clear area where the sprite was
 	clr.l	(a4)+			| ack deletion by setting 0 in X & Y
 	move.w	(a4)+,d4		| height
@@ -1493,7 +1491,7 @@ update_bobs_and_hw_sprites:
 	move.w	(a4)+,d4		| height
 	move.w	(a4)+,d2		| width
 
-	and.w	#0x1F0,d0		| align on 16 lower bound
+	and.w	#0xFFF0,d0		| align on 16 lower bound
 	* AGA: dual playfield, just erase
 	move.w	#NB_TILE_PLANES,d3
 	move.l		playfield_drawn_screen_ptr(pc),a1
@@ -1547,9 +1545,13 @@ blit_background:
 	* adjust offset X: X//8
 	lsr.w	#3,d0
 	lea		mulBG_HORIZ_NB_BYTES_PER_ROW_table(pc),a4
+	.ifdef	NO68020
 	add.w	d1,d1
 	* add Y offset: Y*BG_HORIZ_NB_BYTES_PER_ROW
 	add.w	(a4,d1.w),d0
+	.else
+	add.w	(a4,d1.w*2),d0
+	.endif
 	* same offset for source and destination
 	add.w	d0,a1
 	add.w	d0,a0
@@ -2112,7 +2114,7 @@ clear_planes_any_blitter_internal:
     add.w   d1,d1
     move.w  (a2,d1.w),d1
 1:
-    and.w   #0x1F0,d0
+    and.w   #0xFFF0,d0
     beq.b   2f				| zero X optimization
     lsr.w   #3,d0
     add.w   d0,d1
@@ -2404,7 +2406,7 @@ platform_init:
 0:
 	.ifdef	OCS_VERSION
     move.w #0x200+(NB_BOB_PLANES<<12),bplcon0(a5) | 4 bitplanes
-    move.w #0x99-0X18+(COPPER_Y_START<<8),diwstrt(a5)
+    move.w #0x99-0X8+(COPPER_Y_START<<8),diwstrt(a5)
     move.w #0x79+0x3F-0x48+(COPPER_Y_START<<8)-0x1000,diwstop(a5)
 	.else
     move.w #0x0610+BORDERBLANK,bplcon0(a5) | 8 bitplanes, dual playfield, borderblank
@@ -2707,7 +2709,7 @@ update_bg_tile_vert:
 	.ifdef	OCS_VERSION
 	lea		background_restore_buffer,a3
 	add.w	d0,a3
-	add.w	d0,a4
+	add.w	d0,a4		| for the other buffer
 	.endif
 	
 
@@ -2800,19 +2802,7 @@ update_bg_tile_vert:
 	.endr	
 	.endm
 	
-*	.macro	COPY_TILE_PLANE_ROW_BACKBUFFER	nb_bytes_per_row
-*	COPY_TILE_PLANE_ROW	\nb_bytes_per_row
-*	move.b	d0,(offset,a3)  | backbuffer
-*	.endm
-*	
-*	.macro	CLEAR_TILE_PLANE_BACKBUFFER	nb_bytes_per_row
-*	.set	offset,0
-*	.rept	8
-*	clr.b	(offset,a1)
-*	clr.b	(offset,a3)
-*	.set	offset,offset+\nb_bytes_per_row
-*	.endr	
-*	.endm
+
 	
 	.macro	TILE_NEXT_PLANE
 	add.w	d5,a1
@@ -3984,8 +3974,9 @@ bg_screen_buffer_1:
 	* OCS: background restore buffer
 	* and optional extra background buffer for doublebuffer
 	.skip	4
+	* no need for the bob plane
 background_restore_buffer:
-	.skip	BG_SCREEN_SIZE
+	.skip	BG_SCREEN_PLANE_SIZE*NB_TILE_PLANES
 
 	.ifne	OPT_ENABLE_DOUBLE_BUFFERING
 bg_screen_buffer_2:
