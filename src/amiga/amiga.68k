@@ -3758,9 +3758,13 @@ screen_data_ptr_2:
 	
 	.set	offset,0
 	.ifdef	OCS_VERSION
-	.set	increment,48
+	.if     OCS_VERSION==2
+	.set	increment,48	| ECS: 5 planes total
 	.else
-	.set	increment,40
+	.set	increment,40    | OCS: 4 planes total
+	.endif
+	.else
+	.set	increment,40	| AGA: 4 planes for tiles
 	.endif
 	
 scroll_row_copper_address_table:

@@ -331,7 +331,19 @@ def doit(mode):
         nb_raw_colors = len(full_palette)
         if nb_raw_colors > nb_colors:
             print(f"too many colors {nb_raw_colors} for {nb_colors}, quantizing")
-            full_palette = quantize_image_sets(sprite_set_list+tile_set_list,nb_colors,"sprites",remove_color=magenta,dump_it=True)
+            full_list = sprite_set_list+tile_set_list
+            # first, manual merge of colors, else automatic quantize makes a horrible result
+            maroon = (153,85,34)
+            manual_replacement_dict = {(0,204,0):(0,153,0),  # merging greens
+            (0,34,170):(0,51,153), # merging blues
+            (0,0,255):(0,51,153),
+            (136,136,136):(153,153,153),  # merging close grays
+            (0,17,0):(17,0,17),  # very dark almost black
+            (170,102,0):maroon,
+            (153,0,0):maroon,
+            (103,0,0):maroon}
+            apply_color_replacement(full_list,manual_replacement_dict)
+            full_palette = quantize_image_sets(full_list,nb_colors,"sprites",remove_color=magenta,dump_it=True)
 
     #full_palette_rgb4 = {(x>>4,y>>4,z>>4) for x,y,z in full_palette}
     #actually_used_colors_rgb4 = {(x>>4,y>>4,z>>4) for x,y,z in actually_used_colors}
@@ -340,8 +352,6 @@ def doit(mode):
 
     # pad just in case we don't have 16+16 colors (but we have)
     full_palette += (nb_colors-len(full_palette)) * [(0x10,0x20,0x30)]
-
-
 
 
 
@@ -356,7 +366,7 @@ def doit(mode):
         sprite_table = read_tileset(sprite_set_list,full_palette[16:],[True,False,True,False],cache=bob_plane_cache, is_bob=True, nb_planes=4)
     else:
         # ECS/OCS have only 1 palette
-        sprite_table = read_tileset(sprite_set_list,full_palette,[True,False,True,False],cache=bob_plane_cache, is_bob=True, nb_planes=5)
+        sprite_table = read_tileset(sprite_set_list,full_palette,[True,False,True,False],cache=bob_plane_cache, is_bob=True, nb_planes=5 if mode==ECS_MODE else 4)
 
 
     if mode != OCS_MODE:

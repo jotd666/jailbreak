@@ -8015,7 +8015,10 @@ l_a9d3:
 	move.b	(a0),d0                         	| [...]
 	GET_ADDRESS	0x10f0                     	| [$a9d5: sta    $10f0]
 	move.b	d0,(a0)                         	| [...]
+	.ifndef	RELEASE
 	move.w	#0xec27,d2                      	| [$a9d8: ldx    #$ec27]
+	.endif
+	lea	table_ec27,a2                  	| [$a9e1: ldx    #table_ec31]
 	GET_REG_ADDRESS	0,d3                   	| [$a9db: ldb    ,y]
 	move.b	(a0),d1                         	| [...]
 	cmp.b	#0x05,d1                         	| [$a9dd: cmpb   #$05]
@@ -11378,6 +11381,7 @@ table_ebe5:
 	.long	l_abfb                           	|  $ec21
 	.long	l_a7e6                           	|  $ec23
 	.long	l_a94f                           	|  $ec25
+table_ec27:
 	.long	l_a9f1                           	|  $ec27
 	.long	l_a9fe                           	|  $ec29
 	.long	l_aa0c                           	|  $ec2b
