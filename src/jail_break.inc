@@ -160,28 +160,14 @@ okay\@:
 	move.w	ccr,-(sp)
 	.endm
 
-   .macro    INST_W_TO_REG    inst,src,dest
-    move.b    (\src),d6
-    ror.w    #8,d6
-    move.b    (1,\src),d6
-    \inst\().w    d6,\dest
-    .endm
-
-    .macro    INST_W_TO_REG_020    inst,src,dest
+    .macro    INST_W_TO_REG    inst,src,dest
     \inst\().w    (\src),\dest
     .endm
 	
-	.macro	MOVE_W_FROM_REG_020    src,dest
+	.macro	MOVE_W_FROM_REG    src,dest
 	move.w	\src,(\dest)
 	.endm
 	
-	.macro	MOVE_W_FROM_REG    src,dest
-	ror.w	#8,\src
-	move.b	\src,(\dest)
-	ror.w	#8,\src
-	move.b	\src,(1,\dest)
-	tst.w	\src
-	.endm
 
 
 
@@ -219,6 +205,7 @@ okay\@:
 	move.b	\src,(\dest)
 	ror.w	#8,\src
 	move.b	\src,(1,\dest)
+	tst.w	\src
 	.endm
 
    .macro    INST_W_TO_REG    inst,src,dest

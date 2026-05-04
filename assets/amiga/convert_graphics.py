@@ -325,12 +325,14 @@ def doit(mode):
 
     full_palette = tile_palette+sprite_palette
 
-    if mode != AGA_MODE:
+    if mode == OCS_MODE:
         # merge
         full_palette = sorted(set(full_palette))
         nb_raw_colors = len(full_palette)
         if nb_raw_colors > nb_colors:
-            raise Exception(f"too many colors {nb_raw_colors} for {nb_colors}, quantizing")
+            print(f"too many colors {nb_raw_colors} for {nb_colors}, quantizing")
+            full_palette = quantize_image_sets(sprite_set_list+tile_set_list,nb_colors,"sprites",remove_color=magenta,dump_it=True)
+
     #full_palette_rgb4 = {(x>>4,y>>4,z>>4) for x,y,z in full_palette}
     #actually_used_colors_rgb4 = {(x>>4,y>>4,z>>4) for x,y,z in actually_used_colors}
     #unused_colors = full_palette_rgb4 - actually_used_colors_rgb4
@@ -344,22 +346,27 @@ def doit(mode):
 
 
     tile_plane_cache = {}
+    # 16 first colors, or 16 full colors (for OCS)
     tile_table = read_tileset(tile_set_list,full_palette[:16],[True,False,False,False],cache=tile_plane_cache, is_bob=False, nb_planes=4)
 
     bob_plane_cache = {}
 
     if mode == AGA_MODE:
+        # 16 last colors!
         sprite_table = read_tileset(sprite_set_list,full_palette[16:],[True,False,True,False],cache=bob_plane_cache, is_bob=True, nb_planes=4)
     else:
         # ECS/OCS have only 1 palette
         sprite_table = read_tileset(sprite_set_list,full_palette,[True,False,True,False],cache=bob_plane_cache, is_bob=True, nb_planes=5)
 
 
-    # now that the sprites were decoded, put black as first color too (else for some priority reason
-    # the background is magenta or whatever the color is)
-    full_palette[16] = (0,0,0)
+    if mode != OCS_MODE:
+        # now that the sprites were decoded, put black as first color too (else for some priority reason
+        # the background is magenta or whatever the color is)
+        full_palette[16] = (0,0,0)
 
-    with (xxx_src_dir / "palette.68k").open("w") as f:
+    palette_file = xxx_src_dir / "palette.68k"
+    print(f"Creating {palette_file}")
+    with palette_file.open("w") as f:
         bitplanelib.palette_dump(full_palette,f,bitplanelib.PALETTE_FORMAT_ASMGNU)
 
     gs_array = [0]*NB_SPRITES
@@ -539,6 +546,6 @@ def doit(mode):
                                     bitplanelib.dump_asm_bytes(d,f,mit_format=True)
                                 f.write("\n")
 
-#doit(mode=AGA_MODE)
-#doit(mode=ECS_MODE)
+doit(mode=AGA_MODE)
+doit(mode=ECS_MODE)
 doit(mode=OCS_MODE)
