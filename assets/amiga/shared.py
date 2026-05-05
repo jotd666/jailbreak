@@ -149,6 +149,18 @@ sr2(0x1F0,0x200) | sr2(0x1A0,0x1B0) | sr2(0x1BA,0x1C0) | sr2(0x170,0x17A) |
 sr2(0x1B0,0x1B8)
 )
 
+#result = sorted({"0x"+x.split("_")[1] for x in os.listdir(r"K:\jff\AmigaHD\PROJETS\arcade_remakes\jail_break\assets\amiga\dumps\sprites\unknown\convict")})
+#print(str(result).replace("'",""))
+
+more_police = [0x136,0x154,0xf6,0xf7,0xfe,0xff,0x20,
+0x21,0x22,0x2a,0x2b,0x2c,0x2d,0x38,0x4b,0x4d,0x4f,
+0x50,0x52,0x53,0x53,0x55,0x58,0x59,0x5a,0x5b,0x5c,0x5d,
+0x5e,0x5f,0x60,0x62,0x63,0x64,0x65,0x66,0x67,
+0x68,0x69,0x76]
+more_convict = [0x129, 0x12b, 0x12d, 0x1d5, 0x1df, 0x1ec, 0x1ee, 0x1ef, 0xef, 0xf0, 0xf1, 0xf2, 0xf8, 0xf9, 0xfa]
+
+worker = [0x153,0x162,0x163,0x168,0x169,0xFC]
+
 def set_names(rval,start,end,name):
     rval.update({i:name for i in range(start,end)})
 
@@ -169,6 +181,9 @@ def get_sprite_names():
     rval[0x155] = "blank"
     rval[0x100] = "bullet"
     rval[0x14d] = "bullet"
+    rval.update({i:"policeman" for i in more_police})
+    rval.update({i:"convict" for i in more_convict})
+    rval.update({i:"worker" for i in worker})
     set_names(rval,0x101,0x103,"molotov")
 
     rval[0x10B] = "shell"
@@ -196,12 +211,15 @@ def get_sprite_names():
     rval[0x1C8] = "garbage_truck"
     rval[0x1CA] = "garbage_truck"
     set_names(rval,0,0x20,"policeman")
-    set_names(rval,0x15A,0x15F,"policeman")
+    set_names(rval,0x158,0x15F,"policeman")
+    set_names(rval,0x78,0x80,"policeman")
+    set_names(rval,0x6A,0x73,"policeman")
     set_names(rval,0x23,0x2A,"policeman")
     set_names(rval,0x1A0,0x1B8,"manhole_cover")
     set_names(rval,0x1B8,0x1C0,"convict_in_manhole")
     set_names(rval,0X122,0x125,"policeman")
-    set_names(rval,0x80,0xEF,"convict")
+    set_names(rval,0x80,0xEB,"convict")
+    set_names(rval,0xEB,0xEF,"prisoner")
     set_names(rval,0x1A8,0x1B0,"convict")
     set_names(rval,0x16E,0x170,"child")
     set_names(rval,0x160,0x162,"worker")
@@ -210,10 +228,14 @@ def get_sprite_names():
 
     return rval
 
+def mirror_name(n):
+    if any(x in n for x in ["convict","policeman","worker"]):
+        return True
+
 def get_mirror_sprites():
     """ return the index of the sprites that need mirroring
 """
-    rval = set(range(0,0x200))
+    rval = {i for i,n in get_sprite_names().items() if mirror_name(n)}
     return rval
 
 def dump_asm_bytes(*args,**kwargs):

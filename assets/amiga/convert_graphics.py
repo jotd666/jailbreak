@@ -11,7 +11,7 @@ dirs = ["aga","ecs","ocs"]
 
 sprite_names = get_sprite_names()
 
-mirror_sprites = get_mirror_sprites()
+mirror_sprites = set(range(0x200)) #get_mirror_sprites()
 
 possible_hw_sprites = set() #get_possible_hw_sprites()
 
@@ -140,23 +140,23 @@ def read_tileset(img_set_list,palette,plane_orientation_flags,cache,is_bob,nb_pl
 
                         bitplane_sprite_data = None
                         actual_nb_planes = nb_planes
-
+                        bitplane_data = None
 
                         wtile = plane_func(tile)
 
                         if is_bob:
-                            actual_nb_planes += 1
+                            if plane_name=="standard" or i in mirror_sprites:
+                                actual_nb_planes += 1
 
-
-                            # only 4 planes + mask => 5 planes
-                            orig_wtile = wtile
-                            y_start,wtile = bitplanelib.autocrop_y(wtile,mask_color=magenta)
-                            height = wtile.size[1]
-                            width = wtile.size[0]//8 + 2
-                            bitplane_data = bitplanelib.palette_image2raw(wtile,None,palette,generate_mask=True,mask_color=magenta)
-                            if i in possible_hw_sprites:
-                                # using original, uncropped bitplane data to create 16x16 or 16x32 hw sprite
-                                bitplane_sprite_data = bitplanelib.palette_image2attached_sprites(orig_wtile,None,palette,with_control_words=True)
+                                # only 4 planes + mask => 5 planes
+                                orig_wtile = wtile
+                                y_start,wtile = bitplanelib.autocrop_y(wtile,mask_color=magenta)
+                                height = wtile.size[1]
+                                width = wtile.size[0]//8 + 2
+                                bitplane_data = bitplanelib.palette_image2raw(wtile,None,palette,generate_mask=True,mask_color=magenta)
+                                if i in possible_hw_sprites:
+                                    # using original, uncropped bitplane data to create 16x16 or 16x32 hw sprite
+                                    bitplane_sprite_data = bitplanelib.palette_image2attached_sprites(orig_wtile,None,palette,with_control_words=True)
                         else:
                             # 4 planes, no mask
                             height = 8
@@ -164,23 +164,24 @@ def read_tileset(img_set_list,palette,plane_orientation_flags,cache,is_bob,nb_pl
                             y_start = 0
                             bitplane_data = bitplanelib.palette_image2raw(wtile,None,palette)
 
-                        plane_size = len(bitplane_data) // actual_nb_planes
-                        bitplane_plane_ids = []
-                        for j in range(actual_nb_planes):
-                            offset = j*plane_size
-                            bitplane = bitplane_data[offset:offset+plane_size]
+                        if bitplane_data:
+                            plane_size = len(bitplane_data) // actual_nb_planes
+                            bitplane_plane_ids = []
+                            for j in range(actual_nb_planes):
+                                offset = j*plane_size
+                                bitplane = bitplane_data[offset:offset+plane_size]
 
-                            cache_id = cache.get(bitplane)
-                            if cache_id is not None:
-                                bitplane_plane_ids.append(cache_id)
-                            else:
-                                if any(bitplane):
-                                    cache[bitplane] = next_cache_id
-                                    bitplane_plane_ids.append(next_cache_id)
-                                    next_cache_id += 1
+                                cache_id = cache.get(bitplane)
+                                if cache_id is not None:
+                                    bitplane_plane_ids.append(cache_id)
                                 else:
-                                    bitplane_plane_ids.append(0)  # blank
-                        entry[plane_name] = {"width":width,"height":height,"y_start":y_start,"bitplanes":bitplane_plane_ids}
+                                    if any(bitplane):
+                                        cache[bitplane] = next_cache_id
+                                        bitplane_plane_ids.append(next_cache_id)
+                                        next_cache_id += 1
+                                    else:
+                                        bitplane_plane_ids.append(0)  # blank
+                            entry[plane_name] = {"width":width,"height":height,"y_start":y_start,"bitplanes":bitplane_plane_ids}
                         if bitplane_sprite_data:
                             entry[plane_name]["sprdat"] = bitplane_sprite_data
 
@@ -514,7 +515,7 @@ def doit(mode):
         for i,tile_entry in enumerate(sprite_table):
             for orientation in ['standard','mirror']:
                 f.write("\t.long\t")
-                if any(t and "sprdat" in t[orientation] for t in tile_entry):
+                if any(t and "sprdat" in t.get(orientation,[]) for t in tile_entry):
                     prefix = sprite_names.get(i,"bob")
                     prefix = f"hws_{prefix}_{i:02x}_{orientation}"
                     f.write(prefix)
@@ -525,7 +526,7 @@ def doit(mode):
         # HW sprites clut declaration
         for i,tile_entry in enumerate(sprite_table):
             for orientation in ['standard','mirror']:
-                if any(t and "sprdat" in t[orientation] for t in tile_entry):
+                if any(t and "sprdat" in t.get(orientation,[]) for t in tile_entry):
                     prefix = sprite_names.get(i,"bob")
                     f.write(f"hws_{prefix}_{i:02x}_{orientation}:\n")
                     for j,t in enumerate(tile_entry):

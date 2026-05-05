@@ -20,14 +20,14 @@ if os.path.exists(outdir):
 
 outdir.mkdir(exist_ok=True)
 
-for file in ["readme.md",f"{gamename}_aga.slave"]:
+for file in ["readme.md",f"{gamename}_aga.slave",f"{gamename}_ecs.slave",f"{gamename}_ocs.slave"]:
     shutil.copy(progdir / file,outdir)
 
 
 shutil.copy(progdir / "assets" / "amiga" / "JailBreak.info",outdir)
 
 
-for suffix in ["ecs","aga"]:
+for suffix in ["ocs","ecs","aga"]:
     exename = f"{gamename}_{suffix}"
     subprocess.run(["cranker_windows.exe","-f",str(progdir / exename),"-o",f"{progdir / exename}.rnc"],check=True,stdout=subprocess.DEVNULL)
 

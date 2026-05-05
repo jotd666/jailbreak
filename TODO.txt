@@ -1,5 +1,7 @@
-- OCS version with cut down audio and 16 colors
-- OCS double buffering doesn't work properly ==== to test
+- OCS version with cut down audio: keep cutting!!!
+- mirror: log when frame not present (use -1 as plane pointer?)
+- low/high quality sounds: > 0x80 = speech lowqual, else default highqual
+- OCS double buffering doesn't work properly shaking??
 - ECS lower part shifted: display status & game over lower
 - LMB to select weapon
 - better command line options
@@ -14,7 +16,7 @@
   
 
 - optimize: remove some sprites from mirror to save memory
-  (vehicles)
+  (vehicles, hostages)
 - profile game, try to optimize
 - use multiplexed sprites for enemy bullets (maybe)
 

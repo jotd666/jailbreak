@@ -7,9 +7,21 @@
 	* first instruction (includes contain code)
 	jra		start
 
-	.include "../src/jail_break.inc"
-	.include "../src/sounds.inc"
+	.ifdef	NONAGA_VERSION
+	.if	NONAGA_VERSION==2
+ECS_VERSION=1
+	.else
+OCS_VERSION=1
+	.endif
+	.endif
 
+	.include "../src/jail_break.inc"
+	.ifdef	OCS_VERSION
+	.include "../src/sounds_ocs.inc"
+	.else
+	.include "../src/sounds.inc"	
+	.endif
+	
 	.include "hardware/custom.i"
 	.include "exec/types2.i"
 	.include "lvo/exec_lvos.i"
@@ -42,7 +54,7 @@ COPPER_Y_START = 0x18
 BASE_BPLCON3_VALUE = (1<<12)+(BORDERBLANK<<5)  | dpf second playfield palette starts at color 16!
 BASE_BPLCON2_VALUE = 0x0024		| sprites above all playfields
 
-	.ifdef	OCS_VERSION
+	.ifdef	NONAGA_VERSION
 SPRITE_X_CORRECTION = 0
 	.else
 SPRITE_X_CORRECTION = 32
@@ -80,7 +92,7 @@ OPT_ENABLE_PROFILING = 0
 * if no bitplane data: there will be some color artefacts
 * but not noticeable unless 2 sprites cross each other paths
 OPT_IGNORE_ZERO_BITPLANE = 0
-	.ifdef	OCS_VERSION
+	.ifdef	NONAGA_VERSION
 NO68020 = 1
 OPT_ENABLE_DOUBLE_BUFFERING = 1   | TEMP
 	.else
@@ -88,9 +100,9 @@ OPT_ENABLE_DOUBLE_BUFFERING = 1
 	.endif
 OPT_ENABLE_MULTIPLEXED_SPRITES = 0
 
-	.ifdef	OCS_VERSION
+	.ifdef	NONAGA_VERSION
 NB_TILE_PLANES = 4
-NB_BOB_PLANES = 3+OCS_VERSION
+NB_BOB_PLANES = 3+NONAGA_VERSION
 	.else
 NB_TILE_PLANES = 4
 NB_BOB_PLANES = 4
@@ -114,7 +126,7 @@ NB_PLAYFIELD_LINES = NB_LINES
 
 BG_SCREEN_PLANE_SIZE = BG_HORIZ_NB_BYTES_PER_ROW*NB_PLAYFIELD_LINES
 FG_SCREEN_PLANE_SIZE = FG_NB_BYTES_PER_ROW*NB_PLAYFIELD_LINES
-	.ifdef	OCS_VERSION
+	.ifdef	NONAGA_VERSION
 * less memory used but 1 playfield
 BG_SCREEN_SIZE = BG_SCREEN_PLANE_SIZE*NB_BOB_PLANES
 	.else
@@ -426,7 +438,7 @@ _user:
 	jbsr	align_for_fmode
 	move.l	a0,background_ptr
 	
-	.ifdef	OCS_VERSION
+	.ifdef	NONAGA_VERSION
 	* OCS version, double buffering occurs on back buffer if enabled
 	move.l	#mulBG_HORIZ_NB_BYTES_PER_ROW_table,bob_row_multiplication_table
 	move.w	#BG_HORIZ_NB_BYTES_PER_ROW,bob_row_size
@@ -475,7 +487,7 @@ _user:
 
 	jbsr		really_update_scroll
 	
-	.ifndef	OCS_VERSION
+	.ifndef	NONAGA_VERSION
 	* in AGA version, BOB bitplanes are on 2nd playfield
 	jbsr		set_bob_bitplanes
 	.endif
@@ -813,6 +825,7 @@ _nmi:
 	move.w	#0x7FFF,_custom+intreq
 	rts
 	
+	.ifndef	OCS_VERSION
 handle_music_termination:
 	moveq	#0,d0
 	move.b	_mt_E8Trigger,d0
@@ -824,8 +837,11 @@ handle_music_termination:
 	* another yet unseen issue was that the stop command canceled
 	* the sounds that we played right afterwards! I replaced the F00
 	* command by an empty pattern and a loop on that.
+	
+	* ignore that on OCS, no speech samples for levels
 	tst.b	trigger_lock
 	jeq		1f
+
 	rts
 1:
 	st.b	trigger_lock
@@ -856,6 +872,7 @@ handle_music_termination:
 	move.l	#SIREN_02_SND,d0
 	jra		2b
 	rts
+	.endif
 	
 level3_interrupt:
     movem.l d0-d7/a0-a6,-(a7)
@@ -875,7 +892,9 @@ level3_interrupt:
 	jsr	_read_joystick
 	move.l	d0,_joypad_1_state
 
+	.ifndef	OCS_VERSION
 	jbsr	handle_music_termination
+	.endif
 	
 	* CD32 "play" is disabled but it's free to read
 	* 3rd button on a Sega 3-button so 3rd button is pause
@@ -982,7 +1001,7 @@ osd_set_scroll_direction:
 	clr.w	reset_bplcon1_1
 0:
 	move.l	a0,update_tile_function
-	.ifndef	OCS_VERSION
+	.ifndef	NONAGA_VERSION
 	subq	#8,d1		| adjust for fmode=3
 	.endif
     move.w d1,bpl2mod_copperlist_entry
@@ -1448,7 +1467,7 @@ update_bobs_and_hw_sprites:
 	move.l	playfield_drawn_screen_ptr(pc),a1
 	move.w	#NB_TARGET_SPRITES-1,d7
 	
-	.ifdef	OCS_VERSION
+	.ifdef	NONAGA_VERSION
 	*************************
 	* blit background tiles *
 	*************************
@@ -1473,7 +1492,7 @@ update_bobs_and_hw_sprites:
 
 	* restore background
 	jbsr	blit_background
-	.if		OCS_VERSION==2
+	.ifdef		ECS_VERSION
 	* ECS: clear the last bitplane while blitter is still working
 	move.w	d4,d3		| height
 	add.l	#NB_TILE_PLANES*BG_SCREEN_PLANE_SIZE,a1
@@ -1532,7 +1551,7 @@ update_bobs_and_hw_sprites:
 2:
 	rts
 	
-	.ifdef	OCS_VERSION
+	.ifdef	NONAGA_VERSION
 
 * what: blits data on bg plane, no horizontal shifting (erase)
 * args:
@@ -1647,7 +1666,7 @@ update_one_bob:
 	
 	COMPUTE_SPRITE_COORDS
 
-	.ifdef	OCS_VERSION
+	.ifdef	NONAGA_VERSION
 	add.w	current_scroll_values+16,D0
 	.endif
 	.ifne	SPRITE_Y_CORRECTION
@@ -2104,7 +2123,7 @@ clear_plane_using_cpu:
     add.w   d1,d1
     beq.b   1f		| optim
 	bmi.b	5f
-	.ifdef	OCS_VERSION
+	.ifdef	NONAGA_VERSION
     lea mulBG_HORIZ_NB_BYTES_PER_ROW_table(pc),a2
 	.else
     lea mulFG_NB_BYTES_PER_ROW_table(pc),a2
@@ -2135,7 +2154,7 @@ clear_plane_using_cpu:
     clr.b   (a0)+
     dbf d1,4b
     * next line
-	.ifdef	OCS_VERSION
+	.ifdef	NONAGA_VERSION
     add.w   #BG_HORIZ_NB_BYTES_PER_ROW,a1
 	.else
     add.w   #FG_NB_BYTES_PER_ROW,a1
@@ -2157,7 +2176,7 @@ clear_plane_using_cpu:
     clr.l   (a0)+
     dbf d1,8b
     * next line
- 	.ifdef	OCS_VERSION
+ 	.ifdef	NONAGA_VERSION
     add.w   #BG_HORIZ_NB_BYTES_PER_ROW,a1
 	.else
     add.w   #FG_NB_BYTES_PER_ROW,a1
@@ -2171,7 +2190,7 @@ clear_plane_using_cpu:
 * < D3: nb planes to clear
 * < D4: blit height
 * < D5: plane mask
-	.ifndef	OCS_VERSION
+	.ifndef	NONAGA_VERSION
 * trashes D0-D6/A2
 clear_planes_any_blitter_internal:
     * pre-compute the maximum of shit here
@@ -2484,7 +2503,7 @@ platform_init:
 	move.w	#0x1FE,intreq_block_game
 	move.w	#0x1FE,intreq_block_game_vertical
 0:
-	.ifdef	OCS_VERSION
+	.ifdef	NONAGA_VERSION
     move.w #0x200+(NB_BOB_PLANES<<12),bplcon0(a5) | 4/5 bitplanes
     move.w #0x99-0X8+(COPPER_Y_START<<8),diwstrt(a5)
     move.w #0x79+0x3F-0x30+(COPPER_Y_START<<8)-0x1000,diwstop(a5)
@@ -2503,7 +2522,7 @@ platform_init:
 	* restrict borders: we don't see bobs on the borders!
 	* try to hide color 0 on the border (except on OCS)
 
-	.ifdef	OCS_VERSION
+	.ifdef	NONAGA_VERSION
 	move.w	#BG_HORIZ_NB_BYTES_PER_ROW-40,d0
 	.else
 	move.w	#-8+FG_NB_BYTES_PER_ROW-40,d0
@@ -2593,7 +2612,7 @@ platform_init:
 
 * so memory is quadword-aligned (not trusting .align directives)
 align_for_fmode:
-	.ifdef	OCS_VERSION
+	.ifdef	NONAGA_VERSION
 	* do nothing!
 	.else
 	add.w	#0x8,a0
@@ -2764,7 +2783,7 @@ update_bg_tile_vert:
 	* updating bitplanes
 	move.l	#BG_SCREEN_PLANE_SIZE,d5
 	move.w	#NB_TILE_PLANES-1,d4
-	.ifdef	OCS_VERSION
+	.ifdef	NONAGA_VERSION
 	.ifeq	OPT_ENABLE_DOUBLE_BUFFERING
 	move.l		background_ptr,a1
 	.else 
@@ -2786,7 +2805,7 @@ update_bg_tile_vert:
 	.endif
 	add.w	d1,d0
 	add.w	d0,a1
-	.ifdef	OCS_VERSION
+	.ifdef	NONAGA_VERSION
 	lea		background_restore_buffer,a3
 	add.w	d0,a3
 	.ifne	OPT_ENABLE_DOUBLE_BUFFERING
@@ -2861,7 +2880,7 @@ update_bg_tile_vert:
 	
 	.macro	COPY_TILE_PLANE_ROW
 	move.b	d0,(offset,a1)  | buffer
-	.ifdef	OCS_VERSION
+	.ifdef	NONAGA_VERSION
 	move.b	d0,(offset,a3)  | restore buffer
 	.ifne	OPT_ENABLE_DOUBLE_BUFFERING
 	move.b	d0,(offset,a4)	| second buffer
@@ -2874,7 +2893,7 @@ update_bg_tile_vert:
 	.set	offset,0
 	.rept	8
 	clr.b	(offset,a1)
-	.ifdef	OCS_VERSION
+	.ifdef	NONAGA_VERSION
 	clr.b	(offset,a3)  | restore buffer
 	.ifne	OPT_ENABLE_DOUBLE_BUFFERING
 	clr.b	(offset,a4)	| second buffer
@@ -2888,7 +2907,7 @@ update_bg_tile_vert:
 	
 	.macro	TILE_NEXT_PLANE
 	add.w	d5,a1
-	.ifdef	OCS_VERSION
+	.ifdef	NONAGA_VERSION
 	add.w	d5,a3  | restore buffer
 	.ifne	OPT_ENABLE_DOUBLE_BUFFERING
 	add.w	d5,a4	| second buffer
@@ -2964,7 +2983,7 @@ update_bg_tile_horiz:
 	* updating bitplanes
 	move.l	#BG_SCREEN_PLANE_SIZE,d5
 	move.w	#NB_TILE_PLANES-1,d4
-	.ifdef	OCS_VERSION
+	.ifdef	NONAGA_VERSION
 	.ifeq	OPT_ENABLE_DOUBLE_BUFFERING
 	move.l		background_ptr,a1
 	.else 
@@ -2986,7 +3005,7 @@ update_bg_tile_horiz:
 	.endif
 	add.w	d1,d0
 	add.w	d0,a1
-	.ifdef	OCS_VERSION
+	.ifdef	NONAGA_VERSION
 	lea		background_restore_buffer,a3
 	add.w	d0,a3
 	.ifne	OPT_ENABLE_DOUBLE_BUFFERING
@@ -3049,13 +3068,13 @@ update_bg_tile_horiz:
 	tst.b	d6
 	jeq		20f		| just once
 	* do it twice. Preserve useful registers
-	.ifdef	OCS_VERSION
+	.ifdef	NONAGA_VERSION
 	movem.l	a1-a4,-(a7)
 	.else
 	movem.l	a1/a2,-(a7)
 	.endif
 	jsr		(a5)
-	.ifdef	OCS_VERSION
+	.ifdef	NONAGA_VERSION
 	movem.l	(a7)+,a1-a4
 	.else
 	movem.l	(a7)+,a1/a2
@@ -3063,7 +3082,7 @@ update_bg_tile_horiz:
 	* draw the same thing more to the right
 	move.w	#64,d6
 	add.w	d6,a1
-	.ifdef	OCS_VERSION
+	.ifdef	NONAGA_VERSION
 	add.w	d6,a3
 	.ifne	OPT_ENABLE_DOUBLE_BUFFERING
 	add.w	d6,a4
@@ -3258,7 +3277,7 @@ HW_SpriteYTable_\height:
 * < A0: copperlist address for bitplane pointers
 * < D0: first bitplane address
 set_static_bitplanes:
-	.ifdef	OCS_VERSION
+	.ifdef	NONAGA_VERSION
     moveq #NB_BOB_PLANES-1,d1
 	.else
     moveq #NB_TILE_PLANES-1,d1
@@ -3274,7 +3293,7 @@ set_static_bitplanes:
     dbf d1,1b
     rts
 
-	.ifndef	OCS_VERSION
+	.ifndef	NONAGA_VERSION
 set_bob_bitplanes:
 	movem.l	a0-a1/d0-d2,-(a7)
  	lea	bobs_bitplanes+2,a0
@@ -3611,7 +3630,7 @@ beamdelay:
 	dbf	d0,0b
 	rts
 
-	.ifndef	OCS_VERSION	
+	.ifndef	NONAGA_VERSION	
 	MUL_TABLE	FG_NB_BYTES_PER_ROW,NB_LINES*2
 	.endif
 	MUL_TABLE	BG_HORIZ_NB_BYTES_PER_ROW,NB_LINES*2
@@ -3757,14 +3776,10 @@ screen_data_ptr_2:
 	.endif
 	
 	.set	offset,0
-	.ifdef	OCS_VERSION
-	.if     OCS_VERSION==2
+	.ifdef  ECS_VERSION
 	.set	increment,48	| ECS: 5 planes total
 	.else
-	.set	increment,40    | OCS: 4 planes total
-	.endif
-	.else
-	.set	increment,40	| AGA: 4 planes for tiles
+	.set	increment,40    | OCS/AGA: 4 planes total
 	.endif
 	
 scroll_row_copper_address_table:
@@ -3790,8 +3805,15 @@ playfield_drawn_screen_ptr:
 playfield_displayed_screen_ptr:
 	.long	0
 
+	.ifdef	NONAGA_VERSION
+	.if     NONAGA_VERSION==1
+	.include	"sound_entries_ocs.68k"
+	.else
 	.include	"sound_entries.68k"
-
+	.endif
+	.else
+	.include	"sound_entries.68k"	
+	.endif
 	
 update_tile_function:
 	.long	0
@@ -3830,7 +3852,7 @@ current_scroll_values:
 	.endr
 
 scroll_table:
-	.ifdef	OCS_VERSION
+	.ifdef	NONAGA_VERSION
 	.include	"scroll_table_16.68k"
 	.else
 	.include	"scroll_table_64.68k"
@@ -3916,7 +3938,7 @@ cpu_log_enable:
 	.word	0x01+(y_start*256),0xFFFE
 	.word	bplcon1
 	.word	0
-	.ifdef	OCS_VERSION
+	.ifdef	NONAGA_VERSION
 	DECL_BITPLANES	0,NB_BOB_PLANES
 	.else
 	DECL_EVEN_BITPLANES	4,4
@@ -3955,7 +3977,7 @@ bpl2mod_copperlist_entry:
 	* enable sprite colors now
 
 	.word	0x01+((COPPER_Y_START)*256),0xFFFE
-	.ifdef	OCS_VERSION
+	.ifdef	NONAGA_VERSION
 bobs_bitplanes:
 tiles_bitplanes:
 	DECL_BITPLANES	0,NB_BOB_PLANES
@@ -3970,10 +3992,10 @@ tiles_bitplanes:
 reset_bplcon1_1:
 	.word 	0
 
-	.ifdef	OCS_VERSION
+	.ifdef	NONAGA_VERSION
 tiles_colors:
 	DECL_COLORS	0,TOTAL_NB_COLORS
-	.if 	OCS_VERSION==2
+	.ifdef 	ECS_VERSION
 bobs_colors:
 	DECL_COLORS	16,TOTAL_NB_COLORS
 	.endif
@@ -4074,7 +4096,7 @@ intreq_block_game_vertical:
 bg_screen_buffer_1:
 	.skip	BG_SCREEN_SIZE
 	
-	.ifdef	OCS_VERSION
+	.ifdef	NONAGA_VERSION
 	* OCS: background restore buffer
 	* and optional extra background buffer for doublebuffer
 	.skip	4

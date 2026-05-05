@@ -26,24 +26,33 @@ sound_settings_dict = { 1 : {"channel":3,"priority":1},
   0x93 : {"channel":-1,"priority":100}, # level name
 
 }
-def convert():
+def convert(ocs):
     if not shutil.which("sox"):
         raise Exception("sox command not in path, please install it")
     # BTW convert wav to mp3: ffmpeg -i input.wav -codec:a libmp3lame -b:a 330k output.mp3
 
+    out_dir = src_dir
+    suffix = "_ocs" if ocs else ""
 
+    outfile = os.path.join(out_dir,f"sounds{suffix}.68k")
+    sndfile = os.path.join(out_dir,f"sound_entries{suffix}.68k")
 
-    outfile = os.path.join(src_dir,"sounds.68k")
-    sndfile = os.path.join(src_dir,"sound_entries.68k")
-
-
-    hq_sample_rate = 12000  #{"aga":18004,"ecs":12000,"ocs":11025}[mode]
-    lq_sample_rate = 6000 # if aga_mode else 8000
+    if ocs:
+        hq_sample_rate = 8000
+        lq_sample_rate = 4000
+    else:
+        hq_sample_rate = 12000
+        lq_sample_rate = 6000
 
 
     loop_channel = 2
 
     EMPTY_SND = "EMPTY_SND"
+    dummy_sounds = [0
+    ]
+
+    if ocs:
+        dummy_sounds.extend([0x93,0x8A,0x8B,0x8C,0x8D,0x8E,0x10,0x95]) # rare/large sounds
 
     sound_dict = {}
     sfx_list = set()
@@ -54,15 +63,16 @@ def convert():
         if len(parts)>1:
             try:
                 index = int(parts[1],16)
-                sfx_list.add(index)
-                # auto-declare according to name suffix
-                entry = f"{sound_name}_SND"
-                # fix channel to avoid overlap
-                extra_info = sound_settings_dict.get(index) or dict()
+                if index not in dummy_sounds:
+                    sfx_list.add(index)
+                    # auto-declare according to name suffix
+                    entry = f"{sound_name}_SND"
+                    # fix channel to avoid overlap
+                    extra_info = sound_settings_dict.get(index) or dict()
 
-                sfx_sample_rate = extra_info.get("sample_rate",lq_sample_rate)
-                sound_dict[entry] = {"channel":extra_info.get("channel",-1),
-                "priority":extra_info.get("priority",40),"index":index,"sample_rate":sfx_sample_rate}
+                    sfx_sample_rate = extra_info.get("sample_rate",lq_sample_rate if index>0x7F else hq_sample_rate)
+                    sound_dict[entry] = {"channel":extra_info.get("channel",-1),
+                    "priority":extra_info.get("priority",40),"index":index,"sample_rate":sfx_sample_rate}
             except ValueError:
                 pass
 
@@ -84,12 +94,8 @@ def convert():
 
 })
 
-    dummy_sounds = [0,
 
-    0x42   # highscore
-    ]
-
-    with open(os.path.join(src_dir,"..","sounds.inc"),"w") as f:
+    with open(os.path.join(src_dir,"..",f"sounds{suffix}.inc"),"w") as f:
         for k,v in sorted(sound_dict.items(),key = lambda x:x[1]["index"]):
             f.write(f"\t.equ\t{k.upper()},  0x{v['index']:x}\n")
 
@@ -254,6 +260,8 @@ def convert():
             fst.write(" | {}\n".format(i))
 
 
-convert()
+convert(ocs=False)
+convert(ocs=True)
+
 
 
