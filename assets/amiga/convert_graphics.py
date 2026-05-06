@@ -11,7 +11,7 @@ dirs = ["aga","ecs","ocs"]
 
 sprite_names = get_sprite_names()
 
-mirror_sprites = set(range(0x200)) #get_mirror_sprites()
+mirror_sprites = get_mirror_sprites()
 
 possible_hw_sprites = set() #get_possible_hw_sprites()
 
@@ -489,17 +489,18 @@ def doit(mode):
                                 break
                         else:
                             raise Exception(f"height not found for {name}!!")
-                        for orientation,_ in plane_orientations:
-                            if orientation in t:
+
+                        active_planes = 0
+                        for j,bitplane_id in enumerate(t["standard"]["bitplanes"]):
+                            if bitplane_id:
+                                active_planes |= 1<<j
+
+                        f.write(f"\t.word\t{height},{width},{offset},0x{active_planes:x}\n")
+                        for orientation in ["standard","mirror"]:
+                            if (orientation == "standard" or i in mirror_sprites):
                                 f.write("* orientation={}\n".format(orientation))
-                                active_planes = 0
                                 bitplanes = t[orientation]["bitplanes"]
 
-                                for j,bitplane_id in enumerate(bitplanes):
-                                    if bitplane_id:
-                                        active_planes |= 1<<j
-
-                                f.write(f"\t.word\t{height},{width},{offset},0x{active_planes:x}\n")
                                 for bitplane_id in bitplanes:
                                     f.write("\t.long\t")
                                     if bitplane_id:
@@ -540,6 +541,7 @@ def doit(mode):
         f.write("\n\t.section\t.datachip\n")
 
         for k,v in bob_plane_cache.items():
+            f.write(f"\n\t.word\t0   | orientation flag (for in-place mirroring)\n")
             f.write(f"bob_plane_{v:02d}:")
             dump_asm_bytes(k,f)
 

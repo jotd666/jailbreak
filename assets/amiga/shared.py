@@ -228,14 +228,17 @@ def get_sprite_names():
 
     return rval
 
-def mirror_name(n):
-    if any(x in n for x in ["convict","policeman","worker"]):
+def mirror_name(i,n):
+    if any(x in n for x in ["blank","convict"]):
         return True
+    if i in [0x11a]:
+        return True
+    return False
 
 def get_mirror_sprites():
     """ return the index of the sprites that need mirroring
 """
-    rval = {i for i,n in get_sprite_names().items() if mirror_name(n)}
+    rval = {i for i,n in get_sprite_names().items() if mirror_name(i,n)}
     return rval
 
 def dump_asm_bytes(*args,**kwargs):
