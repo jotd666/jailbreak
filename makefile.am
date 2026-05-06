@@ -1,7 +1,7 @@
 PROGNAME = jail_break
 MAIN_AGA = ..\$(PROGNAME)_aga
-MAIN_OCS = ..\$(PROGNAME)_ocs
-MAIN_ECS = ..\$(PROGNAME)_ecs
+MAIN_OCS = ..\$(PROGNAME)_ecs_1mb
+MAIN_ECS = ..\$(PROGNAME)_ecs_2mb
 AMIGA_SHELL = ..\$(PROGNAME)
 
 ifdef RELEASE_BUILD

@@ -267,5 +267,5 @@ graphicsname:
 exe_aga:
 	.asciz	"jail_break_aga"
 exe_ocs:
-	.asciz	"jail_break_ocs"
+	.asciz	"jail_break_ecs_1mb"
 	

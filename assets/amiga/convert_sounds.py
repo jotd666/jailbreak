@@ -8,24 +8,6 @@ sox = "sox"
 
 sound_dir = this_dir / ".." / "sounds"
 
-sound_settings_dict = { 1 : {"channel":3,"priority":1},
- 3 : {"channel":1,"priority":20},
- 2 : {"channel":2,"priority":100},
-  0x13 : {"channel":3,"priority":10},
-  0x20 : {"channel":2,"priority":10},
-  0x21 : {"channel":2,"priority":10},
-  0x22 : {"channel":2,"priority":10},
-  0x82 : {"channel":1,"priority":10},
-  0x83 : {"channel":1,"priority":10},
-  0x89 : {"channel":3,"priority":100}, # thank you you saved me
-  0x8B : {"channel":3,"priority":100}, # level name
-  0x8C : {"channel":3,"priority":100}, # level name
-  0x8D : {"channel":3,"priority":100}, # level name
-  0x8E : {"channel":3,"priority":100}, # level name
-  0x8F : {"channel":3,"priority":100}, # level name
-  0x93 : {"channel":-1,"priority":100}, # level name
-
-}
 def convert(ocs):
     if not shutil.which("sox"):
         raise Exception("sox command not in path, please install it")
@@ -41,9 +23,29 @@ def convert(ocs):
         hq_sample_rate = 8000
         lq_sample_rate = 4000
     else:
-        hq_sample_rate = 12000
-        lq_sample_rate = 6000
+        hq_sample_rate = 16000
+        lq_sample_rate = 10000
 
+
+    sound_settings_dict = { 1 : {"channel":3,"priority":1},
+ 3 : {"channel":1,"priority":20},
+ 2 : {"channel":2,"priority":100,"sample_rate":lq_sample_rate},
+ 0xE : {"channel":2,"priority":100,"sample_rate":lq_sample_rate},
+  0x13 : {"channel":3,"priority":10},
+  0x20 : {"channel":2,"priority":10},
+  0x21 : {"channel":2,"priority":10},
+  0x22 : {"channel":2,"priority":10},
+  0x82 : {"channel":1,"priority":10},
+  0x83 : {"channel":1,"priority":10},
+  0x89 : {"channel":3,"priority":100}, # thank you you saved me
+  0x8B : {"channel":3,"priority":100}, # level name
+  0x8C : {"channel":3,"priority":100}, # level name
+  0x8D : {"channel":3,"priority":100}, # level name
+  0x8E : {"channel":3,"priority":100}, # level name
+  0x8F : {"channel":3,"priority":100}, # level name
+  0x93 : {"channel":-1,"priority":100}, # level name
+
+}
 
     loop_channel = 2
 

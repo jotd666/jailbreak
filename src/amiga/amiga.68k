@@ -1689,18 +1689,17 @@ update_one_bob:
 	
 	* check if it is a grouped sprite in the table with 0x100 pre-computed entries
 	
-	move.b	(TARGET_SPRITE_ATTR,a0),d6
 	tst.b	(a2,d3.w)
 	jeq		10f
 	jpl		50f
 	* right part: display only if mirrored
-	btst	#MIRROR_X_BIT,d6
+	btst	#MIRROR_X_BIT,(TARGET_SPRITE_ATTR,a0)
 	jeq		2f			| not mirrored
 	* mirrored, right part: display but correct code
 	subq.w	#1,d3
 	jra		100f
 50:
-	btst	#MIRROR_X_BIT,d6
+	btst	#MIRROR_X_BIT,(TARGET_SPRITE_ATTR,a0)
 	jne		2f			| mirrored: don't display
 	
 100:
@@ -1736,41 +1735,44 @@ update_one_bob:
 	move.l	(a1,d2.w*4),d4
 	.endif
 	jeq		22f
-	
-	move.l	a0,-(a7)		| save sprite array pointer
-	move.l	d4,a0
 
+	* re-load properties (for X/Y flip)
+	move.b	(TARGET_SPRITE_ATTR,a0),d3
+	move.l	a0,-(a7)
+	move.l	d4,a0
+    * flip_x = D3 & 0x10
+    * flip_y = D3 & 0x20
+	btst	#MIRROR_X_BIT,d3
+	jeq		101f
+	* mirror (most sprites don't have that, it will just display
+	* the next frame if not generated, which can be off-putting!
+	add.w	#((NB_BOB_PLANES+1)*4+8),a0
+	.ifndef		RELEASE
+	tst.w	(a0)
+	jpl		101f
+	move.l	(a7),a1
+	move.b	(TARGET_SPRITE_CODE,a1),d3
+	move.b	(TARGET_SPRITE_ATTR,a1),d2
+	btst.b	#6,d2
+	jeq		111f
+	bset	#8,d3		| add 256 for logging message
+111:
+	BREAKPOINT	"unexpected mirror bit set, tile code in d3"
+	jra		21f
+	.endif
+101:
 	move.w	(a0)+,d4		| height
 	move.w	(a0)+,d5		| width
-	move.w	(a0)+,d2		| Y offset
-	* A0 points on the first bitplane of the bob
-	addq 	#2,a0			| skip plane bits
-* now we have to check if mirror must be performed, either by doing this in-place
-* or by selecting already mirrored data
-	lea		((NB_BOB_PLANES+1)*4,a0),a1		| load mirrored data pointers
-	tst.w	(a1)
-	jmi		101f		| invalid pointers: we must do in-place
-	btst	#MIRROR_X_BIT,d6
-	jeq		102f
-	* to mirror, just change pointer list
-	move.l	a1,a0
-	* and skip mirroring bit
-	jra		103f
-101:
-	btst	#MIRROR_X_BIT,d6
-102:
-	sne		d3		| convert attribute to boolean 0/ff for mirror_sprite_planes
-	jbsr	mirror_sprite_planes
-103:	
-
-	btst	#FLIP_Y_BIT,d6
-	jeq		104f
+	move.w	(a0)+,d2		| Y-offset
+	addq	#2,a0
+	btst	#FLIP_Y_BIT,d3
+	jeq		101f
 	* flipped: correct Y start
 	neg.w	d2
 	sub.w	d4,d2
 	add.w	#SPRITE_HEIGHT,d2
-104:
-	add.w	d2,d1		| add offset
+101:
+	add.w	d2,d1
 
 	* A0 points on the first bitplane of the bob
 
@@ -1791,13 +1793,13 @@ update_one_bob:
 	move.w	d5,d2			    | width in bytes
 	moveq	#0,d5			    | Y-offset
 
-	btst	#FLIP_Y_BIT,d6
+	btst	#FLIP_Y_BIT,d3
 	jeq		101f
 	* flip
 	neg.w	d4
 101:
 	move.w	#NB_BOB_PLANES,d3
-	jbsr	blit_planes_any_internal_cookie_cut
+	jbsr		blit_planes_any_internal_cookie_cut
 0:
 	move.l	(a7)+,a0
 	rts
@@ -1817,118 +1819,9 @@ update_one_bob:
 	.endif
 	jra		2b
 
-
-	.macro	WRITE_BLITTER_VIRTUAL_MIRROR	height,mirror_function,bitplane
-	move.w	\height,d1		| height
-	subq	#1,d1		| minus one for dbf
-	jsr		(\mirror_function)	  | in: A2 bitplane (parameter is ignored it is already a2), D1: height-1
-	.endm
-
-* < A0: plane list
-* < D3: required orientation
-* < D4: height
-* < D5: width (bytes) including 16 bit shift
-* trashes: A3
-
-mirror_sprite_planes:
-	movem.l	d0-d2/d6/a0/a2,-(a7)
-	* bitplanes aren't pre-computed: check bitplanes current orientation and swap
-	* if required. This is slow but saves memory
-	*.if		OPT_BLIT_CHAIN_MODE==0
-	lea		mirror_table,a1
-	*.endif
-	moveq	#NB_BOB_PLANES+1-1,d6
-	lea		mirror_function_table(pc),a3
-	.ifndef	MC68020
-	move.w	d5,d0       | number of byte values (ex: 4: 16 bits + shifting)
-	add.w	d0,d0
-	move.l	(a3,d0.w),a3
-	.else
-	move.l	(a3,d5.w*2),a3		| compute mirror function once and for all
-	.endif
-0:
-	move.l	(a0)+,d1		| current plane data
-	jeq		1f				| no data: skip
-	move.l	d1,a2
-	cmp.b	(-2,a2),d3		| 2 bytes before: mirror flag
-	jeq		1f
-	* not the proper orientation: change it
-	move.b	d3,(-2,a2)
-	* perform or queue the mirroring
-	WRITE_BLITTER_VIRTUAL_MIRROR	d4,a3,a2
-
-	* next bitplane
-1:
-	dbf		d6,0b
-	movem.l	(a7)+,d0-d2/d6/a0/a2
-	rts
+sprite_groups:
+	.include	"sprite_groups.68k"
 	
-
-mirror_function_table:
-	.long	nope
-	.long	nope
-	.long	mirror_16_bit_wide
-	.long	mirror_32_bit_wide
-	.long	nope		| just in case, but there are no such objects
-	.long	nope
-
-nope:
-	rts
-	
-* < A1: mirror table
-* < A2: bitmap
-* < D1+1: height
-* destroys d0-d2, a2
-
-mirror_16_bit_wide:
-	.ifdef	MC68020
-	moveq	#0,d2
-	.endif
-10:
-	.ifndef	MC68020
-	* we have to do that each time as we must add offsets as long (table is 128k long)
-	moveq	#0,d2
-	.endif
-	move.w	(a2)+,d2
-	jeq		14f					| zero: optim
-	.ifndef	MC68020
-	add.l	d2,d2
-	move.w	(a1,d2.l),(-2,a2)   | use .l as d2.w may be > 0x7FFF
-	.else
-	move.w	(a1,d2.l*2),(-2,a2)
-	.endif
-14:
-	dbf		d1,10b		| next
-	rts
-
-mirror_32_bit_wide:
-	.ifdef	MC68020
-	moveq	#0,d0
-	.endif
-10:
-	.ifndef	MC68020
-	* we have to do that each time as we must add offsets as long (table is 128k long)
-	moveq	#0,d0
-	.endif
-	move.l	(a2)+,d2
-	jeq		14f		| if line is blank, no need to mirror
-	move.w	d2,d0
-	clr.w	d2
-	swap	d2
-	.ifndef	MC68020
-	add.l	d2,d2
-	add.l	d0,d0
-	move.w	(a1,d2.l),-(a2)		| get mirror value
-	move.w	(a1,d0.l),-(a2)		| get mirror value
-	.else
-	move.w	(a1,d2.l*2),-(a2)		| get mirror value
-	move.w	(a1,d0.l*2),-(a2)		| get mirror value
-	.endif
-	addq	#4,a2					| skip row
-14:
-	dbf		d1,10b
-	rts
-
 	.ifdef	HW_SPRITES
 update_one_hw_sprite_old:
 	* code = 0 and clut = 0 => disabled ?? to check
@@ -3948,12 +3841,6 @@ _end_of_ng_code:
 	.align 2
 
 
-sprite_groups:
-	.include	"sprite_groups.68k"
-	
-mirror_table:
-	.include 	"mirror_table.68k"
-	
 
 palette:	
 	.include "palette.68k"

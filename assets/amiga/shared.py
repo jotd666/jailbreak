@@ -167,6 +167,7 @@ def set_names(rval,start,end,name):
 def get_sprite_names():
 
     rval = dict()
+    set_names(rval,0x188,0x197,"police_car")
     set_names(rval,0x1D0,0x1D4,"police_van")
     set_names(rval,0x1C3,0x1C4,"police_van")
     set_names(rval,0x182,0X185,"police_van")
@@ -175,10 +176,14 @@ def get_sprite_names():
     set_names(rval,0x140,0x145,"woman_and_baby")
     set_names(rval,0x148,0x14A,"woman_and_baby")
     set_names(rval,0xF4,0xF6,"killed_worker")
+
     rval[0x4E] = "rpg"
     rval[0x32] = "policeman"
     rval[0x3F] = "blank"
     rval[0x155] = "blank"
+    rval[0x3A] = "police_car"
+    rval[0x3B] = "police_car"
+    rval[0x180] = "police_car"
     rval[0x100] = "bullet"
     rval[0x14d] = "bullet"
     rval.update({i:"policeman" for i in more_police})
@@ -191,11 +196,13 @@ def get_sprite_names():
     rval[0x126] = "dead_convict"
     rval[0x12A] = "dead_convict"
     rval[0x12C] = "dead_convict"
-    rval[0x46] = "bike"
+    set_names(rval,0x41,0x48,"biker")
+
     rval[0x1C6] = "barrel"
     rval[0x138] = "grenade"
     rval[0x139] = "grenade"
     rval[0x13a] = "grenade"
+    rval[0x15f] = "score"
     rval[0x131] = "score"
     rval[0x12E] = "score"
     rval[0x12F] = "score"
@@ -229,16 +236,28 @@ def get_sprite_names():
     return rval
 
 def mirror_name(i,n):
-    if any(x in n for x in ["blank","convict"]):
-        return True
-    if i in [0x11a]:
-        return True
-    return False
+    # default: all are mirrored, unless obvious non-mirrored to save a few bytes
+    if any(x in n for x in ["biker","garbage","barrel","police_car","police_van","score"]):
+        return False
+    return True
+
+##    if any(x in n for x in ["blank"]):
+##        return True
+##    if i in [0x11a]:
+##        return True
+##    return False
 
 def get_mirror_sprites():
     """ return the index of the sprites that need mirroring
 """
-    rval = {i for i,n in get_sprite_names().items() if mirror_name(i,n)}
+    #return set(range(0x200))
+    sprite_names = get_sprite_names()
+    # TODO: tag all unknown to be able to filter with "mirror_name"
+    rval = {i for i,n in sprite_names.items() if mirror_name(i,n)}
+    # unknown: mirror to avoid trouble
+    unknown = set(range(0x200))-set(sprite_names)
+    rval.update(unknown)
+
     return rval
 
 def dump_asm_bytes(*args,**kwargs):

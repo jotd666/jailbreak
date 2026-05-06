@@ -11,12 +11,11 @@ Credits:
 - PascalDe73: icons
 - Konami: original game
 
-Todo:
+Features:
 
-- insert coin with fire
-- ECS version
-- highscore save
-- more game tunes
+- AGA version, 32 colors
+- ECS version, 32 colors, requires 2MB of chipmem
+- ECS version, 16 colors, requires 1MB of chipmem
 
 Instructions:
 

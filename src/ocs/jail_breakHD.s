@@ -5,8 +5,8 @@
 
 ;CHIP_ONLY
 
-EXPMEM = $180000
-CHIPSIZE = $80000
+EXPMEM = $100000
+CHIPSIZE = $100000
 
 _base	SLAVE_HEADER					; ws_security + ws_id
 	dc.w	17					; ws_version (was 10)
@@ -66,7 +66,7 @@ DECL_VERSION:MACRO
 	ENDC
 	ENDM
 _data   dc.b    0
-_name	dc.b	"JailBreak (OCS)",0
+_name	dc.b	"JailBreak (ECS 1MB chip)",0
 _copy	dc.b	'2026 JOTD',0
 _info
     dc.b    "Music by no9",0
@@ -131,5 +131,5 @@ _resload:
 progstart
     dc.l    0
 exe
-	dc.b	"jail_break_ocs",0
+	dc.b	"jail_break_ecs_1mb",0
 	

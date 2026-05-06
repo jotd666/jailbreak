@@ -1,22 +1,16 @@
-- OCS version with cut down audio: keep cutting!!!
-- mirror: log when frame not present (use -1 as plane pointer?)
-- low/high quality sounds: > 0x80 = speech lowqual, else default highqual
 - OCS double buffering doesn't work properly shaking??
-- ECS lower part shifted: display status & game over lower
+- ECS lower part shifted: display status & game over lower, increase
+  scrolling height
 - LMB to select weapon
 - better command line options
 - use sprites for player bullets / enemy bullets when possible
   with fallback to bobs: sprite 0x100
 - vertical scrolling for end sequence:ok, still parasite char near address 0x84A get write address
   and watch it: set start level + skip level! seems to be on other planes
-
-
 - double buffering but still a lot of blinking on chip only, remove fixed 25Hz
   mode, just skip frames if cannot cope, compute the number of active sprites for auto mode
   
 
-- optimize: remove some sprites from mirror to save memory
-  (vehicles, hostages)
 - profile game, try to optimize
 - use multiplexed sprites for enemy bullets (maybe)
 

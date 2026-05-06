@@ -3,15 +3,32 @@ import os,sys,bitplanelib
 
 from shared import *
 
+# this was a heartbreak. After quantizing colors, reducing all kinds of stuff, trying
+# selective dynamic mirroring, it didn't get the expected memory reduction
+#
+# the scrolling scheme isn't optimal. Should have used corkscrew to save some chip. Here it consumes 2 or 3 times
+# as many memory because of archaic lateral scrolling + restore buffer (for ECS) + double buffering
+#
+# no problems at all with AGA thanks to 2MB chip and dual playfield, but in ECS we need a lot more memory,
+# even in 16 colors
+#
+# the only consolation is that 16 color mode is probably much faster
+
 AGA_MODE = 0
-ECS_MODE = 1
-OCS_MODE = 2
+ECS_MODE = 1  # ECS 2MB chip
+OCS_MODE = 2  # actually ECS 1MB chip, 16 colors
 
 dirs = ["aga","ecs","ocs"]
 
 sprite_names = get_sprite_names()
 
+# all sprites are currently mirrored. It doesn't help reducing chipmem
+# to less than 1MB and it fits in 2MB so never mind
 mirror_sprites = get_mirror_sprites()
+
+# no need to insert current orientation flag. Dynamic mirror (OPT_ACTIVE_IN_PLACE_MIRROR)
+# is not activated
+dynamic_mirror = False
 
 possible_hw_sprites = set() #get_possible_hw_sprites()
 
@@ -19,6 +36,7 @@ magenta = (254,0,254)
 
 NB_SPRITES = 0x200
 NB_TILES = 0x400
+
 
 dump_it = True
 
@@ -495,10 +513,10 @@ def doit(mode):
                             if bitplane_id:
                                 active_planes |= 1<<j
 
-                        f.write(f"\t.word\t{height},{width},{offset},0x{active_planes:x}\n")
                         for orientation in ["standard","mirror"]:
                             if (orientation == "standard" or i in mirror_sprites):
                                 f.write("* orientation={}\n".format(orientation))
+                                f.write(f"\t.word\t{height},{width},{offset},0x{active_planes:x}\n")
                                 bitplanes = t[orientation]["bitplanes"]
 
                                 for bitplane_id in bitplanes:
@@ -541,7 +559,9 @@ def doit(mode):
         f.write("\n\t.section\t.datachip\n")
 
         for k,v in bob_plane_cache.items():
-            f.write(f"\n\t.word\t0   | orientation flag (for in-place mirroring)\n")
+            if dynamic_mirror:
+                # not needed if all sprites are mirrored
+                f.write(f"\n\t.word\t0   | orientation flag (for in-place mirroring)\n")
             f.write(f"bob_plane_{v:02d}:")
             dump_asm_bytes(k,f)
 
