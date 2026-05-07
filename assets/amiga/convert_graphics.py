@@ -1,6 +1,7 @@
 from PIL import Image,ImageOps
 import os,sys,bitplanelib
 
+
 from shared import *
 
 # this was a heartbreak. After quantizing colors, reducing all kinds of stuff, trying

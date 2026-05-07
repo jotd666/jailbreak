@@ -892,12 +892,8 @@ level3_interrupt:
 	jsr	_read_joystick
 	move.l	d0,_joypad_1_state
 
-	.ifndef	OCS_VERSION
-	jbsr	handle_music_termination
-	.endif
 	
-	* CD32 "play" is disabled but it's free to read
-	* 3rd button on a Sega 3-button so 3rd button is pause
+	* CD32 "play" or 3rd button: pause
 	btst	#JPB_BTN_PLAY,d0
 	beq.b	0f
 	btst	#JPB_BTN_PLAY,d1
@@ -905,6 +901,9 @@ level3_interrupt:
 	bsr		toggle_pause
 0:
 	
+	.ifndef	OCS_VERSION
+	jbsr	handle_music_termination
+	.endif
 
 	
 	* ack vbl twice (040/pistorm bug)
@@ -1518,7 +1517,7 @@ update_bobs_and_hw_sprites:
 	move.w	#NB_TILE_PLANES,d3
 	move.l		playfield_drawn_screen_ptr(pc),a1
 	subq	#8,a1
-	jbsr		clear_planes_any_blitter_internal
+	jbsr		clear_planes_any
 	.endif
 
 10:	
@@ -2189,10 +2188,11 @@ clear_plane_using_cpu:
 * < D2: width in bytes (inc. 2 extra for shifting)
 * < D3: nb planes to clear
 * < D4: blit height
-* < D5: plane mask
+*
+* will use CPU if blitter is busy
 	.ifndef	NONAGA_VERSION
-* trashes D0-D6/A2
-clear_planes_any_blitter_internal:
+* trashes D0-D6/A2/A3
+clear_planes_any:
     * pre-compute the maximum of shit here
 	move.w	d1,d6
     beq.b   1f    | optim
@@ -2229,10 +2229,15 @@ clear_planes_any_blitter_internal:
     sub.w   d2,d0       | blit width
 
 	move.w	d4,d6		| save height
+	subq	#1,d6
     lsl.w   #6,d4
+	lea		erase_function_table,a2
+	add.w	(a2,d2.w),a2	| pick proper erase func (4,6 width are the only cases here)
+
     lsr.w   #1,d2
     add.w   d2,d4       | blit height+width
 	moveq	#-1,d2
+	
     * now just wait for blitter ready to write all registers
 	WAIT_BLIT
     
@@ -2242,67 +2247,69 @@ clear_planes_any_blitter_internal:
 	
 	subq	#1,d3
 	jeq		4f
+	jra		10f		| first time skip blitter test
 3:
-	WAIT_BLIT
+	btst	#6,(dmaconr,a5)
+	jeq		10f
+31:
+	* blitter is busy, let's erase using the cpu
+	* in the meantime, next time it should be free
+	* D6 has been saved as height
+	jbsr	(a2)
+	lea		(FG_SCREEN_PLANE_SIZE,a1),a1
+	dbf		d3,3b
+	rts
+10:
 	move.l a1,bltdpt(a5)	|destination top left corner
 	move.w  d4,bltsize(a5)	|rectangle size, starts blit
-32:
 	lea		(FG_SCREEN_PLANE_SIZE,a1),a1
 	dbf		d3,3b
 4:
 	rts
 	
+erase_function_table:
+	.word	erase_none-erase_function_table
+	.word	erase_16-erase_function_table		| not reached here
+	.word	erase_32-erase_function_table
+	.word	erase_48-erase_function_table
+	* probably never reached, just in case!
+	.word	erase_none-erase_function_table
+	.word	erase_none-erase_function_table
+
 	
+erase_none:
+	rts
+erase_16:
+	move.w	d6,d5
+	move.l	a1,a3
+0:
+	clr.w	(a3)
+	add.w	#FG_NB_BYTES_PER_ROW,a3
+	dbf		d6,0b
+	move.w	d5,d6
+	rts
 	
-	
-	subq	#1,d3
-*	jra		31f
-3:
-*	lsr.b	#1,d5
-*	jcc		32f
-*	BTST	#6,(dmaconr,a5)
-*	jra		31f
-*	* blitter is busy: do it with cpu for that plane
-*	move.w	d6,d2
-*	subq	#1,d2
-*	move.l	a1,a2
-*	* no need to know which width in the case of gyruss there are
-*	* only 32 bit erase / blits
-*55:
-*	clr.l	(a2)
-*	lea		(FG_NB_BYTES_PER_ROW,a2),a2
-*	dbf		d2,55b
-*	jra 	32f			| should send to blitter operation next time
-	
-31:
-	move.l a1,bltdpt(a5)	|destination top left corner
-	move.w  d4,bltsize(a5)	|rectangle size, starts blit
-32:
-	lea		(FG_SCREEN_PLANE_SIZE,a1),a1
-	dbf		d3,3b
-4:
-*	lsr.b	#1,d5
-*	jcs		5f
-*	rts
-*5:
-	* last plane: if blitter busy, do with CPU
-*	BTST	#6,(dmaconr,a5)
-*	jra		31f
-*	* blitter is busy: do it with cpu for that plane
-*	move.w	d6,d2
-*	subq	#1,d2
-*	move.l	a1,a2
-*	* no need to know which width in the case of gyruss there are
-*	* only 32 bit erase / blits
-*55:
-*	clr.l	(a2)
-*	lea		(BG_HORIZ_NB_BYTES_PER_ROW,a2),a2
-*	dbf		d2,55b
-*	rts
-*31:
-	move.l a1,bltdpt(a5)	|destination top left corner
-	move.w  d4,bltsize(a5)	|rectangle size, starts blit
-    rts
+erase_32:
+	move.w	d6,d5
+	move.l	a1,a3
+0:
+	clr.l	(a3)
+	add.w	#FG_NB_BYTES_PER_ROW,a3
+	dbf		d6,0b
+	move.w	d5,d6
+	rts
+
+erase_48:
+	move.w	d6,d5
+	move.l	a1,a3
+0:
+	clr.w	(a3)
+	clr.l	(2,a3)
+	add.w	#FG_NB_BYTES_PER_ROW,a3
+	dbf		d6,0b
+	move.w	d5,d6
+	rts
+
 	.endif
 
 bob_row_multiplication_table:
@@ -3516,7 +3523,7 @@ handle_keyboard:
     cmp.b   #0x19,d0	| "P" key
     bne.b   0f
 
-    bsr	toggle_pause
+    jbsr	toggle_pause
 0:
 
 	btst	#4,cheat_flags+3

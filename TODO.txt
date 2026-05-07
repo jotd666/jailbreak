@@ -1,3 +1,7 @@
+- gray is brown on 16 col change that
+- restore back using CPU / blitter alternately (ECS)
+- change PUSH_SR see dig dug / block ECS version if 68020
+  (too bad as ECS 16 would fly on vanilla A1200)
 - OCS double buffering doesn't work properly shaking??
 - ECS lower part shifted: display status & game over lower, increase
   scrolling height
