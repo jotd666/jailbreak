@@ -1,5 +1,5 @@
 - gray is brown on 16 col change that
-- restore back using CPU / blitter alternately (ECS)
+- improve bitplane clear using cpu (ecs version)
 - change PUSH_SR see dig dug / block ECS version if 68020
   (too bad as ECS 16 would fly on vanilla A1200)
 - OCS double buffering doesn't work properly shaking??
@@ -11,9 +11,7 @@
   with fallback to bobs: sprite 0x100
 - vertical scrolling for end sequence:ok, still parasite char near address 0x84A get write address
   and watch it: set start level + skip level! seems to be on other planes
-- double buffering but still a lot of blinking on chip only, remove fixed 25Hz
-  mode, just skip frames if cannot cope, compute the number of active sprites for auto mode
-  
+ 
 
 - profile game, try to optimize
 - use multiplexed sprites for enemy bullets (maybe)
