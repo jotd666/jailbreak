@@ -1,10 +1,9 @@
 - gray is brown on 16 col change that
 - improve bitplane clear using cpu (ecs version)
-- change PUSH_SR see dig dug / block ECS version if 68020
-  (too bad as ECS 16 would fly on vanilla A1200)
-- OCS double buffering doesn't work properly shaking??
-- ECS lower part shifted: display status & game over lower, increase
-  scrolling height
+- OCS/ECS double buffering doesn't work properly shaking??
+- OCS/ECS status: maybe adjust scroll so it's shifted: read value
+  for scroll = 0 in bplcon1
+- OCS/ECS: prison: set strip color of the prison floor
 - LMB to select weapon
 - better command line options
 - use sprites for player bullets / enemy bullets when possible
