@@ -92,7 +92,7 @@ def convert(ocs):
     "GAME_OVER_SND"      :{"index":0x45,"pattern":0x3,"volume":music_volume},
     "INTRO_SND"      :{"index":0x43,"pattern":0x0,"volume":music_volume},
     "GAME_COMPLETED_SND"      :{"index":0x41,"pattern":0x5,"volume":music_volume},
-    "HIGH_SCORE_SND"      :{"index":0x42,"pattern":0x9,"volume":40},
+    "HIGH_SCORE_SND"      :{"index":0x42,"pattern":0x9,"volume":music_volume},
 
 })
 
@@ -183,7 +183,7 @@ def convert(ocs):
                 wav_file = os.path.join(sound_dir,wav_name+".wav")
 
                 def get_sox_cmd(sr,output):
-                    return [sox,"--volume","3.0",wav_file,"--channels","1","-D","--bits","8","-r",str(sr),"--encoding","signed-integer",output]
+                    return [sox,"--volume","2.5",wav_file,"--channels","1","-D","--bits","8","-r",str(sr),"--encoding","signed-integer",output]
 
                 used_sampling_rate = details["sample_rate"]
                 used_priority = details.get("priority",1)

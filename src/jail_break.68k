@@ -595,6 +595,7 @@ l_824c:
 	subq.w	#2,d4                           	| [...]
 	GET_REG_ADDRESS	0,d4                   	| [$8257: cmpd   ,--u] test checksum here: 3FC7 in C458
 	CMP_W_TO_REG	a0,d1                          	| [...]
+	illegal
 	PUSH_SR                                	| [$825a: pshs   cc] save comparison result for later, pushing on stack never popping!
 	cmp.w	#0xc458,d4                       	| [$825c: cmpu   #$c458]
 	jne	l_8247                             	| [$8260: bne    $8247]
@@ -786,7 +787,7 @@ l_833d:
 	VIDEO_BYTE_DIRTY | [...]
 l_8343:
 	rts                                    	| [$8343: rts]
-l_8344:
+add_to_score_8344:
 	OP_1_ON_DP_ADDRESS	tst,0x44             | [$8344: tst    $44]
 	jeq	l_8343                             	| [$8346: beq    $8343]
 	asl.b	#1,d1                            	| [$8348: aslb]
@@ -795,8 +796,10 @@ l_8344:
 	move.b	d1,d6                           	| [...] as byte
 	DO_EXTB	d6                             	| [...] with sign extension
 	GET_REG_ADDRESS_FROM_REG	d6,d2         	| [$834c: ldy    b,x]
+	* d3 now points to the points to add to the player score
 	MOVE_W_TO_REG	a0,d3                         	| [...]
-	move.w	#0x1575,d2                      	| [$834f: ldx    #$1575]
+	* load pointer on end of score to perform score addition
+	move.w	#player_score_1572+3,d2                      	| [$834f: ldx    #$1575]
 	OP_R_ON_DP_ADDRESS	move,current_player_43,d0| [$8352: lda    current_player_43]
 	jeq	l_8358                             	| [$8354: beq    $8358]
 	addq.w	#0x3,d2                         	| [$8356: leax   $3,x]
@@ -831,11 +834,12 @@ l_8358:
 	move.b	(a0),d6	| [...]
 	POP_SR			| restore carry
 	abcd	d6,d0	| [...]
-	PUSH_SR			| protect carry
+	scs		d6			| protect carry
 	GET_REG_ADDRESS	0,d2                   	| [$836b: sta    ,x]
 	move.b	d0,(a0)                         	| [...]
-	POP_SR			| restore carry
-	jcc	l_8378                             	| [$836d: bcc    $8378]
+	tst.b	d6			| restore carry
+	jeq	l_8378                             	| [$836d: bcc    $8378]
+	* max out score
 	move.b	#0x99,d0                        	| [$836f: ldd    #$9990]
 	move.w	#0x9990,d1                      	| [$836f: ldd    #$9990]
 	| [$8372: sta    ,x]
@@ -904,7 +908,7 @@ l_83c7:
 	jeq	l_83d7                             	| [$83cf: beq    $83d7]
 l_83d1:
 	move.w	#0x08c4,d2                      	| [$83d1: ldx    #$08c4]
-	move.w	#0x1575,d4                      	| [$83d4: ldu    #$1575]
+	move.w	#player_score_1572+3,d4                      	| [$83d4: ldu    #$1575]
 l_83d7:
 	GET_REG_ADDRESS	0,d4                   	| [$83d7: lda    ,u]
 	move.b	(a0),d0                         	| [...]
@@ -1518,7 +1522,7 @@ l_86e3:
 	OP_W_ON_DP_ADDRESS	addq,0x29,#1         | [$86e6: inc    $29]
 	rts                                    	| [$86e8: rts]
 l_86e9:
-	move.w	#0x1575,d2                      	| [$86e9: ldx    #$1575]
+	move.w	#player_score_1572+3,d2                      	| [$86e9: ldx    #$1575]
 	OP_R_ON_DP_ADDRESS	move,0x51,d0         | [$86ec: lda    $51]
 	and.b	#0x04,d0                         	| [$86ee: anda   #$04]
 	jne	l_86f4                             	| [$86f0: bne    $86f4]
@@ -1589,7 +1593,7 @@ l_8749:
 	subq.b	#1,d0                           	| [$874b: deca]
 	jne	l_8749                             	| [$874c: bne    $8749]
 l_874e:
-	move.w	#0x1575,d2                      	| [$874e: ldx    #$1575]
+	move.w	#player_score_1572+3,d2                      	| [$874e: ldx    #$1575]
 	OP_R_ON_DP_ADDRESS	move,0x6a,d0         | [$8751: lda    $6a]
 	jne	l_8758                             	| [$8753: bne    $8758]
 	move.w	#player_score_1572,d2                      	| [$8755: ldx    #player_score_1572]
@@ -7573,11 +7577,11 @@ l_a78a:
 	move.b	(a0),d1                         	| [...]
 	GET_REG_ADDRESS	0x2,d3                 	| [$a78e: addb   $2,y]
 	add.b	(a0),d1                          	| [...]
-	PUSH_SR
+	scs		d6
 	| [$a790: stb    $2,y]
 	move.b	d1,(a0)                         	| [...]
-	POP_SR
-	jcc	l_a7a8                             	| [$a792: bcc    $a7a8]
+	tst.b	d6
+	jeq	l_a7a8                             	| [$a792: bcc    $a7a8]
 	GET_REG_ADDRESS	0x3,d3                 	| [$a794: inc    $3,y]
 	addq.b	#1,(a0)                         	| [...]
 	GET_REG_ADDRESS	0x2,d3                 	| [$a796: clr    $2,y]
@@ -8728,7 +8732,7 @@ l_ada4:
 	move.b	(a0),d0                         	| [...]
 	OP_R_ON_DP_ADDRESS	move,0x9b,d1         | [$adba: ldb    $9b]
 	cmp.b	#0x05,d1                         	| [$adbc: cmpb   #$05]
-	PUSH_SR                                	| [$adbe: pshs   cc]
+	*PUSH_SR                                	| [$adbe: pshs   cc]
 	jeq	l_ad27                             	| [$adc0: lbeq   $ad27]
 	GET_ADDRESS	0x1270                     	| [$adc4: ldb    $1270]
 	move.b	(a0),d1                         	| [...]
@@ -8744,8 +8748,10 @@ l_adcb:
 l_add4:
 	GET_ADDRESS	0x11c6                     	| [$add4: ldb    $11c6]
 	move.b	(a0),d1                         	| [...]
-	POP_SR                                 	| [$add7: puls   cc]
-	jeq	l_ad13                             	| [$add9: lbeq   $ad13]
+	*POP_SR                                 	| [$add7: puls   cc]
+	* cannot happen, always non zero as else it would have branched
+	* to ad27 at adc0
+	*jeq	l_ad13                             	| [$add9: lbeq   $ad13]
 l_addd:
 	GET_ADDRESS	0x1278                     	| [$addd: subb   $1278]
 	sub.b	(a0),d1                          	| [...]
@@ -11220,7 +11226,7 @@ l_bcef:
 event_table_bd14:
 	.long	l_82da                           	|  $bd14
 	.long	l_8327                           	|  $bd16
-	.long	l_8344                           	|  $bd18
+	.long	add_to_score_8344                           	|  $bd18
 	.long	l_843f                           	|  $bd1a
 	.long	l_85e2                           	|  $bd1c
 	.long	l_8602                           	|  $bd1e

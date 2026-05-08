@@ -109,30 +109,7 @@ okay\@:
 	eor.b	#0x11,ccr
 	.endm
 
-* useful to recall C from X (add then move then bcx)
-	.macro	SET_C_FROM_X
-	PUSH_SR
-	move.w	(sp),d6
-	bset	#0,d6   | set C
-	btst	#4,d6
-	jne	0f
-	bclr	#0,d6   | X is clear: clear C
-0:
-	move.w	d6,(sp)
-	POP_SR
-	.endm
 
-	.macro	SET_X_FROM_CLEARED_C
-	PUSH_SR
-	move.w	(sp),d6
-	bset	#4,d6   | set X
-	btst	#0,d6
-	jeq	0f
-	bclr	#4,d6   | C is set: clear X
-0:
-	move.w	d6,(sp)
-	POP_SR
-	.endm
 
 
 
