@@ -507,141 +507,19 @@ l_81d2:
 	move.b	#0x15,d0                        	| [$81dc: lda    #$15]
 	SET_DP_FROM_A                          	| [$81de: tfr    a,dp] set page $15 as direct page
 	jmp	start_8000   | skip all self-tests
-* now that DP has been set we can skip all this
-* checksum/memtest crap and directly jump
-* to $8000 to avoid slowdowns at boot
-
-* write memory from 0 to $2000 and check it
-l_81e1:
-	clr.w	d2                               	| [$81e1: ldx    #$0000]
-l_81e4:
-	 |  [$81e4: sta    watchdog_3300]
-	GET_REG_UNCHECKED_ADDRESS	0,d2                   	| [$81e7: sta    ,x] [video_address]
-	move.b	d0,(a0)                         	| [...]
-	VIDEO_BYTE_DIRTY | [...]
-	GET_REG_UNCHECKED_ADDRESS	0,d2                   	| [$81e9: cmpa   ,x+] [video_address]
-	addq.w	#1,d2                           	| [...]
-	cmp.b	(a0),d0                          	| [...]
-	jne	l_8192                             	| [$81eb: bne    $8192] if happens (non-zero) just reset, mem test?
-	cmp.w	#scroll_x_2000,d2                	| [$81ed: cmpx   #scroll_x_2000]
-	jcs	l_81e4                             	| [$81f0: bcs    $81e4]
-	add.b	#0x55,d0                         	| [$81f2: adda   #$55]
-	cmp.b	#0x54,d0                         	| [$81f4: cmpa   #$54]
-	jne	l_81e1                             	| [$81f6: bne    $81e1] do it with different memory values
-l_81f8:
-	addq.b	#1,d0                           	| [$81f8: inca]
-	cmp.b	#0xff,d0                         	| [$81f9: cmpa   #$ff]
-	jne	l_81fe                             	| [$81fb: bne    $81fe]
-* now in the other direction...
-	moveq	#0,d0                            	| [$81fd: clra]
-l_81fe:
-	 |  [$81fe: sta    watchdog_3300]
-	GET_REG_ADDRESS	0,d2                   	| [$8201: sta    ,-x]
-	move.b	d0,(a0)                         	| [...]
-	| [$8203: cmpa   ,x]
-	cmp.b	(a0),d0                          	| [...]
-	jne	l_8192                             	| [$8205: bne    $8192]
-	tst.w	d2                               	| [$8207: cmpx   #$0000]
-	jhi	l_81f8                             	| [$820a: bhi    $81f8]
-	moveq	#0,d0                            	| [$820c: clra]
-* now the scroll registers
-l_820d:
-	move.w	#scroll_x_2000,d2               	| [$820d: ldx    #scroll_x_2000]
-l_8210:
-	 |  [$8210: sta    watchdog_3300]
-	GET_REG_ADDRESS	0,d2                   	| [$8213: sta    ,x]
-	move.b	d0,(a0)                         	| [...]
-	| [$8215: cmpa   ,x+]
-	addq.w	#1,d2                           	| [...]
-	cmp.b	(a0),d0                          	| [...]
-	jne	l_817d                             	| [$8217: lbne   $817d]
-	cmp.w	#0x2020,d2                       	| [$821b: cmpx   #$2020]
-	jcs	l_8210                             	| [$821e: bcs    $8210]
-	add.b	#0x55,d0                         	| [$8220: adda   #$55]
-	cmp.b	#0x54,d0                         	| [$8222: cmpa   #$54]
-	jne	l_820d                             	| [$8224: bne    $820d]
-l_8226:
-	addq.b	#1,d0                           	| [$8226: inca]
-	cmp.b	#0xff,d0                         	| [$8227: cmpa   #$ff]
-	jne	l_822c                             	| [$8229: bne    $822c]
-	moveq	#0,d0                            	| [$822b: clra]
-l_822c:
-	 |  [$822c: sta    watchdog_3300]
-	GET_REG_ADDRESS	0,d2                   	| [$822f: sta    ,-x]
-	move.b	d0,(a0)                         	| [...]
-	| [$8231: cmpa   ,x]
-	cmp.b	(a0),d0                          	| [...]
-	jne	l_817d                             	| [$8233: lbne   $817d]
-	cmp.w	#scroll_x_2000,d2                	| [$8237: cmpx   #scroll_x_2000]
-	jhi	l_8226                             	| [$823a: bhi    $8226]
-	move.b	#0x10,d1                        	| [$823c: ldb    #$10]
-	jbsr	l_82ac                            	| [$823e: bsr    $82ac]
-	move.w	#0xc45c,d4                      	| [$8240: ldu    #$c45c]
-	clr.w	d3                               	| [$8243: ldy    #$0000]
-* ROM checksum
-l_8247:
-	move.w	#speech_4000,d2                 	| [$8247: ldx    #speech_4000]
-	moveq	#0,d0                            	| [$824a: clra]
-	moveq	#0,d1                            	| [$824b: clrb]
-l_824c:
-	 |  [$824c: sta    watchdog_3300]
-	GET_REG_ADDRESS	0,d3                   	| [$824f: addb   ,-y]
-	add.b	(a0),d1                          	| [...]
-	move.b	#0x00,d6	| [$8251: adca   #$00]
-	addx.b	d6,d0                        	| [$8251: adca   #$00]
-	subq.w	#0x1,d2                         	| [$8253: leax   -$1,x]
-	jne	l_824c                             	| [$8255: bne    $824c]
-	MAKE_D
-	subq.w	#2,d4                           	| [...]
-	GET_REG_ADDRESS	0,d4                   	| [$8257: cmpd   ,--u] test checksum here: 3FC7 in C458
-	CMP_W_TO_REG	a0,d1                          	| [...]
-	illegal
-	PUSH_SR                                	| [$825a: pshs   cc] save comparison result for later, pushing on stack never popping!
-	cmp.w	#0xc458,d4                       	| [$825c: cmpu   #$c458]
-	jne	l_8247                             	| [$8260: bne    $8247]
-* ROM checksum address correct, proceed
-	jbsr	l_82bf                            	| [$8262: jsr    $82bf]
-	move.b	#0x12,d1                        	| [$8265: ldb    #$12]
-	jbsr	l_82da                            	| [$8267: jsr    $82da]
-	move.w	#0x0a92,d2                      	| [$826a: ldx    #$0a92]
-l_826d:
-	POP_SR                                 	| [$826d: puls   cc]
-* if checksum correct, continue
-	jeq	l_827c                             	| [$826f: beq    $827c]
-	move.b	#0x12,d0                        	| [$8271: ldd    #$1211]
-	move.w	#0x1211,d1                      	| [$8271: ldd    #$1211]
-	GET_REG_ADDRESS	0,d2                   	| [$8274: sta    ,x]
-	move.b	d0,(a0)                         	| [...]
-	GET_REG_ADDRESS	0x1,d2                 	| [$8276: stb    $1,x]
-	move.b	d1,(a0)                         	| [...]
-	move.b	#0x14,d0                        	| [$8278: lda    #$14]
-	GET_REG_ADDRESS	0x2,d2                 	| [$827a: sta    $2,x]
-	move.b	d0,(a0)                         	| [...]
-* continue do shit
-l_827c:
-	add.w	#0x0080,d2                       	| [$827c: leax   $0080,x]
-	cmp.w	#0x0b92,d2                       	| [$8280: cmpx   #$0b92]
-	jne	l_826d                             	| [$8283: bne    $826d]
-	GET_REG_ADDRESS	-0x1,d5                	| [$8285: lda    -$1,s]
-	move.b	(a0),d0                         	| [...]
-	and.b	#0x04,d0                         	| [$8287: anda   #$04]
-	jeq	l_81a6                             	| [$8289: lbeq   $81a6]
-	GET_REG_ADDRESS	-0x2,d5                	| [$828d: lda    -$2,s]
-	move.b	(a0),d0                         	| [...]
-	and.b	#0x04,d0                         	| [$828f: anda   #$04]
-	jeq	l_81a6                             	| [$8291: lbeq   $81a6]
-	jbsr	l_829e                            	| [$8295: bsr    $829e]
-	jbsr	l_82aa                            	| [$8297: bsr    $82aa]
-	jbsr	l_829e                            	| [$8299: bsr    $829e]
-	jmp	start_8000                         	| [$829b: jmp    start_8000] really start game now
-
+	* code removed, check 6809 version for reference
+	
+	* now code is active again?
 l_829e:
-	clr.w	d2                               	| [$829e: ldx    #$0000]
-l_82a1:
-	 |  [$82a1: sta    watchdog_3300]
-	jbsr	multiply_ab                       	| [$82a4: mul]
-	subq.w	#0x1,d2                         	| [$82a5: leax   -$1,x]
-	jne	l_82a1                             	| [$82a7: bne    $82a1]
+	* this seems like a cpu-intensive delay loop
+	* removing it as it seems not called
+			
+					| [$829e: ldx    #$0000]
+			
+			
+					| [$82a4: mul]
+					| [$82a5: leax   -$1,x]
+					| [$82a7: bne    $82a1]
 	rts                                    	| [$82a9: rts]
 l_82aa:
 	move.b	#0xff,d1                        	| [$82aa: ldb    #$ff]
@@ -798,58 +676,47 @@ add_to_score_8344:
 	GET_REG_ADDRESS_FROM_REG	d6,d2         	| [$834c: ldy    b,x]
 	* d3 now points to the points to add to the player score
 	MOVE_W_TO_REG	a0,d3                         	| [...]
+	GET_REG_ADDRESS	0,d3
+	move.l	a0,a1		
 	* load pointer on end of score to perform score addition
 	move.w	#player_score_1572+3,d2                      	| [$834f: ldx    #$1575]
+	GET_REG_ADDRESS	0,d2
 	OP_R_ON_DP_ADDRESS	move,current_player_43,d0| [$8352: lda    current_player_43]
 	jeq	l_8358                             	| [$8354: beq    $8358]
-	addq.w	#0x3,d2                         	| [$8356: leax   $3,x]
+	addq.w	#3,a0                         	| [$8356: leax   $3,x]
 l_8358:
-	subq.w	#1,d2                           	| [...]
-	GET_REG_ADDRESS	0,d2                   	| [$8358: lda    ,-x]
-	move.b	(a0),d0                         	| [...]
-	subq.w	#1,d3                           	| [...]
-	GET_REG_ADDRESS	0,d3                   	| [$835a: adda   ,-y]
+	                   	
+	* now a1 = d3, a0 = target d2
+	* we don't touch d2 or d3, thus avoiding to change X flag
+	move.b	-(a0),d0            | [$8358: lda    ,-x]
+	           
 	CLR_XC_FLAGS
-	move.b	(a0),d6	| [...]
+	move.b	-(a1),d6	| fetch first point to add data
+	abcd	d6,d0	| [$835a: adda   ,-y]        	
+               	
+	move.b	d0,(a0)                | [$835d: sta    ,x]
+	move.b	-(a0),d0               | [$835f: lda    ,-x]
+	move.b	-(a1),d6	| [...]    | [$8361: adca   ,-y]
 	abcd	d6,d0	| [...]
-	PUSH_SR			| protect carry
-	GET_REG_ADDRESS	0,d2                   	| [$835d: sta    ,x]
-	move.b	d0,(a0)                         	| [...]
-	subq.w	#1,d2                           	| [...]
-	GET_REG_ADDRESS	0,d2                   	| [$835f: lda    ,-x]
-	move.b	(a0),d0                         	| [...]
-	subq.w	#1,d3                           	| [...]
-	GET_REG_ADDRESS	0,d3                   	| [$8361: adca   ,-y]
-	move.b	(a0),d6	| [...]
-	POP_SR			| restore carry
-	abcd	d6,d0	| [...]
-	PUSH_SR			| protect carry
-	GET_REG_ADDRESS	0,d2                   	| [$8364: sta    ,x]
-	move.b	d0,(a0)                         	| [...]
-	subq.w	#1,d2                           	| [...]
-	GET_REG_ADDRESS	0,d2                   	| [$8366: lda    ,-x]
-	move.b	(a0),d0                         	| [...]
-	subq.w	#1,d3                           	| [...]
-	GET_REG_ADDRESS	0,d3                   	| [$8368: adca   ,-y]
-	move.b	(a0),d6	| [...]
-	POP_SR			| restore carry
+	move.b	d0,(a0)                       	| [$8364: sta    ,x]
+	move.b	-(a0),d0                           	| [$8366: lda    ,-x]
+	move.b	-(a1),d6	|  [$8368: adca   ,-y]
 	abcd	d6,d0	| [...]
 	scs		d6			| protect carry
-	GET_REG_ADDRESS	0,d2                   	| [$836b: sta    ,x]
-	move.b	d0,(a0)                         	| [...]
+	move.b	d0,(a0)                    	| [$836b: sta    ,x]
 	tst.b	d6			| restore carry
 	jeq	l_8378                             	| [$836d: bcc    $8378]
 	* max out score
 	move.b	#0x99,d0                        	| [$836f: ldd    #$9990]
 	move.w	#0x9990,d1                      	| [$836f: ldd    #$9990]
 	| [$8372: sta    ,x]
-	move.b	d0,(a0)                         	| [...]
-	GET_REG_ADDRESS	0x1,d2                 	| [$8374: std    $1,x]
-	MOVE_W_FROM_REG	d1,a0                         	| [...]
+	move.b	d0,(a0)+                         	| [...]
+	MOVE_W_FROM_REG	d1,a0             	| [$8374: std    $1,x]
+	subq 	#1,a0
 	jra	l_83a5                             	| [$8376: bra    $83a5]
 l_8378:
-	GET_REG_ADDRESS	0,d2                   	| [$8378: ldd    ,x]
-	LOAD_D                                 	| [$8378: ldd    ,x]
+	* check if high score beaten
+	LOAD_D                                 	| [$8378: ldd    ,x] load MSB score digits
 	GET_DP_ADDRESS	0x9c                    	| [$837a: cmpd   $9c]
 	CMP_W_TO_REG	a0,d1                          	| [...]
 	jcs	l_83a5                             	| [$837d: bcs    $83a5]
@@ -878,14 +745,12 @@ l_8378:
 	jbsr	l_843f                            	| [$83a0: jsr    $843f]
 	movem.l	(sp)+,d2/d3                    	| [$83a3: puls   x,y]
 l_83a5:
-	GET_REG_ADDRESS	0,d2                   	| [$83a5: ldd    ,x]
 	LOAD_D                                 	| [$83a5: ldd    ,x]
 	GET_DP_ADDRESS	0x7e                    	| [$83a7: cmpd   $7e]
 	CMP_W_TO_REG	a0,d1                          	| [...]
 	jhi	l_83b4                             	| [$83aa: bhi    $83b4]
 	jcs	l_83c7                             	| [$83ac: bcs    $83c7]
-	GET_REG_ADDRESS	0x2,d2                 	| [$83ae: ldb    $2,x]
-	move.b	(a0),d1                         	| [...]
+	move.b	(2,a0),d1                       | [$83ae: ldb    $2,x]
 	OP_R_ON_DP_ADDRESS	cmp,0x80,d1          | [$83b0: cmpb   $80]
 	jls	l_83c7                             	| [$83b2: bls    $83c7]
 l_83b4:
@@ -6471,7 +6336,7 @@ l_a1e7:
 	GET_REG_ADDRESS	0,d2                   	| [$a1e7: cmpd   ,x]
 	CMP_W_TO_REG	a0,d1                          	| [...]
 	jeq	l_a209                             	| [$a1ea: beq    $a209]
-	PUSH_SR                                	| [$a1ec: pshs   a,cc]
+	scs		d6                               	| [$a1ec: pshs   a,cc]
 	move.l	d0,-(sp)                        	| [$a1ec: pshs   a,cc]
 	GET_REG_ADDRESS	0x2,d2                 	| [$a1ee: lda    $2,x]
 	move.b	(a0),d0                         	| [...]
@@ -6490,21 +6355,18 @@ l_a201:
 	addq.w	#0x3,d2                         	| [$a201: leax   $3,x]
 	movem.l	(sp)+,d0                       	| [$a203: puls   cc,a]
 	MAKE_D                                 	| [...]
-	POP_SR                                 	| [$a203: puls   cc,a]
-	jcc	l_a1e7                             	| [$a205: bcc    $a1e7]
+	tst.b	d6                                 	| [$a203: puls   cc,a]
+	jeq	l_a1e7                             	| [$a205: bcc    $a1e7]
 	jra	l_a286                             	| [$a207: bra    $a286]
 l_a209:
 	GET_REG_ADDRESS	0x2,d2                 	| [$a209: ldb    $2,x]
-	move.b	(a0),d1                         	| [...]
-	GET_REG_ADDRESS	0x3,d2                 	| [$a20b: lda    $3,x]
-	move.b	(a0),d0                         	| [...]
+	move.b	(a0),d1                         	| [...]	                 	
+	move.b	(1,a0),d0                    | [$a20b: lda    $3,x]
 	GET_ADDRESS	0x1275                     	| [$a20d: sta    $1275]
 	move.b	d0,(a0)                         	| [...]
 	jra	l_a280                             	| [$a210: bra    $a280]
 l_a212:
-	move.b	#0x00,d0                        	| [$a212: ldd    #$0001]
 	move.w	#0x0001,d1                      	| [$a212: ldd    #$0001]
-	MAKE_D                                 	| [...]
 	GET_ADDRESS	0x10f9                     	| [$a215: addd   $10f9]
 	ADD_W_TO_REG	a0,d1                          	| [...]
 	MAKE_A                                 	| [...]
@@ -6519,11 +6381,11 @@ l_a212:
 	OP_W_ON_DP_ADDRESS	addq,level_completed_flag_9f,#1| [$a228: inc    level_completed_flag_9f]
 	jra	l_a286                             	| [$a22a: bra    $a286]
 l_a22c:
-	OP_R_ON_DP_ADDRESS	move,0x9b,d0         | [$a22c: lda    $9b]
-	asl.b	#1,d0                            	| [$a22e: asla]
+	* it makes no sense to read in d0 then overwrite itx
+												| [$a22c: lda    $9b]
+												| [$a22e: asla]
 	move.b	#0x0a,d0                        	| [$a22f: ldd    #$0a48]
 	move.w	#0x0a48,d1                      	| [$a22f: ldd    #$0a48]
-	MAKE_D
 	GET_DP_ADDRESS	0xa7                    	| [$a232: cmpd   $a7]
 	CMP_W_TO_REG	a0,d1                          	| [...]
 	jcs	l_a212                             	| [$a235: bcs    $a212]
@@ -6635,8 +6497,8 @@ l_a2ad:
 	move.b	#0x03,d1                        	| [$a2b2: ldb    #$03]
 	GET_REG_ADDRESS	0x1c,d3                	| [$a2b4: stb    $1c,y]
 	move.b	d1,(a0)                         	| [...]
-	GET_REG_ADDRESS	0x1d,d3                	| [$a2b7: clr    $1d,y]
-	clr.b	(a0)                         	| [...]
+											| [$a2b7: clr    $1d,y]
+	clr.b	(1,a0)                         	| [...]
 l_a2ba:
 	GET_REG_ADDRESS	0x15,d3                	| [$a2ba: inc    $15,y]
 	addq.b	#1,(a0)                         	| [...]
@@ -6651,8 +6513,8 @@ l_a2c5:
 	jcs	l_a2d5                             	| [$a2c7: bcs    $a2d5]
 	GET_REG_ADDRESS	0x15,d3                	| [$a2c9: clr    $15,y]
 	clr.b	(a0)                         	| [...]
-	GET_REG_ADDRESS	0x17,d3                	| [$a2cc: clr    $17,y]
-	clr.b	(a0)                         	| [...]
+	                	| [$a2cc: clr    $17,y]
+	clr.b	(2,a0)                         	| [...]
 	jbsr	l_a6e8                            	| [$a2cf: jsr    $a6e8]
 	jmp	l_a4f0                             	| [$a2d2: jmp    $a4f0]
 l_a2d5:
@@ -7010,16 +6872,16 @@ l_a469:
 	move.b	d1,(a0)                         	| [...]
 	GET_REG_ADDRESS	0x4,d3                 	| [$a4b5: ldb    $4,y]
 	move.b	(a0),d1                         	| [...]
-	GET_REG_ADDRESS	0x14,d3                	| [$a4b7: stb    $14,y]
-	move.b	d1,(a0)                         	| [...]
-	GET_REG_ADDRESS	0x24,d3                	| [$a4ba: stb    $24,y]
-	move.b	d1,(a0)                         	| [...]
+	                	| [$a4b7: stb    $14,y]
+	move.b	d1,(0x10,a0)                         	| [...]
+	                	| [$a4ba: stb    $24,y]
+	move.b	d1,(0x20,a0)                         	| [...]
 	add.b	#0x10,d1                         	| [$a4bd: addb   #$10]
-	GET_REG_ADDRESS	0x44,d3                	| [$a4bf: stb    $44,y]
-	move.b	d1,(a0)                         	| [...]
+	                	| [$a4bf: stb    $44,y]
+	move.b	d1,(0x40,a0)                         	| [...]
 	add.b	#0x10,d1                         	| [$a4c2: addb   #$10]
-	GET_REG_ADDRESS	0x0084,d3              	| [$a4c4: stb    $0084,y]
-	move.b	d1,(a0)                         	| [...]
+									| [$a4c4: stb    $0084,y]
+	move.b	d1,(0x80,a0)                         	| [...]
 l_a4c8:
 	GET_REG_ADDRESS	0x12,d3                	| [$a4c8: ldb    $12,y]
 	move.b	(a0),d1                         	| [...]
@@ -7108,10 +6970,10 @@ l_a522:
 	jcs	l_a54d                             	| [$a538: bcs    $a54d]
 	GET_REG_ADDRESS	0x9,d3                 	| [$a53a: stb    $9,y]
 	move.b	d1,(a0)                         	| [...]
-	GET_REG_ADDRESS	0xa,d3                 	| [$a53c: stb    $a,y]
-	move.b	d1,(a0)                         	| [...]
-	GET_REG_ADDRESS	0xd,d3                 	| [$a53e: stb    $d,y]
-	move.b	d1,(a0)                         	| [...]
+	                 	| [$a53c: stb    $a,y]
+	move.b	d1,(1,a0)                         	| [...]
+	                 	| [$a53e: stb    $d,y]
+	move.b	d1,(4,a0)                         	| [...]
 	rts                                    	| [$a540: rts]
 l_a541:
 	MAKE_D
@@ -7140,10 +7002,10 @@ l_a55c:
 	jcc	l_a54d                             	| [$a564: bcc    $a54d]
 	GET_REG_ADDRESS	0x9,d3                 	| [$a566: stb    $9,y]
 	move.b	d1,(a0)                         	| [...]
-	GET_REG_ADDRESS	0xa,d3                 	| [$a568: clr    $a,y]
-	clr.b	(a0)                         	| [...]
-	GET_REG_ADDRESS	0xd,d3                 	| [$a56a: clr    $d,y]
-	clr.b	(a0)                         	| [...]
+	                 	| [$a568: clr    $a,y]
+	clr.b	(1,a0)                         	| [...]
+	                 	| [$a56a: clr    $d,y]
+	clr.b	(4,a0)                         	| [...]
 	rts                                    	| [$a56c: rts]
 l_a56d:
 	move.w	#0xebc4,d2                      	| [$a56d: ldx    #$ebc4]
@@ -7250,14 +7112,14 @@ l_a5ff:
 	GET_REG_ADDRESS	0x24,d3                	| [$a603: ldb    $24,y]
 	move.b	(a0),d1                         	| [...]
 	add.b	#0x20,d1                         	| [$a606: addb   #$20]
-	GET_REG_ADDRESS	0x24,d3                	| [$a608: stb    $24,y]
+											| [$a608: stb    $24,y]
 	move.b	d1,(a0)                         	| [...]
 	jra	l_a615                             	| [$a60b: bra    $a615]
 l_a60d:
 	GET_REG_ADDRESS	0x34,d3                	| [$a60d: ldb    $34,y]
 	move.b	(a0),d1                         	| [...]
 	sub.b	#0x20,d1                         	| [$a610: subb   #$20]
-	GET_REG_ADDRESS	0x34,d3                	| [$a612: stb    $34,y]
+	                	| [$a612: stb    $34,y]
 	move.b	d1,(a0)                         	| [...]
 l_a615:
 	rts                                    	| [$a615: rts]
@@ -7584,8 +7446,8 @@ l_a78a:
 	jeq	l_a7a8                             	| [$a792: bcc    $a7a8]
 	GET_REG_ADDRESS	0x3,d3                 	| [$a794: inc    $3,y]
 	addq.b	#1,(a0)                         	| [...]
-	GET_REG_ADDRESS	0x2,d3                 	| [$a796: clr    $2,y]
-	clr.b	(a0)                         	| [...]
+										| [$a796: clr    $2,y]
+	clr.b	(-1,a0)                         	| [...]
 	GET_REG_ADDRESS	0x5,d4                 	| [$a798: cmpa   $5,u]
 	cmp.b	(a0),d0                          	| [...]
 	jls	l_a7a9                             	| [$a79a: bls    $a7a9]
@@ -7921,8 +7783,8 @@ l_a94f:
 	move.w	d3,d4                           	| [$a951: leau   ,y]
 	GET_REG_ADDRESS	0x4,d3                 	| [$a953: ldb    $4,y]
 	move.b	(a0),d1                         	| [...]
-	GET_REG_ADDRESS	0x13,d3                	| [$a955: lda    $13,y]
-	move.b	(a0),d0                         	| [...]
+									| [$a955: lda    $13,y]
+	move.b	(0xF,a0),d0                         	| [...]
 	jne	l_a972                             	| [$a958: bne    $a972]
 	tst.b	d1                               	| [$a95a: tstb]
 	jpl	l_a96d                             	| [$a95b: bpl    $a96d]
@@ -7931,8 +7793,8 @@ l_a95f:
 	GET_REG_ADDRESS	0x4,d4                 	| [$a95f: lda    $4,u]
 	move.b	(a0),d0                         	| [...]
 	jmi	l_a965                             	| [$a961: bmi    $a965]
-	GET_REG_ADDRESS	0x6,d4                 	| [$a963: clr    $6,u]
-	clr.b	(a0)                         	| [...]
+											| [$a963: clr    $6,u]
+	clr.b	(2,a0)                         	| [...]
 l_a965:
 	add.w	#0x10,d4                         	| [$a965: leau   $10,u]
 	subq.b	#1,d1                           	| [$a968: decb]
@@ -8141,8 +8003,8 @@ l_aa72:
 	jne	l_aa80                             	| [$aa79: bne    $aa80]
 	GET_REG_ADDRESS	0x8,d3                 	| [$aa7b: stb    $8,y]
 	move.b	d1,(a0)                         	| [...]
-	GET_REG_ADDRESS	0xb,d3                 	| [$aa7d: stb    $b,y]
-	move.b	d1,(a0)                         	| [...]
+									| [$aa7d: stb    $b,y]
+	move.b	d1,(3,a0)                         	| [...]
 l_aa7f:
 	rts                                    	| [$aa7f: rts]
 l_aa80:
@@ -8732,7 +8594,7 @@ l_ada4:
 	move.b	(a0),d0                         	| [...]
 	OP_R_ON_DP_ADDRESS	move,0x9b,d1         | [$adba: ldb    $9b]
 	cmp.b	#0x05,d1                         	| [$adbc: cmpb   #$05]
-	*PUSH_SR                                	| [$adbe: pshs   cc]
+	                                	| [$adbe: pshs   cc]
 	jeq	l_ad27                             	| [$adc0: lbeq   $ad27]
 	GET_ADDRESS	0x1270                     	| [$adc4: ldb    $1270]
 	move.b	(a0),d1                         	| [...]
@@ -8748,10 +8610,10 @@ l_adcb:
 l_add4:
 	GET_ADDRESS	0x11c6                     	| [$add4: ldb    $11c6]
 	move.b	(a0),d1                         	| [...]
-	*POP_SR                                 	| [$add7: puls   cc]
-	* cannot happen, always non zero as else it would have branched
+	                                 	| [$add7: puls   cc]
+	* lbeq cannot happen, always non zero as else it would have branched
 	* to ad27 at adc0
-	*jeq	l_ad13                             	| [$add9: lbeq   $ad13]
+	                             	| [$add9: lbeq   $ad13]
 l_addd:
 	GET_ADDRESS	0x1278                     	| [$addd: subb   $1278]
 	sub.b	(a0),d1                          	| [...]
