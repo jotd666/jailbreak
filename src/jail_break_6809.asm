@@ -6604,6 +6604,7 @@ B76C: E7 09       STB    $1,Y
 B76E: 86 A8       LDA    #$20
 B770: A7 01       STA    $3,Y
 B772: 39          RTS
+; unreached code
 B773: CC 22 23    LDD    #$0001
 B776: ED A0       STD    $2,Y
 B778: BD 87 1C    JSR    $AF94

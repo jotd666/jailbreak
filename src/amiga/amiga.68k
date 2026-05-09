@@ -493,7 +493,13 @@ _user:
 	.endif
 	
 	lea		palette,a0
+	.ifdef	OCS_VERSION
+	move.w	#TOTAL_NB_COLORS,d0
+	move.w	#0x888,(18,a0)	| hack: last minute palette change
+	.else
 	move.w	#TOTAL_NB_COLORS*2,d0
+	.endif
+	* ECS 16 cols: load 16 colors for tiles/bobs & sprites
 	* ECS: load 32 colors for tiles/bobs & sprites
 	* AGA: load 32 colors (16+16 DPF)
 	* in the end the colors are the same
@@ -1196,7 +1202,9 @@ really_update_scroll:
 	tst.b	vertical_scroll
 	jne		update_vertical_scroll
 	.ifdef	NONAGA_VERSION
-	* copy scroll value to the last row
+	* copy scroll value to the last rows
+	* we want the status rows to scroll else BOBs will be
+	* split (since no dual playfield)
 	move.b	(0x10,a6),(0x1C,a6)
 	move.b	(0x30,a6),(0x3C,a6)
 	move.b	(0x10,a6),(0x1D,a6)
@@ -1238,6 +1246,7 @@ really_update_scroll:
 
 	.ifdef	NONAGA_VERSION
 	* reset static bitplanes for status
+	move.w	(a2),reset_bplcon1_2	| set bplcon value
 	lea		status_bitplanes+2,a0
 	move.l	a4,d0				| base address
 	jbsr	set_static_bitplanes
@@ -3071,6 +3080,10 @@ update_bg_tile_horiz:
 	cmp.b	#0x90,d2
 	jne		1f
 	move.w	#0x888,d4		| gray
+	move.l	m6809_direct_page_pointer,a5
+	cmp.b	#5,(stage_number_97,a5)  | DP
+	jne		1f
+	move.w	#0x952,d4		| maroon (better than real game that has gray :))
 1:
 	move.w	d4,road_color
 0:
@@ -4196,7 +4209,7 @@ scroll_rows_second_half:
 	* mimics the road (but without scrolling)
 	.word	color
 road_color:
-	.word	0x888
+	.word	0
 	.endif
 	
 	* pal limit

@@ -358,11 +358,16 @@ def doit(mode):
             (0,34,170):(0,51,153), # merging blues
             (0,0,255):(0,51,153),
             (136,136,136):(153,153,153),  # merging close grays
-            (0,17,0):(17,0,17),  # very dark almost black
+            (0,17,0):(17,0,17),  # very dark almost black, we have to leave it non-black because of bottom strip
+            #(0,17,0):(0,0,51),
+            #(17,0,17):(0,0,51),
             (170,102,0):maroon,
             (153,0,0):maroon,
             (103,0,0):maroon}
+
+            # manual pre-processing to merge colors manually
             apply_color_replacement(full_list,manual_replacement_dict)
+            # then quantize
             full_palette = quantize_image_sets(full_list,nb_colors,"sprites",remove_color=magenta,dump_it=True)
 
     #full_palette_rgb4 = {(x>>4,y>>4,z>>4) for x,y,z in full_palette}

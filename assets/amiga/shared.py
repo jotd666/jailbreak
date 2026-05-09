@@ -56,6 +56,11 @@ def quantize_palette(rgb_tuples,img_type,nb_quantize,transparent=None,dump_it=Fa
     # apply rounding now, else possible color duplicates, which would be a pity
     reduced_palette = bitplanelib.palette_round(reduced_palette,0xF0)
 
+    unique_reduced_img = Image.new("RGB",(len(rgb_configs),1))
+    for i,rgb in enumerate(sorted(set(reduced_palette))):
+        unique_reduced_img.putpixel((i,0),rgb)
+
+
     # now create a dictionary by associating the original & reduced colors
     rval = dict(zip(rgb_configs,reduced_palette))
 
@@ -68,11 +73,14 @@ def quantize_palette(rgb_tuples,img_type,nb_quantize,transparent=None,dump_it=Fa
         s = clut_img.size
         ns = (s[0]*30,s[1]*30)
         clut_img = clut_img.resize(ns,resample=0)
-        whole_image = Image.new("RGB",(clut_img.size[0],clut_img.size[1]*3))
+        unique_reduced_img = unique_reduced_img.resize(ns,resample=0)
+        whole_image = Image.new("RGB",(clut_img.size[0],clut_img.size[1]*5))
         whole_image.paste(clut_img,(0,0))
         reduced_colors_clut_img = reduced_colors_clut_img.resize(ns,resample=0)
         whole_image.paste(reduced_colors_clut_img,(0,clut_img.size[1]*2))
-        whole_image.save(dump_dir / "{}_colors.png".format(img_type))
+        whole_image.paste(unique_reduced_img,(0,clut_img.size[1]*4))
+
+        whole_image.convert("P",dither=0).save(dump_dir / "{}_colors.png".format(img_type))
 
     result_nb = len(set(reduced_palette))
     if nb_quantize < result_nb:

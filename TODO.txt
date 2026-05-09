@@ -1,19 +1,14 @@
-- gray is brown on 16 col change that
 - improve bitplane clear using cpu (ecs version)
 - OCS/ECS double buffering doesn't work properly shaking??
-- OCS/ECS status: maybe adjust scroll so it's shifted: read value
-  for scroll = 0 in bplcon1
-- OCS/ECS: prison: set strip color of the prison floor
+- vertical scrolling for end sequence:ok, still parasite char near address 0x84A get write address
+  and watch it: set start level + skip level! seems to be on other planes
+
+
 - LMB to select weapon
 - better command line options
 - use sprites for player bullets / enemy bullets when possible
   with fallback to bobs: sprite 0x100
-- vertical scrolling for end sequence:ok, still parasite char near address 0x84A get write address
-  and watch it: set start level + skip level! seems to be on other planes
- 
-
-- profile game, try to optimize
-- use multiplexed sprites for enemy bullets (maybe)
+ - profile game, try to optimize
 
 log sounds: bpset 93b7,,{print A;g}
 only play this C sound: bpset 93b7,A!=$C,{PC=93c9;g}

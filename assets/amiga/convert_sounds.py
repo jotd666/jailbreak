@@ -21,7 +21,7 @@ def convert(ocs):
 
     if ocs:
         hq_sample_rate = 8000
-        lq_sample_rate = 4000
+        lq_sample_rate = 6000
     else:
         hq_sample_rate = 16000
         lq_sample_rate = 10000
@@ -54,8 +54,8 @@ def convert(ocs):
     ]
 
     if ocs:
-        dummy_sounds.extend([0x84,0x93,0x8A,0x8B,0x8C,0x8D,0x8E,0x10,0x95,0x91,0x89,0x8F,0x90]) # rare/large sounds/speech
-
+        dummy_sounds.extend([0x84,0x93,0x8A,0x8B,0x8C,0x8D,0x8E,0x10,0x95,0x8F,0x90]) # rare/large sounds/speech
+#,0x89,,0x91
     sound_dict = {}
     sfx_list = set()
     # scan directory for speech
