@@ -1,4 +1,4 @@
-- improve bitplane clear using cpu (ecs version)
+- AGA version check if still all sound samples (voices)
 - OCS/ECS double buffering doesn't work properly shaking??
 - vertical scrolling for end sequence:ok, still parasite char near address 0x84A get write address
   and watch it: set start level + skip level! seems to be on other planes

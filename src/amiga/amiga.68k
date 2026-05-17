@@ -1636,11 +1636,11 @@ blit_background:
 	
 	.rept	NB_TILE_PLANES-1
 	.if	BG_SCREEN_PLANE_SIZE>0x7FFF
-	add.l	#BG_SCREEN_PLANE_SIZE,a0
-	add.l	#BG_SCREEN_PLANE_SIZE,a1
+	add.l	d0,a0
+	add.l	d0,a1
 	.else
-	add.w	#BG_SCREEN_PLANE_SIZE,a0
-	add.w	#BG_SCREEN_PLANE_SIZE,a1
+	add.w	d0,a0
+	add.w	d0,a1
 	.endif
 	btst	#6,(dmaconr,a5)
 	jeq		0f
@@ -3302,7 +3302,7 @@ flipped_tile:
 	
 0:
 	rts
-
+5:
 	CLEAR_TILE_PLANE	BG_HORIZ_NB_BYTES_PER_ROW
 	jra		41b
 	
@@ -3328,8 +3328,6 @@ mirror_tile:
 
 0:
 	rts
-1:
-
 5:
 	CLEAR_TILE_PLANE	BG_HORIZ_NB_BYTES_PER_ROW
 	jra		41b
@@ -4145,10 +4143,12 @@ bobs_bitplanes:
 tiles_bitplanes:
 	DECL_BITPLANES	0,NB_BOB_PLANES
 	.else
-bobs_bitplanes:
-	DECL_EVEN_BITPLANES	0,4
 tiles_bitplanes:
 	DECL_EVEN_BITPLANES	4,4
+	* resync bitplanes vs start of line
+	.word	0x01+((COPPER_Y_START+2)*256),0xFFFE
+bobs_bitplanes:
+	DECL_EVEN_BITPLANES	0,4
 	* set 0-scroll value for both plane sets
 	.endif
 	.word	bplcon1
